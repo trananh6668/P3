@@ -1453,264 +1453,40 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
 </div>
 </div>
 <script>
-    
-// ==========================================
-    // KHU VỰC DỮ LIỆU & ĐỒNG BỘ SERVER
     // ==========================================
-    
-    // 1. CẤU HÌNH API (Thay URL Firebase của bạn vào đây nếu có thay đổi)
+    // CẤU HÌNH DATABASE (FIREBASE)
+    // ==========================================
+    // Thay URL Firebase của bạn vào đây (Phải kết thúc bằng .json)
     const SYNC_API_URL = 'https://tracnghiemonline-ad6a3-default-rtdb.firebaseio.com/.json'; 
 
-    // Hàm cập nhật trạng thái UI
-    function updateStatusUI(type, message) {
-        const iconSpan = document.getElementById('status-icon');
-        const textSpan = document.getElementById('status-text');
-        
-        if (!textSpan) return;
-
-        textSpan.innerText = message;
-        
-        if (type === 'loading') {
-            iconSpan.innerText = '⏳';
-            textSpan.style.color = '#e67e22'; // Cam
-        } else if (type === 'success') {
-            iconSpan.innerText = '✅';
-            textSpan.style.color = '#27ae60'; // Xanh lá
-        } else if (type === 'error') {
-            iconSpan.innerText = '❌';
-            textSpan.style.color = '#c0392b'; // Đỏ
-        } else {
-            iconSpan.innerText = '⚪';
-            textSpan.style.color = '#7f8c8d'; // Xám
-        }
-    }
-
-    // --- 2. HÀM TẢI DỮ LIỆU TỪ SERVER (LOAD) ---
-    async function syncLoadFromServer() {
-        updateStatusUI('loading', 'Đang tải dữ liệu từ Server...');
-        console.log("--> Đang tải dữ liệu từ:", SYNC_API_URL);
-
-        try {
-            const response = await fetch(SYNC_API_URL);
-            if (!response.ok) throw new Error("Không kết nối được Server");
-            
-            const data = await response.json();
-
-            if (data) {
-                // Hợp nhất dữ liệu tải về với biến toàn cục
-                if (data.questions) GLOBAL_DATA.questions = data.questions;
-                if (data.leaderboard) GLOBAL_DATA.leaderboard = data.leaderboard;
-                if (data.config) GLOBAL_DATA.config = data.config;
-
-                // Cập nhật lại tham chiếu và lưu vào LocalStorage
-                QUESTION_DB = GLOBAL_DATA.questions;
-                DataManager.saveToLocal();
-                
-                // Refresh giao diện
-                Manager.updateSubjectLists();
-                Manager.renderList();
-                QuizApp.updateSubjectInfo();
-                if(typeof renderTable === 'function') renderTable(GLOBAL_DATA.leaderboard);
-
-                updateStatusUI('success', 'Đã đồng bộ dữ liệu mới nhất!');
-            } else {
-                updateStatusUI('error', 'Server trả về dữ liệu rỗng!');
-            }
-        } catch (error) {
-            console.error(error);
-            updateStatusUI('error', 'Lỗi kết nối: ' + error.message);
-        }
-    }
-
-    // --- 3. HÀM LƯU DỮ LIỆU LÊN SERVER (SAVE) ---
-    async function syncSaveToServer() {
-        if (!confirm("⚠️ Hành động này sẽ GHI ĐÈ toàn bộ dữ liệu trên Server bằng dữ liệu hiện tại của bạn.\nBạn có chắc chắn không?")) return;
-        
-        updateStatusUI('loading', 'Đang đẩy dữ liệu lên Server...');
-
-        try {
-            // Cập nhật thời gian đồng bộ
-            GLOBAL_DATA.lastSync = new Date().toLocaleString('vi-VN');
-
-            await fetch(SYNC_API_URL, {
-                method: 'PUT', // PUT để ghi đè toàn bộ
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(GLOBAL_DATA)
-            });
-
-            updateStatusUI('success', 'Đã lưu lên Server thành công!');
-            alert('✅ Đã lưu dữ liệu lên đám mây thành công!');
-        } catch (error) {
-            console.error(error);
-            updateStatusUI('error', 'Lỗi khi lưu: ' + error.message);
-            alert('❌ Lỗi: ' + error.message);
-        }
-    }
-
-    // --- 4. TỰ ĐỘNG CHẠY KHI MỞ WEB ---
-    window.addEventListener('DOMContentLoaded', () => {
-        // Tự động tải dữ liệu mới nhất khi mở web
-        syncLoadFromServer();
-    });
-
-    // ... (Các code cũ của bạn như renderTable, Utils giữ nguyên ở dưới) ...
-// Hash SHA256 mặc định cho "."
-    let GLOBAL_DATA = /*DATA_START*/{
-    "questions": [],
-    "leaderboard": [
-        {
-            "date": "2/1/2026 21:19",
-            "name": 1,
-            "subject": "Test",
-            "score": 0,
-            "correct": 0,
-            "total": 1
-        },
-        {
-            "date": "1/1/2026 18:41",
-            "name": "Tran Anh",
-            "subject": "(HDH) Chương 3: quản lý bộ nhớ Phân Đoạn",
-            "score": 6,
-            "correct": 6,
-            "total": 10
-        },
-        {
-            "date": "1/1/2026 15:29",
-            "name": "T",
-            "subject": "Nguyên Lý Hệ Điều Hành",
-            "score": 0,
-            "correct": 0,
-            "total": 72
-        },
-        {
-            "date": "1/1/2026 0:13",
-            "name": "Thu Nguyen",
-            "subject": "Nguyên Lý Hệ Điều Hành",
-            "score": 0.1,
-            "correct": 1,
-            "total": 72
-        },
-        {
-            "date": "1/1/2026 0:3",
-            "name": "Tran Anh",
-            "subject": "Cấu trúc dữ liệu & thuật toán",
-            "score": 0.1,
-            "correct": 1,
-            "total": 140
-        },
-        {
-            "date": "31/12/2025 23:46",
-            "name": "Tran Anh",
-            "subject": "Tất cả môn",
-            "score": 0,
-            "correct": 0,
-            "total": 212
-        },
-        {
-            "date": "31/12/2025 23:34",
-            "name": "Test",
-            "subject": "Cấu trúc dữ liệu & thuật toán",
-            "score": 0.1,
-            "correct": 1,
-            "total": 140
-        },
-        {
-            "date": "31/12/2025 23:14",
-            "name": "Tran Anh",
-            "subject": "Cấu trúc dữ liệu & thuật toán",
-            "score": 0,
-            "correct": 0,
-            "total": 140
-        },
-        {
-            "date": "31/12/2025 23:13",
-            "name": "Tran Anh",
-            "subject": "Nguyên Lý Hệ Điều Hành",
-            "score": 0,
-            "correct": 0,
-            "total": 72
-        },
-        {
-            "date": "31/12/2025 23:13",
-            "name": "Tran Anh",
-            "subject": "Tất cả môn",
-            "score": 0,
-            "correct": 0,
-            "total": 212
-        },
-        {
-            "date": "31/12/2025 22:13",
-            "name": "Tran Anh",
-            "subject": "Cấu trúc dữ liệu & thuật toán",
-            "score": 0,
-            "correct": 0,
-            "total": 140
-        },
-        {
-            "date": "31/12/2025 22:13",
-            "name": "Tran Anh",
-            "subject": "Nguyên Lý Hệ Điều Hành",
-            "score": 0,
-            "correct": 0,
-            "total": 72
-        },
-        {
-            "date": "31/12/2025 22:13",
-            "name": "Tran Anh",
-            "subject": "Tất cả môn",
-            "score": 0,
-            "correct": 0,
-            "total": 212
-        },
-        {
-            "date": "31/12/2025 22:7",
-            "name": "Tran Anh",
-            "subject": "Nguyên Lý Hệ Điều Hành",
-            "score": 0,
-            "correct": 0,
-            "total": 72
-        },
-        {
-            "date": "31/12/2025 22:7",
-            "name": "Tran Anh",
-            "subject": "Cấu trúc dữ liệu & thuật toán",
-            "score": 0,
-            "correct": 0,
-            "total": 140
-        },
-        {
-            "date": "31/12/2025 22:6",
-            "name": "Tran Anh",
-            "subject": "Tất cả môn",
-            "score": 0,
-            "correct": 0,
-            "total": 212
-        }
-    ],
-    "config": {
-        "subjects": [
-            "Chung"
-        ],
-        "adminHash": "615ed7fb1504b0c724a296d7a69e6c7b2f9ea2c57c1d8206c5afdf392ebdfd25"
-    }
-}/*DATA_END*/;
+    // Biến lưu trữ dữ liệu toàn cục trong RAM
+    let GLOBAL_DATA = {
+        questions: [],
+        leaderboard: [],
+        config: { subjects: ["Chung"], adminHash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3" }
+    };
 
     let QUESTION_DB = GLOBAL_DATA.questions;
 
     // ==========================================
-    // UTILITIES
+    // HELPER: UI STATUS & UTILS
     // ==========================================
+    function updateStatusUI(type, message) {
+        const iconSpan = document.getElementById('status-icon');
+        const textSpan = document.getElementById('status-text');
+        if (!textSpan) return;
+        textSpan.innerText = message;
+        if (type === 'loading') { iconSpan.innerText = '⏳'; textSpan.style.color = '#e67e22'; }
+        else if (type === 'success') { iconSpan.innerText = '✅'; textSpan.style.color = '#27ae60'; }
+        else if (type === 'error') { iconSpan.innerText = '❌'; textSpan.style.color = '#c0392b'; }
+        else { iconSpan.innerText = '⚪'; textSpan.style.color = '#7f8c8d'; }
+    }
+
     const Utils = {
         sha256: function(ascii) {
             function rightRotate(value, amount) { return (value>>>amount) | (value<<(32 - amount)); }
-            
-            var mathPow = Math.pow;
-            var maxWord = mathPow(2, 32);
-            var lengthProperty = 'length';
-            var i, j;
-            var result = '';
-            var words = [];
-            var asciiBitLength = ascii[lengthProperty]*8;
+            var mathPow = Math.pow; var maxWord = mathPow(2, 32); var lengthProperty = 'length'; var i, j;
+            var result = ''; var words = []; var asciiBitLength = ascii[lengthProperty]*8;
             var hash = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
             var k = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
                      0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -1720,46 +1496,22 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
                      0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
                      0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
                      0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
-            
-            ascii += '\x80'; 
-            while (ascii[lengthProperty]%64 - 56) ascii += '\x00'; 
-            for (i = 0; i < ascii[lengthProperty]; i++) {
-                j = ascii.charCodeAt(i);
-                if (j>>8) return; 
-                words[i>>2] |= j << ((3 - i)%4)*8;
-            }
-            words[words[lengthProperty]] = ((asciiBitLength/maxWord)|0);
-            words[words[lengthProperty]] = (asciiBitLength)
-            
+            ascii += '\x80'; while (ascii[lengthProperty]%64 - 56) ascii += '\x00'; 
+            for (i = 0; i < ascii[lengthProperty]; i++) { j = ascii.charCodeAt(i); if (j>>8) return; words[i>>2] |= j << ((3 - i)%4)*8; }
+            words[words[lengthProperty]] = ((asciiBitLength/maxWord)|0); words[words[lengthProperty]] = (asciiBitLength)
             for (j = 0; j < words[lengthProperty];) {
-                var w = words.slice(j, j += 16);
-                var oldHash = hash;
-                hash = hash.slice(0, 8);
-                
+                var w = words.slice(j, j += 16); var oldHash = hash; hash = hash.slice(0, 8);
                 for (i = 0; i < 64; i++) {
-                    var i2 = i + j;
-                    var w15 = w[i - 15], w2 = w[i - 2];
-                    var a = hash[0], e = hash[4];
-                    var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e&hash[5])^((~e)&hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (
-                        w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10))
-                    )|0);
+                    var i2 = i + j; var w15 = w[i - 15], w2 = w[i - 2]; var a = hash[0], e = hash[4];
+                    var temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) + ((e&hash[5])^((~e)&hash[6])) + k[i] + (w[i] = (i < 16) ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15>>>3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2>>>10)))|0);
                     var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
-                    
-                    hash = [(temp1 + temp2)|0].concat(hash); 
-                    hash[4] = (hash[4] + temp1)|0;
+                    hash = [(temp1 + temp2)|0].concat(hash); hash[4] = (hash[4] + temp1)|0;
                 }
                 for (i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i])|0;
             }
-            
-            for (i = 0; i < 8; i++) {
-                for (j = 3; j + 1; j--) {
-                    var b = (hash[i]>>(j*8))&255;
-                    result += ((b < 16) ? 0 : '') + b.toString(16);
-                }
-            }
+            for (i = 0; i < 8; i++) { for (j = 3; j + 1; j--) { var b = (hash[i]>>(j*8))&255; result += ((b < 16) ? 0 : '') + b.toString(16); } }
             return result;
         },
-
         escapeHtml: function(text) {
             if (!text) return "";
             return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1767,242 +1519,184 @@ mjx-stretchy-v mjx-c, mjx-stretchy-h mjx-c {
     };
 
     // ==========================================
-    // AUTHENTICATION
-    // ==========================================
-    function checkAdminLogin() {
-        const inp = document.getElementById('admin-password-input');
-        const inputHash = Utils.sha256(inp.value);
-        const storedHash = (GLOBAL_DATA.config && GLOBAL_DATA.config.adminHash) ? GLOBAL_DATA.config.adminHash : "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
-
-        if (inputHash === storedHash) {
-            document.getElementById('admin-login-panel').style.display = 'none';
-            document.getElementById('admin-content-panel').style.display = 'block';
-            inp.value = '';
-            Manager.renderList();
-        } else {
-            alert("Mật khẩu không đúng!");
-            inp.value = '';
-            inp.focus();
-        }
-    }
-
-    function lockAdmin() {
-        document.getElementById('admin-login-panel').style.display = 'block';
-        document.getElementById('admin-content-panel').style.display = 'none';
-    }
-    function handleEnterLogin(e) { if(e.key === 'Enter') checkAdminLogin(); }
-
-// ==========================================
-    // DATA & FILE MANAGER (FULL CODE)
+    // CORE: DATA MANAGER (CLOUD ONLY)
     // ==========================================
     const DataManager = {
-        STORAGE_KEY: 'quiz_app_pro_v5',
-        NAME_KEY: 'quiz_app_last_name',
-        SUB_KEY: 'quiz_app_last_subject',
+        // Chỉ dùng LocalStorage cho cài đặt người dùng, KHÔNG lưu Data
+        PREF_KEY: 'quiz_user_prefs', 
 
-        init: function() {
-            // BƯỚC 1: LOAD DỮ LIỆU TỪ CACHE (LOCALSTORAGE)
-            const savedData = localStorage.getItem(this.STORAGE_KEY);
-            
-            // Mặc định sử dụng dữ liệu cứng trong file HTML (GLOBAL_DATA gốc)
-            // Nếu file vừa được Save HTML, GLOBAL_DATA sẽ chứa mật khẩu mới.
-            
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    
-                    // Kiểm tra xem file HTML này có chứa câu hỏi cứng không (file vừa Save As HTML)
-                    const isHTMLHasData = (GLOBAL_DATA.questions && GLOBAL_DATA.questions.length > 0);
-                    
-                    if (isHTMLHasData) {
-                        // === ƯU TIÊN DỮ LIỆU CỦA FILE HTML (QUAN TRỌNG) ===
-                        // Nếu file HTML này là file đã Save, ta dùng Config và Question của nó.
-                        // Chỉ lấy Lịch sử thi (Leaderboard) từ Cache cũ để không mất lịch sử người dùng.
-                        if (parsed.leaderboard) GLOBAL_DATA.leaderboard = parsed.leaderboard;
-                        
-                        // KHÔNG ghi đè Config từ Cache, để bảo toàn mật khẩu mới trong HTML
-                    } else {
-                        // Nếu file HTML rỗng (chạy lần đầu hoặc reload trên file gốc) -> Load toàn bộ từ Cache
-                        GLOBAL_DATA = parsed;
-                    }
-                } catch (e) { 
-                    console.error("Lỗi parse cache:", e); 
-                    localStorage.removeItem(this.STORAGE_KEY);
-                }
-            } else {
-                // Chưa có cache -> Lưu dữ liệu hiện tại vào cache
-                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(GLOBAL_DATA));
+        init: async function() {
+            // 1. Load User Prefs (Tên, Môn đã chọn) từ LocalStorage
+            const prefsStr = localStorage.getItem(this.PREF_KEY);
+            if (prefsStr) {
+                const prefs = JSON.parse(prefsStr);
+                if(prefs.name) document.getElementById('student-name').value = prefs.name;
             }
 
-            // BƯỚC 2: ĐẢM BẢO CONFIG TỒN TẠI
-            if (!GLOBAL_DATA.config) GLOBAL_DATA.config = { subjects: ["Chung"] };
-            
-            // *** ĐÃ XÓA BỎ ĐOẠN "FIX LỖI MẬT KHẨU" GHI ĐÈ Ở ĐÂY ***
-            // Bây giờ nó sẽ dùng GLOBAL_DATA.config.adminHash được load từ file HTML hoặc Cache.
-
-            // Cập nhật ngược lại vào LocalStorage để đồng bộ
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(GLOBAL_DATA));
-
-            // BƯỚC 3: KHỞI TẠO GIAO DIỆN
-            QUESTION_DB = GLOBAL_DATA.questions;
-
-            // Khôi phục tên thí sinh
-            const lastName = localStorage.getItem(this.NAME_KEY);
-            if(lastName) document.getElementById('student-name').value = lastName;
-
-            // Render các phần khác
-            this.renderLeaderboard();
-            Manager.updateSubjectLists();
-            
-            // Khôi phục môn thi đã chọn
-            const lastSub = localStorage.getItem(this.SUB_KEY);
-            const userSel = document.getElementById('user-subject-select');
-            if(lastSub && (lastSub === 'ALL' || GLOBAL_DATA.config.subjects.includes(lastSub))) {
-                    userSel.value = lastSub;
-            } else { userSel.value = "ALL"; }
-
-            QuizApp.updateSubjectInfo();
+            // 2. Load Dữ liệu chính từ Cloud (Bắt buộc)
+            await this.loadFromCloudDB();
         },
 
-        saveToLocal: function() {
+        // Hàm tải dữ liệu từ Firebase
+        loadFromCloudDB: async function() {
+            updateStatusUI('loading', 'Đang tải dữ liệu từ Cloud...');
             try {
-                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(GLOBAL_DATA));
-            } catch (e) { alert("Bộ nhớ trình duyệt đầy!"); }
+                const response = await fetch(SYNC_API_URL);
+                if (!response.ok) throw new Error("Không kết nối được Server");
+                const data = await response.json();
+
+                if (data) {
+                    GLOBAL_DATA = data;
+                    // Fix lỗi nếu data trên cloud bị thiếu trường
+                    if(!GLOBAL_DATA.questions) GLOBAL_DATA.questions = [];
+                    if(!GLOBAL_DATA.config) GLOBAL_DATA.config = { subjects: ["Chung"] };
+                    if(!GLOBAL_DATA.leaderboard) GLOBAL_DATA.leaderboard = [];
+                    
+                    QUESTION_DB = GLOBAL_DATA.questions;
+                    
+                    // Render UI
+                    this.refreshUI();
+                    updateStatusUI('success', 'Dữ liệu đã sẵn sàng!');
+                } else {
+                    updateStatusUI('warning', 'Cloud chưa có dữ liệu (Mới)');
+                }
+            } catch (error) {
+                console.error(error);
+                updateStatusUI('error', 'Lỗi tải data: ' + error.message);
+                alert("Không tải được dữ liệu! Vui lòng kiểm tra kết nối mạng.");
+            }
+        },
+
+        // Hàm lưu dữ liệu lên Firebase (Thay thế cho saveToLocal cũ)
+        saveToCloudDB: async function(silent = false) {
+            if(!silent) updateStatusUI('loading', 'Đang lưu lên Cloud...');
+            
+            try {
+                GLOBAL_DATA.lastSync = new Date().toLocaleString('vi-VN');
+                
+                await fetch(SYNC_API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(GLOBAL_DATA)
+                });
+
+                if(!silent) updateStatusUI('success', 'Đã lưu thành công!');
+                console.log("Auto-saved to cloud.");
+            } catch (error) {
+                console.error(error);
+                if(!silent) {
+                    updateStatusUI('error', 'Lỗi lưu: ' + error.message);
+                    alert("⚠️ CẢNH BÁO: Không lưu được dữ liệu lên Cloud!\nLỗi: " + error.message);
+                }
+            }
+        },
+
+        // Hàm wrapper để các module khác gọi (thay vì gọi saveToLocal)
+        requestSave: function() {
+            // Debounce hoặc gọi trực tiếp. Ở đây gọi trực tiếp cho an toàn dữ liệu.
+            this.saveToCloudDB();
+            this.refreshUI();
+        },
+
+        // Lưu cài đặt người dùng vào LocalStorage (chỉ string nhỏ)
+        saveUserPrefs: function() {
+            const prefs = {
+                name: document.getElementById('student-name').value,
+                lastSubject: document.getElementById('user-subject-select').value
+            };
+            localStorage.setItem(this.PREF_KEY, JSON.stringify(prefs));
+        },
+
+        refreshUI: function() {
+            Manager.updateSubjectLists();
             Manager.renderList();
             this.renderLeaderboard();
-            Manager.updateSubjectLists();
-        },
-
-        // --- HÀM TẠO DỮ LIỆU EXPORT THEO CẤU TRÚC MỚI ---
-_generateCustomRows: function() {
-    return QUESTION_DB.map((q, index) => {
-        // Xử lý đáp án text
-        let correctText = "";
-        if(Array.isArray(q.answer)) {
-            let sortedAns = [...q.answer].sort((a,b)=>a-b);
-            correctText = sortedAns.map(i => (q.options[i] || "")).join("///");
-        } else {
-            correctText = q.options[q.answer] || "";
-        }
-
-        // Xử lý Link ảnh CÂU HỎI
-        let imgLink = "";
-        if (q.image && (q.image.startsWith("http") || q.image.startsWith("//"))) {
-            imgLink = q.image;
-        }
-        
-        // Xử lý Link ảnh GIẢI THÍCH (MỚI)
-        let noteImgLink = "";
-        if (q.noteImage && (q.noteImage.startsWith("http") || q.noteImage.startsWith("//"))) {
-            noteImgLink = q.noteImage;
-        }
-
-        let row = {
-            "STT": index + 1,
-            "Môn thi": q.subject || "Chung",
-            "Câu hỏi": q.question || "",
-            "Link hình ảnh": imgLink,
-            "Link ảnh giải thích": noteImgLink, // <--- THÊM CỘT NÀY
-            "Data Code": q.code || "",
-            "Ngôn ngữ Code": q.lang || "plaintext",
-            "Đáp án đúng": correctText,
-            "Giải thích": q.note || ""
-        };
-
-        q.options.forEach((opt, i) => {
-            row[`Đáp án ${i + 1}`] = opt;
-        });
-
-        return row;
-    });
-},
-
-        // --- EXCEL LOGIC ---
-        _checkExcelLib: function() {
-            if(typeof XLSX === 'undefined') {
-                alert("Thư viện Excel chưa tải xong. Hãy dùng nút CSV.");
-                return false;
+            QuizApp.updateSubjectInfo();
+            
+            // Khôi phục môn đã chọn từ Prefs
+            const prefsStr = localStorage.getItem(this.PREF_KEY);
+            if(prefsStr) {
+                const prefs = JSON.parse(prefsStr);
+                const userSel = document.getElementById('user-subject-select');
+                if(prefs.lastSubject && (prefs.lastSubject === 'ALL' || GLOBAL_DATA.config.subjects.includes(prefs.lastSubject))) {
+                    userSel.value = prefs.lastSubject;
+                }
             }
-            return true;
+        },
+        
+        // --- CÁC HÀM EXPORT/IMPORT KHÁC (GIỮ NGUYÊN LOGIC, CHỈ SỬA SAVE) ---
+        
+        exportExcel: function() {
+             if(typeof XLSX === 'undefined') return alert("Chưa tải xong thư viện Excel. Dùng CSV nhé.");
+             if (QUESTION_DB.length === 0) return alert("Không có dữ liệu!");
+             const rows = this._generateCustomRows();
+             const worksheet = XLSX.utils.json_to_sheet(rows);
+             const workbook = XLSX.utils.book_new();
+             XLSX.utils.book_append_sheet(workbook, worksheet, "NganHangCauHoi");
+             XLSX.writeFile(workbook, "CauHoi_Cloud.xlsx");
         },
 
-        // --- EXCEL EXPORT (CẬP NHẬT) ---
-    exportExcel: function() {
-        if(!this._checkExcelLib()) return;
-        if (QUESTION_DB.length === 0) return alert("Không có dữ liệu!");
-        
-        const rows = this._generateCustomRows();
-        const worksheet = XLSX.utils.json_to_sheet(rows);
-        
-        // Chỉnh độ rộng cột (Thêm 1 cột độ rộng 15 cho Ngôn ngữ Code)
-        const wscols = [
-            {wch: 5},  // STT
-            {wch: 25}, // Môn thi
-            {wch: 50}, // Câu hỏi
-            {wch: 20}, // Ảnh
-            {wch: 20}, // Data Code
-            {wch: 15}, // Ngôn ngữ Code (MỚI)
-            {wch: 30}, // Đáp án đúng
-            {wch: 30}, // Giải thích
-            {wch: 20}, {wch: 20}, {wch: 20}, {wch: 20} // Các đáp án
-        ];
-        worksheet['!cols'] = wscols;
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "NganHangCauHoi");
-        XLSX.writeFile(workbook, "CauHoi_Export_Pro.xlsx");
-    },
-
-        // --- CSV EXPORT (CẬP NHẬT) ---
-    exportCSV_Native: function() {
-        if (QUESTION_DB.length === 0) return alert("Không có dữ liệu!");
-        
-        // Tìm số lượng đáp án nhiều nhất
-        let maxOpts = 0;
-        QUESTION_DB.forEach(q => { if(q.options.length > maxOpts) maxOpts = q.options.length; });
-
-        // Tạo Header (Thêm Ngôn ngữ Code vào sau Data Code)
-        let headers = ["STT", "Môn thi", "Câu hỏi", "Link hình ảnh", "Data Code", "Ngôn ngữ Code", "Đáp án đúng", "Giải thích"];
-        for(let i=1; i<=maxOpts; i++) headers.push(`Đáp án ${i}`);
-
-        const data = this._generateCustomRows();
-        let csvContent = headers.join(",") + "\n";
-
-        data.forEach(row => {
-            let rowArr = [];
-            headers.forEach(header => {
-                let val = row[header] || "";
-                // Escape CSV
-                val = String(val).replace(/"/g, '""'); 
-                if (val.search(/("|,|\n)/g) >= 0) val = `"${val}"`;
-                rowArr.push(val);
+        exportCSV_Native: function() {
+            if (QUESTION_DB.length === 0) return alert("Không có dữ liệu!");
+            let maxOpts = 0; QUESTION_DB.forEach(q => { if(q.options.length > maxOpts) maxOpts = q.options.length; });
+            let headers = ["STT", "Môn thi", "Câu hỏi", "Link hình ảnh", "Data Code", "Ngôn ngữ Code", "Đáp án đúng", "Giải thích"];
+            for(let i=1; i<=maxOpts; i++) headers.push(`Đáp án ${i}`);
+            const data = this._generateCustomRows();
+            let csvContent = headers.join(",") + "\n";
+            data.forEach(row => {
+                let rowArr = [];
+                headers.forEach(header => {
+                    let val = row[header] || "";
+                    val = String(val).replace(/"/g, '""'); 
+                    if (val.search(/("|,|\n)/g) >= 0) val = `"${val}"`;
+                    rowArr.push(val);
+                });
+                csvContent += rowArr.join(",") + "\n";
             });
-            csvContent += rowArr.join(",") + "\n";
-        });
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "CauHoi_Offline.csv"; link.click();
+        },
 
-        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "CauHoi_Offline_Pro.csv";
-        link.click();
-    },
+        _generateCustomRows: function() {
+            return QUESTION_DB.map((q, index) => {
+                let correctText = "";
+                if(Array.isArray(q.answer)) {
+                    let sortedAns = [...q.answer].sort((a,b)=>a-b);
+                    correctText = sortedAns.map(i => (q.options[i] || "")).join("///");
+                } else { correctText = q.options[q.answer] || ""; }
+                let row = {
+                    "STT": index + 1, "Môn thi": q.subject || "Chung", "Câu hỏi": q.question || "",
+                    "Link hình ảnh": q.image || "", "Data Code": q.code || "", "Ngôn ngữ Code": q.lang || "plaintext",
+                    "Đáp án đúng": correctText, "Giải thích": q.note || ""
+                };
+                q.options.forEach((opt, i) => { row[`Đáp án ${i + 1}`] = opt; });
+                return row;
+            });
+        },
+
+        importExcel: function(inputElement) {
+             const file = inputElement.files[0]; if (!file) return;
+             const reader = new FileReader();
+             reader.onload = function(e) {
+                 const data = new Uint8Array(e.target.result);
+                 const workbook = XLSX.read(data, {type: 'array'});
+                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                 DataManager._processImportData(json);
+                 inputElement.value = "";
+             };
+             reader.readAsArrayBuffer(file);
+        },
 
         importCSV_Native: function(inputElement) {
-            const file = inputElement.files[0];
-            if (!file) return;
+            const file = inputElement.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                const text = e.target.result;
-                const rows = DataManager._parseCSV(text);
-                if(!rows || rows.length < 2) return alert("File lỗi hoặc rỗng!");
-                
-                const headers = rows[0]; 
-                const json = [];
+                const rows = DataManager._parseCSV(e.target.result);
+                if(!rows || rows.length < 2) return alert("File lỗi!");
+                const headers = rows[0]; const json = [];
                 for(let i = 1; i < rows.length; i++) {
-                    let rowData = rows[i];
-                    if(rowData.length < 2) continue;
-                    let obj = {};
-                    headers.forEach((h, index) => { obj[h.trim()] = rowData[index]; });
+                    let rowData = rows[i]; if(rowData.length < 2) continue;
+                    let obj = {}; headers.forEach((h, index) => { obj[h.trim()] = rowData[index]; });
                     json.push(obj);
                 }
                 DataManager._processImportData(json);
@@ -2010,22 +1704,15 @@ _generateCustomRows: function() {
             };
             reader.readAsText(file);
         },
-        
+
         _parseCSV: function(text) {
-            let arr = [];
-            let quote = false;  
-            let row = [], col = "";
+            let arr = []; let quote = false; let row = [], col = "";
             for (let c = 0; c < text.length; c++) {
                 let cc = text[c], nc = text[c+1];
-                if (cc === '"') {
-                    if (quote && nc === '"') { col += '"'; c++; }
-                    else { quote = !quote; } 
-                } else if (cc === ',' && !quote) {
-                    row.push(col); col = "";
-                } else if ((cc === '\r' || cc === '\n') && !quote) {
-                    row.push(col); col = "";
-                    if(row.length > 0) arr.push(row);
-                    row = [];
+                if (cc === '"') { if (quote && nc === '"') { col += '"'; c++; } else { quote = !quote; } } 
+                else if (cc === ',' && !quote) { row.push(col); col = ""; } 
+                else if ((cc === '\r' || cc === '\n') && !quote) {
+                    row.push(col); col = ""; if(row.length > 0) arr.push(row); row = [];
                     if (cc === '\r' && nc === '\n') c++;
                 } else { col += cc; }
             }
@@ -2033,94 +1720,44 @@ _generateCustomRows: function() {
             return arr;
         },
 
-        importExcel: function(inputElement) {
-             if(!this._checkExcelLib()) return;
-             const file = inputElement.files[0];
-             if (!file) return;
-             const reader = new FileReader();
-             reader.onload = function(e) {
-                 const data = new Uint8Array(e.target.result);
-                 const workbook = XLSX.read(data, {type: 'array'});
-                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                 const json = XLSX.utils.sheet_to_json(worksheet);
-                 DataManager._processImportData(json);
-                 inputElement.value = "";
-             };
-             reader.readAsArrayBuffer(file);
+        _processImportData: function(json) {
+            if (json.length === 0) return alert("File rỗng!");
+            if(confirm(`Tìm thấy ${json.length} câu hỏi. \nOK = GHI ĐÈ Database\nCancel = THÊM VÀO Database`)) {
+                GLOBAL_DATA.questions = [];
+            }
+            json.forEach(row => {
+                const qText = String(row["Câu hỏi"] || row["Question"] || "").trim(); if(!qText) return;
+                const subject = String(row["Môn thi"] || row["Subject"] || "Chung").trim();
+                if(!GLOBAL_DATA.config.subjects.includes(subject)) GLOBAL_DATA.config.subjects.push(subject);
+                
+                let opts = [];
+                Object.keys(row).forEach(key => {
+                    if(key.startsWith("Đáp án") && !key.includes("đúng") && row[key]) opts.push(String(row[key]));
+                });
+                
+                const correctRaw = String(row["Đáp án đúng"] || "").trim();
+                let ansIndex = 0;
+                if (correctRaw.includes("///")) {
+                    let correctParts = correctRaw.split("///").map(s => s.trim());
+                    let indices = [];
+                    correctParts.forEach(p => { let idx = opts.findIndex(o => String(o).trim() === p); if(idx !== -1) indices.push(idx); });
+                    if(indices.length > 0) ansIndex = indices;
+                } else {
+                    let idx = opts.findIndex(o => String(o).trim() === correctRaw); if(idx !== -1) ansIndex = idx;
+                }
+
+                GLOBAL_DATA.questions.push({
+                    question: qText, options: opts, answer: ansIndex, note: row["Giải thích"] || "",
+                    subject: subject, image: row["Link hình ảnh"] || null, code: row["Data Code"] || null, lang: row["Ngôn ngữ Code"] || "plaintext"
+                });
+            });
+            QUESTION_DB = GLOBAL_DATA.questions;
+            this.requestSave(); // SAVE TO CLOUD
+            alert("Đã nhập và lưu lên Cloud!");
         },
 
-        // --- XỬ LÝ NHẬP LIỆU (CẬP NHẬT ĐỂ ĐỌC CỘT MỚI) ---
-_processImportData: function(json) {
-    if (json.length === 0) return alert("File rỗng!");
-    if(confirm(`Tìm thấy ${json.length} câu hỏi. \nOK = GHI ĐÈ (Xóa cũ)\nCancel = THÊM VÀO (Gộp)`)) {
-        GLOBAL_DATA.questions = [];
-    }
-
-    json.forEach(row => {
-        const qText = String(row["Câu hỏi"] || row["Question"] || "").trim();
-        if(!qText) return;
-        
-        const subject = String(row["Môn thi"] || row["Subject"] || "Chung").trim();
-        if(!GLOBAL_DATA.config.subjects.includes(subject)) GLOBAL_DATA.config.subjects.push(subject);
-
-        const note = String(row["Giải thích"] || row["Note"] || "");
-        
-        const code = String(row["Data Code"] || row["Code"] || "");
-        let lang = String(row["Ngôn ngữ Code"] || row["Code Lang"] || "plaintext").trim().toLowerCase();
-        if(lang === "") lang = "plaintext";
-
-        let img = String(row["Link hình ảnh"] || row["Image"] || "").trim();
-        
-        // ĐỌC CỘT ẢNH GIẢI THÍCH (MỚI)
-        let noteImg = String(row["Link ảnh giải thích"] || row["Note Image"] || "").trim();
-
-        let opts = [];
-        Object.keys(row).forEach(key => {
-            if(key.startsWith("Đáp án") && !key.includes("đúng")) {
-                if(row[key] != null && String(row[key]).trim() !== "") {
-                    opts.push(String(row[key]));
-                }
-            }
-        });
-        
-        if(opts.length === 0) {
-             if(row["Đáp án 1"]) opts.push(String(row["Đáp án 1"]));
-             if(row["Đáp án 2"]) opts.push(String(row["Đáp án 2"]));
-             if(row["Đáp án 3"]) opts.push(String(row["Đáp án 3"]));
-             if(row["Đáp án 4"]) opts.push(String(row["Đáp án 4"]));
-        }
-
-        const correctRaw = String(row["Đáp án đúng"] || row["Đáp án đúng (Text)"] || "").trim();
-        let ansIndex = 0;
-        
-        if (correctRaw.includes("///")) {
-            let correctParts = correctRaw.split("///").map(s => s.trim());
-            let indices = [];
-            correctParts.forEach(p => {
-                 let idx = opts.findIndex(o => String(o).trim() === p);
-                 if(idx !== -1) indices.push(idx);
-            });
-            if(indices.length > 0) ansIndex = indices;
-        } else {
-            let idx = opts.findIndex(o => String(o).trim() === correctRaw);
-            if(idx !== -1) ansIndex = idx;
-        }
-
-        GLOBAL_DATA.questions.push({
-            question: qText, options: opts, answer: ansIndex, note: note,
-            subject: subject, image: img || null, math: null, 
-            code: code || null, lang: lang,
-            noteImage: noteImg || null // <--- LƯU VÀO DB
-        });
-    });
-    QUESTION_DB = GLOBAL_DATA.questions;
-    DataManager.saveToLocal();
-    alert("Nhập dữ liệu thành công!");
-},
-
         renderLeaderboard: function() {
-             const tbody = document.getElementById('rank-body');
-             tbody.innerHTML = '';
+             const tbody = document.getElementById('rank-body'); tbody.innerHTML = '';
              const displayList = GLOBAL_DATA.leaderboard.slice(0, 50);
              if(displayList.length === 0) tbody.innerHTML = '<tr><td colspan="6">Chưa có dữ liệu</td></tr>';
              displayList.forEach((row, index) => {
@@ -2130,41 +1767,13 @@ _processImportData: function(json) {
              });
         },
         
-        saveAsHtml: function() {
-             const loginPanel = document.getElementById('admin-login-panel');
-             const contentPanel = document.getElementById('admin-content-panel');
-             const wasLoggedIn = contentPanel.style.display === 'block';
-             loginPanel.style.display = 'block'; contentPanel.style.display = 'none';
-             document.getElementById('admin-password-input').value = ''; 
-             
-             let fullHTML = document.documentElement.outerHTML;
-             let jsonData = JSON.stringify(GLOBAL_DATA, null, 4);
-             const regex = /\/\*DATA_START\*\/[\s\S]*?\/\*DATA_END\*\//;
-             
-             if (wasLoggedIn) { loginPanel.style.display = 'none'; contentPanel.style.display = 'block'; }
-             
-             if (regex.test(fullHTML)) {
-                fullHTML = fullHTML.replace(regex, `/*DATA_START*/${jsonData}/*DATA_END*/`);
-                const blob = new Blob([fullHTML], {type: "text/html"});
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                const d = new Date();
-                link.download = `TracNghiem_Pro_${d.getDate()}_${d.getMonth()+1}.html`;
-                link.click();
-             } else { alert("Lỗi lưu file: Không tìm thấy vị trí chèn dữ liệu."); }
-        },
-		
-        reloadFromHTML: function() {
-            if (confirm("Bạn có chắc muốn tải lại dữ liệu gốc từ file HTML?\n(Các dữ liệu mới chưa lưu trong bộ nhớ tạm sẽ bị xóa)")) {
-                localStorage.removeItem(this.STORAGE_KEY);
-                location.reload();
-            }
-        },
-		
+        saveAsHtml: function() { alert("Tính năng này đã tắt khi dùng chế độ Cloud Database."); },
+        reloadFromHTML: function() { if(confirm("Tải lại trang?")) location.reload(); },
         resetDefault: function() {
-            if(confirm("⚠ CẢNH BÁO: Xóa toàn bộ dữ liệu (Câu hỏi, Lịch sử)?")) {
-                localStorage.removeItem(this.STORAGE_KEY);
-                location.reload();
+            if(confirm("⚠ NGUY HIỂM: Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu trên Cloud không?")) {
+                GLOBAL_DATA = { questions: [], leaderboard: [], config: { subjects: ["Chung"], adminHash: GLOBAL_DATA.config.adminHash } };
+                this.requestSave();
+                alert("Đã xóa trắng Database!");
             }
         },
 
@@ -2172,59 +1781,36 @@ _processImportData: function(json) {
             const dataStr = JSON.stringify(GLOBAL_DATA, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "database_backup.json";
-            a.click();
+            const a = document.createElement('a'); a.href = url; a.download = "backup_cloud.json"; a.click();
         },
-
         importJSONFile: function(inputElement) {
-            const file = inputElement.files[0];
-            if (!file) return;
+            const file = inputElement.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    DataManager.mergeData(data);
+                    if(confirm("Ghi đè (OK) hay Gộp (Cancel)?")) GLOBAL_DATA = data;
+                    else {
+                        if(data.questions) GLOBAL_DATA.questions = GLOBAL_DATA.questions.concat(data.questions);
+                        if(data.leaderboard) GLOBAL_DATA.leaderboard = GLOBAL_DATA.leaderboard.concat(data.leaderboard);
+                    }
+                    QUESTION_DB = GLOBAL_DATA.questions;
+                    DataManager.requestSave();
+                    alert("Đã nhập JSON và lưu lên Cloud!");
                 } catch (err) { alert("Lỗi JSON: " + err); }
                 inputElement.value = '';
             };
             reader.readAsText(file);
         },
-
-        loadFromCloud: function() {
-            const url = document.getElementById('cloud-url').value.trim();
-            if (!url) return alert("Chưa nhập Link!");
-            fetch(url)
-                .then(r => r.json())
-                .then(d => { DataManager.mergeData(d); alert("Tải thành công!"); })
-                .catch(e => alert("Lỗi tải: " + e));
-        },
-
-        mergeData: function(data) {
-            if (!data.questions) return alert("Format sai!");
-            if (confirm("GHI ĐÈ dữ liệu cũ (OK) hay GỘP (Cancel)?")) {
-                GLOBAL_DATA = data;
-            } else {
-                GLOBAL_DATA.questions = GLOBAL_DATA.questions.concat(data.questions || []);
-                GLOBAL_DATA.leaderboard = GLOBAL_DATA.leaderboard.concat(data.leaderboard || []);
-                // Update subjects
-                const subSet = new Set(GLOBAL_DATA.config.subjects);
-                (data.config?.subjects || []).forEach(s => subSet.add(s));
-                GLOBAL_DATA.config.subjects = Array.from(subSet);
-            }
-            QUESTION_DB = GLOBAL_DATA.questions;
-            DataManager.saveToLocal();
-            location.reload();
-        }
+        // Hàm này giờ không cần thiết vì ta load trực tiếp
+        loadFromCloud: function() { this.loadFromCloudDB(); } 
     };
 
     // ==========================================
-    // MANAGER (FULL CODE)
+    // ADMIN MANAGER
     // ==========================================
     const Manager = {
         currentTab: 'questions',
-
         switchTab: function(tabName) {
             this.currentTab = tabName;
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -2233,44 +1819,30 @@ _processImportData: function(json) {
             document.getElementById(`tab-${tabName}`).style.display = 'block';
             if(tabName === 'subjects') this.renderSubjectList();
         },
-
         renderList: function() {
             const listContainer = document.getElementById('question-list-container');
             const filterSub = document.getElementById('admin-filter-subject').value;
             let filteredDB = QUESTION_DB;
-            if(filterSub !== 'ALL') {
-                filteredDB = QUESTION_DB.map((q, idx) => ({...q, originalIdx: idx}))
-                                        .filter(q => q.subject === filterSub);
-            } else {
-                filteredDB = QUESTION_DB.map((q, idx) => ({...q, originalIdx: idx}));
-            }
+            if(filterSub !== 'ALL') { filteredDB = QUESTION_DB.map((q, idx) => ({...q, originalIdx: idx})).filter(q => q.subject === filterSub); } 
+            else { filteredDB = QUESTION_DB.map((q, idx) => ({...q, originalIdx: idx})); }
             document.getElementById('total-questions-count').innerText = filteredDB.length;
             listContainer.innerHTML = '';
             filteredDB.forEach((q) => {
-                const div = document.createElement('div');
-                div.className = 'q-list-item';
+                const div = document.createElement('div'); div.className = 'q-list-item';
                 div.innerHTML = `
-                    <div class="q-list-content">
-                        <span class="q-subject-badge">${Utils.escapeHtml(q.subject)}</span>
-                        <strong>#${q.originalIdx + 1}:</strong> ${Utils.escapeHtml(q.question)}
-                    </div>
-                    <div class="q-actions">
-                        <button class="btn btn-primary btn-sm" onclick="Manager.openModal(${q.originalIdx})">✎</button>
-                        <button class="btn btn-danger btn-sm" onclick="Manager.deleteQuestion(${q.originalIdx})">🗑</button>
-                    </div>`;
+                    <div class="q-list-content"><span class="q-subject-badge">${Utils.escapeHtml(q.subject)}</span><strong>#${q.originalIdx + 1}:</strong> ${Utils.escapeHtml(q.question)}</div>
+                    <div class="q-actions"><button class="btn btn-primary btn-sm" onclick="Manager.openModal(${q.originalIdx})">✎</button><button class="btn btn-danger btn-sm" onclick="Manager.deleteQuestion(${q.originalIdx})">🗑</button></div>`;
                 listContainer.appendChild(div);
             });
         },
-
         deleteQuestion: function(index) {
-            if(confirm('Xóa câu hỏi này?')) {
+            if(confirm('Xóa câu hỏi này và CẬP NHẬT Cloud?')) {
                 QUESTION_DB.splice(index, 1);
-                DataManager.saveToLocal();
+                DataManager.requestSave(); // SAVE CLOUD
             }
         },
-
         updateSubjectLists: function() {
-            const subs = GLOBAL_DATA.config.subjects;
+            const subs = GLOBAL_DATA.config.subjects || ["Chung"];
             const adminFilter = document.getElementById('admin-filter-subject');
             const currentFilter = adminFilter.value;
             adminFilter.innerHTML = '<option value="ALL">-- Tất cả môn --</option>';
@@ -2286,36 +1858,28 @@ _processImportData: function(json) {
             let userOpts = '<option value="ALL">Tất cả môn</option>';
             subs.forEach(s => { userOpts += `<option value="${s}">${s}</option>`; });
             userSel.innerHTML = userOpts;
-            if(currentUserSel && (currentUserSel === 'ALL' || subs.includes(currentUserSel))) {
-                userSel.value = currentUserSel;
-            } else { userSel.value = "ALL"; }
+            if(currentUserSel && (currentUserSel === 'ALL' || subs.includes(currentUserSel))) { userSel.value = currentUserSel; } 
+            else { userSel.value = "ALL"; }
         },
-
         renderSubjectList: function() {
-            const ul = document.getElementById('subject-list-ui');
-            ul.innerHTML = '';
+            const ul = document.getElementById('subject-list-ui'); ul.innerHTML = '';
             GLOBAL_DATA.config.subjects.forEach((s, idx) => {
                 const li = document.createElement('li');
                 li.style = "padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;";
                 const count = QUESTION_DB.filter(q => q.subject === s).length;
-                const deleteBtn = (count === 0 && GLOBAL_DATA.config.subjects.length > 1) 
-                    ? `<button class="btn btn-danger btn-sm" onclick="Manager.removeSubject(${idx})">Xóa</button>` 
-                    : `<span style="color:#ccc; font-size:0.8em;">(Đang dùng)</span>`;
+                const deleteBtn = (count === 0 && GLOBAL_DATA.config.subjects.length > 1) ? `<button class="btn btn-danger btn-sm" onclick="Manager.removeSubject(${idx})">Xóa</button>` : `<span style="color:#ccc; font-size:0.8em;">(Đang dùng)</span>`;
                 li.innerHTML = `<span><b>${s}</b> <small>(${count} câu)</small></span><div><button class="btn btn-primary btn-sm" onclick="Manager.editSubject(${idx})">✎ Sửa</button>${deleteBtn}</div>`;
                 ul.appendChild(li);
             });
         },
-
         addSubject: function() {
             const inp = document.getElementById('new-subject-input');
             const val = inp.value.trim();
             if(!val || GLOBAL_DATA.config.subjects.includes(val)) return;
             GLOBAL_DATA.config.subjects.push(val);
-            DataManager.saveToLocal();
-            inp.value = '';
-            this.renderSubjectList();
+            DataManager.requestSave(); // SAVE CLOUD
+            inp.value = ''; this.renderSubjectList();
         },
-
         editSubject: function(idx) {
             const oldName = GLOBAL_DATA.config.subjects[idx];
             const newName = prompt("Tên môn mới:", oldName);
@@ -2323,23 +1887,18 @@ _processImportData: function(json) {
                 if(GLOBAL_DATA.config.subjects.includes(newName)) return;
                 GLOBAL_DATA.config.subjects[idx] = newName;
                 QUESTION_DB.forEach(q => { if(q.subject === oldName) q.subject = newName; });
-                DataManager.saveToLocal();
+                DataManager.requestSave(); // SAVE CLOUD
                 this.renderSubjectList();
             }
         },
-
         removeSubject: function(idx) {
             if(confirm("Xóa môn này?")) {
                 GLOBAL_DATA.config.subjects.splice(idx, 1);
-                DataManager.saveToLocal();
+                DataManager.requestSave(); // SAVE CLOUD
                 this.renderSubjectList();
             }
         },
-
-        rememberSubject: function() {
-            localStorage.setItem(DataManager.SUB_KEY, document.getElementById('user-subject-select').value);
-        },
-
+        rememberSubject: function() { DataManager.saveUserPrefs(); },
         changePassword: function() {
             const oldP = document.getElementById('old-pass').value;
             const newP = document.getElementById('new-pass').value;
@@ -2347,284 +1906,178 @@ _processImportData: function(json) {
             const currentHash = GLOBAL_DATA.config.adminHash || Utils.sha256("123");
             if(Utils.sha256(oldP) !== currentHash) return alert("Mật khẩu cũ sai!");
             GLOBAL_DATA.config.adminHash = Utils.sha256(newP);
-            DataManager.saveToLocal();
+            DataManager.requestSave(); // SAVE CLOUD
             alert("Đổi thành công!");
         },
-		handleNoteLinkChange: function(ele) {
-    const url = ele.value.trim();
-    if(url) {
-        const img = document.getElementById('note-img-preview');
-        img.src = url;
-        img.style.display = 'block';
-        document.getElementById('btn-clear-note-img').style.display = 'inline-block';
-        document.getElementById('inp-note-image-data').value = "";
-        document.getElementById('inp-note-file-hidden').value = "";
-    } else {
-        this.clearNoteImage();
-    }
-},
-
-handleNoteFileSelect: function(input) {
-    if (input.files && input.files[0]) this.processNoteImageFile(input.files[0]);
-},
-
-processNoteImageFile: function(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('inp-note-image-data').value = e.target.result;
-        const img = document.getElementById('note-img-preview');
-        img.src = e.target.result;
-        img.style.display = 'block';
-        document.getElementById('btn-clear-note-img').style.display = 'inline-block';
-        document.getElementById('inp-note-img-link').value = "";
-    };
-    reader.readAsDataURL(file);
-},
-
-clearNoteImage: function(clearInput = true) {
-    if(clearInput) document.getElementById('inp-note-image-data').value = "";
-    document.getElementById('note-img-preview').style.display = "none";
-    document.getElementById('note-img-preview').src = "";
-    document.getElementById('btn-clear-note-img').style.display = "none";
-    document.getElementById('inp-note-file-hidden').value = "";
-    document.getElementById('inp-note-img-link').value = "";
-},
-
-        // --- MODAL & IMAGE HANDLERS (UPDATED) ---
-openModal: function(index = -1) {
-    const modal = document.getElementById('editor-modal');
-    const container = document.getElementById('options-container');
-    document.getElementById('edit-index').value = index;
-    container.innerHTML = ''; 
-    
-    // Reset ảnh câu hỏi & ảnh giải thích
-    this.clearImage(true);
-    this.clearNoteImage(true);
-
-    if (index === -1) { 
-        // ... (Code reset form cũ giữ nguyên) ...
-        document.getElementById('modal-title').innerText = "Thêm câu hỏi mới";
-        document.getElementById('inp-question').value = "";
-        document.getElementById('inp-math').value = "";
-        document.getElementById('inp-code').value = "";
-        document.getElementById('inp-code-lang').value = "plaintext";
-        document.getElementById('inp-note').value = "";
-        document.getElementById('inp-type').value = "single";
-        const filterVal = document.getElementById('admin-filter-subject').value;
-        if(filterVal !== 'ALL') document.getElementById('inp-subject').value = filterVal;
-        for(let i=0; i<4; i++) this.addOptionUI('', false);
-    } else { 
-        const q = QUESTION_DB[index];
-        // ... (Code load dữ liệu cũ giữ nguyên) ...
-        document.getElementById('modal-title').innerText = "Sửa câu hỏi #" + (index + 1);
-        document.getElementById('inp-subject').value = q.subject || GLOBAL_DATA.config.subjects[0];
-        document.getElementById('inp-question').value = q.question;
-        
-        // Load ảnh câu hỏi
-        if(q.image) {
-            const img = document.getElementById('img-preview');
-            img.src = q.image;
-            img.style.display = 'block';
-            document.getElementById('btn-clear-img').style.display = 'inline-block';
-            if (q.image.startsWith("http") || q.image.startsWith("//")) {
-                document.getElementById('inp-img-link').value = q.image;
-            } else {
-                document.getElementById('inp-image-data').value = q.image;
-            }
-        }
-
-        // LOAD ẢNH GIẢI THÍCH (MỚI)
-        if(q.noteImage) {
-            const imgNote = document.getElementById('note-img-preview');
-            imgNote.src = q.noteImage;
-            imgNote.style.display = 'block';
-            document.getElementById('btn-clear-note-img').style.display = 'inline-block';
-            
-            if (q.noteImage.startsWith("http") || q.noteImage.startsWith("//")) {
-                document.getElementById('inp-note-img-link').value = q.noteImage;
-            } else {
-                document.getElementById('inp-note-image-data').value = q.noteImage;
-            }
-        }
-
-        document.getElementById('inp-math').value = q.math || "";
-        document.getElementById('inp-code').value = q.code || "";
-        document.getElementById('inp-code-lang').value = q.lang || "plaintext";
-        document.getElementById('inp-note').value = q.note || "";
-        
-        // ... (Phần load options giữ nguyên) ...
-        const isMulti = Array.isArray(q.answer);
-        document.getElementById('inp-type').value = isMulti ? 'multi' : 'single';
-        q.options.forEach((optText, i) => {
-            let isCorrect = isMulti ? q.answer.includes(i) : q.answer === i;
-            this.addOptionUI(optText, isCorrect);
-        });
-    }
-    modal.classList.add('active');
-},
-
-        // Xử lý khi người dùng dán Link
         handleLinkChange: function(ele) {
             const url = ele.value.trim();
             if(url) {
-                const img = document.getElementById('img-preview');
-                img.src = url;
-                img.style.display = 'block';
+                const img = document.getElementById('img-preview'); img.src = url; img.style.display = 'block';
                 document.getElementById('btn-clear-img').style.display = 'inline-block';
-                // Xóa dữ liệu file base64 để ưu tiên Link
-                document.getElementById('inp-image-data').value = "";
+                document.getElementById('inp-image-data').value = ""; 
                 document.getElementById('inp-file-hidden').value = "";
-            } else {
-                this.clearImage();
-            }
+            } else { this.clearImage(); }
         },
-
-initImageHandlers: function() {
-    // Handler cho Câu hỏi (Cũ)
-    const pasteArea = document.getElementById('paste-area');
-    pasteArea.addEventListener('click', () => document.getElementById('inp-file-hidden').click());
-    // ... (Giữ nguyên phần drag drop cũ của câu hỏi nếu muốn) ...
-
-    // Handler cho Giải thích (MỚI)
-    const notePasteArea = document.getElementById('note-paste-area');
-    notePasteArea.addEventListener('click', () => document.getElementById('inp-note-file-hidden').click());
-    
-    // Sự kiện Paste toàn cục thông minh
-    document.addEventListener('paste', (e) => { 
-        if (!document.getElementById('editor-modal').classList.contains('active')) return; 
-        
-        if (e.clipboardData && e.clipboardData.items) { 
-            for (let i = 0; i < e.clipboardData.items.length; i++) { 
-                if (e.clipboardData.items[i].type.indexOf("image") !== -1) { 
-                    const file = e.clipboardData.items[i].getAsFile();
-                    
-                    // Logic xác định paste vào đâu:
-                    // Nếu đang focus vào ô nhập giải thích HOẶC chuột đang ở vùng paste giải thích -> Paste vào giải thích
-                    // Ngược lại -> Paste vào câu hỏi
-                    const activeId = document.activeElement.id;
-                    const isHoveringNote = document.querySelector('#note-paste-area:hover') != null;
-                    
-                    if (activeId === 'inp-note' || activeId === 'inp-note-img-link' || isHoveringNote) {
-                        this.processNoteImageFile(file);
-                    } else {
-                        this.processImageFile(file);
-                    }
-                    break; 
+        handleNoteLinkChange: function(ele) {
+            const url = ele.value.trim();
+            if(url) {
+                const img = document.getElementById('note-img-preview'); img.src = url; img.style.display = 'block';
+                document.getElementById('btn-clear-note-img').style.display = 'inline-block';
+                document.getElementById('inp-note-image-data').value = ""; document.getElementById('inp-note-file-hidden').value = "";
+            } else { this.clearNoteImage(); }
+        },
+        initImageHandlers: function() {
+            const pasteArea = document.getElementById('paste-area');
+            pasteArea.addEventListener('click', () => document.getElementById('inp-file-hidden').click());
+            const notePasteArea = document.getElementById('note-paste-area');
+            notePasteArea.addEventListener('click', () => document.getElementById('inp-note-file-hidden').click());
+            document.addEventListener('paste', (e) => { 
+                if (!document.getElementById('editor-modal').classList.contains('active')) return; 
+                if (e.clipboardData && e.clipboardData.items) { 
+                    for (let i = 0; i < e.clipboardData.items.length; i++) { 
+                        if (e.clipboardData.items[i].type.indexOf("image") !== -1) { 
+                            const file = e.clipboardData.items[i].getAsFile();
+                            const activeId = document.activeElement.id;
+                            const isHoveringNote = document.querySelector('#note-paste-area:hover') != null;
+                            if (activeId === 'inp-note' || activeId === 'inp-note-img-link' || isHoveringNote) { this.processNoteImageFile(file); } 
+                            else { this.processImageFile(file); }
+                            break; 
+                        } 
+                    } 
                 } 
-            } 
-        } 
-    });
-},
-
-        handleFileSelect: function(input) {
-            if (input.files && input.files[0]) this.processImageFile(input.files[0]);
+            });
         },
-
+        handleFileSelect: function(input) { if (input.files && input.files[0]) this.processImageFile(input.files[0]); },
+        handleNoteFileSelect: function(input) { if (input.files && input.files[0]) this.processNoteImageFile(input.files[0]); },
         processImageFile: function(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('inp-image-data').value = e.target.result;
-                const img = document.getElementById('img-preview');
-                img.src = e.target.result;
-                img.style.display = 'block';
+                const img = document.getElementById('img-preview'); img.src = e.target.result; img.style.display = 'block';
                 document.getElementById('btn-clear-img').style.display = 'inline-block';
-                // Xóa ô nhập Link để ưu tiên File
                 document.getElementById('inp-img-link').value = "";
-            };
-            reader.readAsDataURL(file);
+            }; reader.readAsDataURL(file);
         },
-
+        processNoteImageFile: function(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('inp-note-image-data').value = e.target.result;
+                const img = document.getElementById('note-img-preview'); img.src = e.target.result; img.style.display = 'block';
+                document.getElementById('btn-clear-note-img').style.display = 'inline-block';
+                document.getElementById('inp-note-img-link').value = "";
+            }; reader.readAsDataURL(file);
+        },
         clearImage: function(clearInput = true) {
             if(clearInput) document.getElementById('inp-image-data').value = "";
-            document.getElementById('img-preview').style.display = "none";
-            document.getElementById('img-preview').src = "";
+            document.getElementById('img-preview').style.display = "none"; document.getElementById('img-preview').src = "";
             document.getElementById('btn-clear-img').style.display = "none";
-            document.getElementById('inp-file-hidden').value = "";
-            document.getElementById('inp-img-link').value = ""; // Clear Link
+            document.getElementById('inp-file-hidden').value = ""; document.getElementById('inp-img-link').value = "";
         },
+        clearNoteImage: function(clearInput = true) {
+            if(clearInput) document.getElementById('inp-note-image-data').value = "";
+            document.getElementById('note-img-preview').style.display = "none"; document.getElementById('note-img-preview').src = "";
+            document.getElementById('btn-clear-note-img').style.display = "none";
+            document.getElementById('inp-note-file-hidden').value = ""; document.getElementById('inp-note-img-link').value = "";
+        },
+        openModal: function(index = -1) {
+            const modal = document.getElementById('editor-modal');
+            const container = document.getElementById('options-container');
+            document.getElementById('edit-index').value = index;
+            container.innerHTML = ''; 
+            this.clearImage(true); this.clearNoteImage(true);
 
+            if (index === -1) { 
+                document.getElementById('modal-title').innerText = "Thêm câu hỏi mới";
+                document.getElementById('inp-question').value = "";
+                document.getElementById('inp-math').value = "";
+                document.getElementById('inp-code').value = "";
+                document.getElementById('inp-code-lang').value = "plaintext";
+                document.getElementById('inp-note').value = "";
+                document.getElementById('inp-type').value = "single";
+                const filterVal = document.getElementById('admin-filter-subject').value;
+                if(filterVal !== 'ALL') document.getElementById('inp-subject').value = filterVal;
+                for(let i=0; i<4; i++) this.addOptionUI('', false);
+            } else { 
+                const q = QUESTION_DB[index];
+                document.getElementById('modal-title').innerText = "Sửa câu hỏi #" + (index + 1);
+                document.getElementById('inp-subject').value = q.subject || "Chung";
+                document.getElementById('inp-question').value = q.question;
+                if(q.image) {
+                    const img = document.getElementById('img-preview'); img.src = q.image; img.style.display = 'block';
+                    document.getElementById('btn-clear-img').style.display = 'inline-block';
+                    if (q.image.startsWith("http") || q.image.startsWith("//")) document.getElementById('inp-img-link').value = q.image;
+                    else document.getElementById('inp-image-data').value = q.image;
+                }
+                if(q.noteImage) {
+                    const imgNote = document.getElementById('note-img-preview'); imgNote.src = q.noteImage; imgNote.style.display = 'block';
+                    document.getElementById('btn-clear-note-img').style.display = 'inline-block';
+                    if (q.noteImage.startsWith("http") || q.noteImage.startsWith("//")) document.getElementById('inp-note-img-link').value = q.noteImage;
+                    else document.getElementById('inp-note-image-data').value = q.noteImage;
+                }
+                document.getElementById('inp-math').value = q.math || "";
+                document.getElementById('inp-code').value = q.code || "";
+                document.getElementById('inp-code-lang').value = q.lang || "plaintext";
+                document.getElementById('inp-note').value = q.note || "";
+                const isMulti = Array.isArray(q.answer);
+                document.getElementById('inp-type').value = isMulti ? 'multi' : 'single';
+                q.options.forEach((optText, i) => {
+                    let isCorrect = isMulti ? q.answer.includes(i) : q.answer === i;
+                    this.addOptionUI(optText, isCorrect);
+                });
+            }
+            modal.classList.add('active');
+        },
         closeModal: function() { document.getElementById('editor-modal').classList.remove('active'); },
-
         addOptionUI: function(text = '', isChecked = false) {
             const container = document.getElementById('options-container');
             const type = document.getElementById('inp-type').value; 
             const inputType = (type === 'single') ? 'radio' : 'checkbox';
-            const div = document.createElement('div');
-            div.className = 'option-row';
-            div.innerHTML = `
-                <input type="${inputType}" name="correct_ans_selector" class="option-check" ${isChecked ? 'checked' : ''}>
-                <input type="text" class="form-control option-text" value="${Utils.escapeHtml(text)}" placeholder="Nhập đáp án...">
-                <button type="button" class="btn-remove-opt" onclick="this.parentElement.remove()">×</button>
-            `;
+            const div = document.createElement('div'); div.className = 'option-row';
+            div.innerHTML = `<input type="${inputType}" name="correct_ans_selector" class="option-check" ${isChecked ? 'checked' : ''}><input type="text" class="form-control option-text" value="${Utils.escapeHtml(text)}" placeholder="Nhập đáp án..."><button type="button" class="btn-remove-opt" onclick="this.parentElement.remove()">×</button>`;
             container.appendChild(div);
         },
-
         changeType: function() {
             const type = document.getElementById('inp-type').value;
             const inputType = (type === 'single') ? 'radio' : 'checkbox';
-            document.querySelectorAll('input[name="correct_ans_selector"]').forEach(inp => {
-                inp.type = inputType;
-                inp.checked = false; 
-            });
+            document.querySelectorAll('input[name="correct_ans_selector"]').forEach(inp => { inp.type = inputType; inp.checked = false; });
         },
+        saveQuestion: function() {
+            const qText = document.getElementById('inp-question').value.trim();
+            const qImage = document.getElementById('inp-img-link').value.trim() || document.getElementById('inp-image-data').value.trim();
+            const nImage = document.getElementById('inp-note-img-link').value.trim() || document.getElementById('inp-note-image-data').value.trim();
+            const qMath = document.getElementById('inp-math').value.trim();
+            const qCode = document.getElementById('inp-code').value.trim();
+            const qLang = document.getElementById('inp-code-lang').value;
+            const qNote = document.getElementById('inp-note').value.trim();
+            const qSub = document.getElementById('inp-subject').value;
+            const qType = document.getElementById('inp-type').value;
+            const index = parseInt(document.getElementById('edit-index').value);
 
-saveQuestion: function() {
-    const qText = document.getElementById('inp-question').value.trim();
-    
-    // Lấy ảnh câu hỏi
-    const qLink = document.getElementById('inp-img-link').value.trim();
-    const qBase64 = document.getElementById('inp-image-data').value.trim();
-    const qImage = qLink ? qLink : qBase64;
+            const optRows = document.querySelectorAll('.option-row');
+            let optionsArr = []; let correctIndices = [];
+            optRows.forEach((row, i) => {
+                const text = row.querySelector('.option-text').value.trim();
+                const isChecked = row.querySelector('.option-check').checked;
+                if (text) { optionsArr.push(text); if (isChecked) correctIndices.push(optionsArr.length - 1); }
+            });
 
-    // LẤY ẢNH GIẢI THÍCH (MỚI)
-    const nLink = document.getElementById('inp-note-img-link').value.trim();
-    const nBase64 = document.getElementById('inp-note-image-data').value.trim();
-    const nImage = nLink ? nLink : nBase64;
+            if (!qText) return alert("Vui lòng nhập nội dung!");
+            if (optionsArr.length < 2) return alert("Cần ít nhất 2 đáp án!");
+            if (correctIndices.length === 0) return alert("Chọn ít nhất 1 đáp án đúng!");
+            if (qType === 'single' && correctIndices.length > 1) return alert("Chọn 1 đáp án thì không được tick nhiều!");
 
-    const qMath = document.getElementById('inp-math').value.trim();
-    const qCode = document.getElementById('inp-code').value.trim();
-    const qLang = document.getElementById('inp-code-lang').value;
-    const qNote = document.getElementById('inp-note').value.trim();
-    const qSub = document.getElementById('inp-subject').value;
-    const qType = document.getElementById('inp-type').value;
-    const index = parseInt(document.getElementById('edit-index').value);
+            let finalAnswer = (qType === 'single') ? correctIndices[0] : correctIndices;
+            const newQuestion = {
+                question: qText, image: qImage || null, math: qMath || null, code: qCode || null, lang: qLang || 'plaintext',
+                options: optionsArr, answer: finalAnswer, note: qNote, subject: qSub, noteImage: nImage || null
+            };
 
-    // ... (Phần xử lý options giữ nguyên) ...
-    const optRows = document.querySelectorAll('.option-row');
-    let optionsArr = [];
-    let correctIndices = [];
+            if (index === -1) QUESTION_DB.push(newQuestion);
+            else QUESTION_DB[index] = newQuestion;
 
-    optRows.forEach((row, i) => {
-        const text = row.querySelector('.option-text').value.trim();
-        const isChecked = row.querySelector('.option-check').checked;
-        if (text) {
-            optionsArr.push(text);
-            if (isChecked) correctIndices.push(optionsArr.length - 1);
-        }
-    });
-
-    if (!qText) return alert("Vui lòng nhập nội dung!");
-    if (optionsArr.length < 2) return alert("Cần ít nhất 2 đáp án!");
-    if (correctIndices.length === 0) return alert("Chọn ít nhất 1 đáp án đúng!");
-    if (qType === 'single' && correctIndices.length > 1) return alert("Chọn 1 đáp án thì không được tick nhiều!");
-
-    let finalAnswer = (qType === 'single') ? correctIndices[0] : correctIndices;
-
-    const newQuestion = {
-        question: qText, image: qImage || null, math: qMath || null,
-        code: qCode || null, lang: qLang || 'plaintext',
-        options: optionsArr, answer: finalAnswer, note: qNote, 
-        subject: qSub,
-        noteImage: nImage || null // <--- LƯU VÀO ĐÂY
-    };
-
-    if (index === -1) QUESTION_DB.push(newQuestion);
-    else QUESTION_DB[index] = newQuestion;
-
-    DataManager.saveToLocal();
-    this.closeModal();
-},
-
+            DataManager.requestSave(); // SAVE CLOUD
+            this.closeModal();
+        },
         toggleTimeInput: function() {
             const isUnlimited = document.getElementById('unlimited-time').checked;
             const timeInput = document.getElementById('quiz-duration');
@@ -2638,177 +2091,113 @@ saveQuestion: function() {
     // QUIZ APP
     // ==========================================
     const QuizApp = {
-        currentData: [],
-        timerInterval: null,
-        currentPlayerName: '',
-        currentSubject: '',
-        
+        currentData: [], timerInterval: null, currentPlayerName: '', currentSubject: '',
         updateSubjectInfo: function() {
             const sel = document.getElementById('user-subject-select').value;
-            let count = 0;
-            if(sel === 'ALL') count = QUESTION_DB.length;
-            else count = QUESTION_DB.filter(q => q.subject === sel).length;
+            let count = 0; if(sel === 'ALL') count = QUESTION_DB.length; else count = QUESTION_DB.filter(q => q.subject === sel).length;
             document.getElementById('subject-info-display').innerText = `Tổng số câu hỏi: ${count}`;
         },
-
         start: function(isShuffle) {
             const nameInput = document.getElementById('student-name');
             const subjectSel = document.getElementById('user-subject-select').value;
             const nameVal = nameInput.value.trim();
-            
-            if (!nameVal) {
-                alert("Vui lòng nhập tên của bạn!");
-                nameInput.focus();
-                return;
-            }
+            if (!nameVal) { alert("Vui lòng nhập tên của bạn!"); nameInput.focus(); return; }
 
             let dataToUse = [];
-            if(subjectSel === 'ALL') dataToUse = [...QUESTION_DB];
-            else dataToUse = QUESTION_DB.filter(q => q.subject === subjectSel);
-
+            if(subjectSel === 'ALL') dataToUse = [...QUESTION_DB]; else dataToUse = QUESTION_DB.filter(q => q.subject === subjectSel);
             if(dataToUse.length === 0) return alert("Môn này chưa có câu hỏi nào!");
 
-            this.currentPlayerName = nameVal;
-            this.currentSubject = subjectSel;
-            localStorage.setItem(DataManager.NAME_KEY, nameVal);
-            
+            this.currentPlayerName = nameVal; this.currentSubject = subjectSel;
+            DataManager.saveUserPrefs(); // Save name locally
+
             const isUnlimited = document.getElementById('unlimited-time').checked;
             let durationMin = parseInt(document.getElementById('quiz-duration').value);
             if(isNaN(durationMin) || durationMin < 1) durationMin = 30;
 
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('quiz-screen').classList.add('active');
-            document.getElementById('result-box').style.display = 'none'; 
-            document.getElementById('submit-btn').style.display = 'block';
-            
+            document.getElementById('result-box').style.display = 'none'; document.getElementById('submit-btn').style.display = 'block';
             document.getElementById('display-student-name').innerText = this.currentPlayerName;
             document.getElementById('display-subject-name').innerText = (subjectSel === 'ALL') ? "TẤT CẢ MÔN" : subjectSel;
 
             dataToUse = JSON.parse(JSON.stringify(dataToUse));
-            if (isShuffle) {
-                dataToUse.sort(() => Math.random() - 0.5);
-                dataToUse = dataToUse.map(q => this.shuffleOptionsInQuestion(q));
-            }
+            if (isShuffle) { dataToUse.sort(() => Math.random() - 0.5); dataToUse = dataToUse.map(q => this.shuffleOptionsInQuestion(q)); }
             this.currentData = dataToUse;
-            
-            this.render();
-            this.startTimer(durationMin, isUnlimited);
+            this.render(); this.startTimer(durationMin, isUnlimited);
             window.scrollTo(0, 0);
         },
-
         resetToHome: function() {
             if(this.timerInterval) clearInterval(this.timerInterval);
             document.getElementById('quiz-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
             document.getElementById('timer-display').innerText = "∞";
-            this.renderLeaderboard(); // from DataManager but context here
             DataManager.renderLeaderboard();
         },
-
         shuffleOptionsInQuestion: function(question) {
             let mappedOptions = question.options.map((opt, i) => ({ text: opt, oldIdx: i }));
             mappedOptions.sort(() => Math.random() - 0.5);
             question.options = mappedOptions.map(m => m.text);
-            if (Array.isArray(question.answer)) {
-                question.answer = question.answer.map(ansIdx => mappedOptions.findIndex(m => m.oldIdx === ansIdx)).sort((a,b) => a - b);
-            } else {
-                question.answer = mappedOptions.findIndex(m => m.oldIdx === question.answer);
-            }
+            if (Array.isArray(question.answer)) { question.answer = question.answer.map(ansIdx => mappedOptions.findIndex(m => m.oldIdx === ansIdx)).sort((a,b) => a - b); } 
+            else { question.answer = mappedOptions.findIndex(m => m.oldIdx === question.answer); }
             return question;
         },
-
-// TRONG QuizApp:
-
-render: function() {
-    const container = document.getElementById('quiz-container');
-    let html = '';
-    this.currentData.forEach((q, index) => {
-        let codeHtml = '';
-        if (q.code) {
-            const langClass = q.lang ? `language-${q.lang}` : '';
-            codeHtml = `<div class="code-block"><span class="code-lang-badge">${q.lang ? q.lang.toUpperCase() : 'CODE'}</span><pre><code class="${langClass}">${Utils.escapeHtml(q.code)}</code></pre></div>`;
-        }
-        const mathHtml = q.math ? `<div class="math-block">${Utils.escapeHtml(q.math)}</div>` : '';
-        const imgHtml = q.image ? `<img src="${q.image}" class="quiz-image" alt="Hình ảnh câu hỏi">` : '';
-        
-        // HTML CHO ẢNH GIẢI THÍCH (MỚI)
-        const noteImgHtml = q.noteImage ? `<div style="margin-top:10px; text-align:center;"><img src="${q.noteImage}" class="quiz-image" style="max-height: 250px; border: 1px dashed #ccc; padding: 5px;"></div>` : '';
-
-        const isMulti = Array.isArray(q.answer);
-        const inputType = isMulti ? 'checkbox' : 'radio';
-        const hint = isMulti ? '<small style="color:var(--primary-color)">(Chọn nhiều)</small>' : '';
-        html += `
-        <div class="question-card" id="card-${index}" data-type="${isMulti ? 'multi' : 'single'}">
-            <div class="question-title">
-                Câu ${index + 1}: ${Utils.escapeHtml(q.question)} ${hint}
-            </div>
-            ${imgHtml} ${mathHtml} ${codeHtml}
-            <div>
-                ${q.options.map((opt, i) => `
-                    <label class="option-label" onclick="QuizApp.selectOption(${index}, this)">
-                        <input type="${inputType}" name="q-${index}" value="${i}" style="pointer-events:none;">
-                        <span>${Utils.escapeHtml(opt)}</span>
-                    </label>`).join('')}
-            </div>
-            <div class="explanation">
-                <strong>Đáp án:</strong> 
-                ${isMulti ? q.answer.map(a => q.options[a]).join(', ') : q.options[q.answer]} <br>
-                <em>${q.note || ''}</em>
-                ${noteImgHtml} </div>
-        </div>`;
-    });
-    container.innerHTML = html;
-    document.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
-    if(window.MathJax) MathJax.typesetPromise();
-},
-
+        render: function() {
+            const container = document.getElementById('quiz-container'); let html = '';
+            this.currentData.forEach((q, index) => {
+                let codeHtml = '';
+                if (q.code) { const langClass = q.lang ? `language-${q.lang}` : ''; codeHtml = `<div class="code-block"><span class="code-lang-badge">${q.lang ? q.lang.toUpperCase() : 'CODE'}</span><pre><code class="${langClass}">${Utils.escapeHtml(q.code)}</code></pre></div>`; }
+                const mathHtml = q.math ? `<div class="math-block">${Utils.escapeHtml(q.math)}</div>` : '';
+                const imgHtml = q.image ? `<img src="${q.image}" class="quiz-image" alt="Hình ảnh câu hỏi">` : '';
+                const noteImgHtml = q.noteImage ? `<div style="margin-top:10px; text-align:center;"><img src="${q.noteImage}" class="quiz-image" style="max-height: 250px; border: 1px dashed #ccc; padding: 5px;"></div>` : '';
+                const isMulti = Array.isArray(q.answer);
+                const inputType = isMulti ? 'checkbox' : 'radio';
+                const hint = isMulti ? '<small style="color:var(--primary-color)">(Chọn nhiều)</small>' : '';
+                html += `
+                <div class="question-card" id="card-${index}" data-type="${isMulti ? 'multi' : 'single'}">
+                    <div class="question-title">Câu ${index + 1}: ${Utils.escapeHtml(q.question)} ${hint}</div>
+                    ${imgHtml} ${mathHtml} ${codeHtml}
+                    <div>
+                        ${q.options.map((opt, i) => `
+                            <label class="option-label" onclick="QuizApp.selectOption(${index}, this)">
+                                <input type="${inputType}" name="q-${index}" value="${i}" style="pointer-events:none;">
+                                <span>${Utils.escapeHtml(opt)}</span>
+                            </label>`).join('')}
+                    </div>
+                    <div class="explanation">
+                        <strong>Đáp án:</strong> ${isMulti ? q.answer.map(a => q.options[a]).join(', ') : q.options[q.answer]} <br>
+                        <em>${q.note || ''}</em>
+                        ${noteImgHtml}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+            document.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+            if(window.MathJax) MathJax.typesetPromise();
+        },
         selectOption: function(qIdx, label) {
             const card = document.getElementById(`card-${qIdx}`);
             const input = label.querySelector('input');
             const isMulti = card.dataset.type === 'multi';
             if(input.disabled) return; 
-            if (isMulti) {
-                input.checked = !input.checked;
-                label.classList.toggle('checked', input.checked);
-            } else {
-                card.querySelectorAll('.option-label').forEach(l => {
-                    l.classList.remove('checked');
-                    l.querySelector('input').checked = false;
-                });
-                label.classList.add('checked');
-                input.checked = true;
-            }
+            if (isMulti) { input.checked = !input.checked; label.classList.toggle('checked', input.checked); } 
+            else { card.querySelectorAll('.option-label').forEach(l => { l.classList.remove('checked'); l.querySelector('input').checked = false; }); label.classList.add('checked'); input.checked = true; }
         },
-
         startTimer: function(minutes, isUnlimited) {
             const display = document.getElementById('timer-display');
             if(this.timerInterval) clearInterval(this.timerInterval);
-            if (isUnlimited) {
-                display.innerText = "∞"; 
-                display.classList.remove('timer-warning');
-                return;
-            }
+            if (isUnlimited) { display.innerText = "∞"; display.classList.remove('timer-warning'); return; }
             let timeLeft = minutes * 60;
             this.updateTimerDisplay(timeLeft, display);
             this.timerInterval = setInterval(() => {
-                timeLeft--;
-                this.updateTimerDisplay(timeLeft, display);
-                if (timeLeft <= 0) {
-                    clearInterval(this.timerInterval);
-                    alert("Đã hết thời gian làm bài!");
-                    this.submit();
-                }
+                timeLeft--; this.updateTimerDisplay(timeLeft, display);
+                if (timeLeft <= 0) { clearInterval(this.timerInterval); alert("Đã hết thời gian làm bài!"); this.submit(); }
             }, 1000);
         },
-
         updateTimerDisplay: function(seconds, displayElement) {
-            const m = Math.floor(seconds / 60);
-            const s = seconds % 60;
+            const m = Math.floor(seconds / 60); const s = seconds % 60;
             displayElement.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-            if(seconds < 60) displayElement.classList.add('timer-warning');
-            else displayElement.classList.remove('timer-warning');
+            if(seconds < 60) displayElement.classList.add('timer-warning'); else displayElement.classList.remove('timer-warning');
         },
-
         submit: function() {
             if(this.timerInterval) clearInterval(this.timerInterval);
             let score = 0;
@@ -2818,10 +2207,7 @@ render: function() {
                 const labels = card.querySelectorAll('.option-label');
                 const isMulti = Array.isArray(q.answer);
                 let userAns = [];
-                inputs.forEach((inp, i) => {
-                    if(inp.checked) userAns.push(i);
-                    inp.disabled = true; 
-                });
+                inputs.forEach((inp, i) => { if(inp.checked) userAns.push(i); inp.disabled = true; });
                 let isCorrect = false;
                 if(isMulti) {
                     if(userAns.length === q.answer.length && userAns.every(v => q.answer.includes(v))) isCorrect = true;
@@ -2831,36 +2217,32 @@ render: function() {
                     });
                 } else {
                     if(userAns.length > 0 && userAns[0] === q.answer) isCorrect = true;
-                    labels[q.answer].classList.add('correct');
-                    if(!isCorrect && userAns.length > 0) labels[userAns[0]].classList.add('incorrect');
+                    if(q.answer !== undefined && labels[q.answer]) labels[q.answer].classList.add('correct');
+                    if(!isCorrect && userAns.length > 0 && labels[userAns[0]]) labels[userAns[0]].classList.add('incorrect');
                 }
                 if(isCorrect) score++;
-                card.querySelector('.explanation').style.display = 'block';
+                const explainDiv = card.querySelector('.explanation');
+                if(explainDiv) explainDiv.style.display = 'block';
             });
 
             const finalScore = parseFloat((score / this.currentData.length * 10).toFixed(1));
-
             const date = new Date();
-            const dateStr = `${date.getDate()}/${date.getMonth()+1} ${date.getHours()}:${date.getMinutes()}`;
+            const dateStr = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
             
             const newEntry = {
-                name: this.currentPlayerName,
-                score: finalScore,
-                correct: score, 
-                total: this.currentData.length,
-                date: dateStr,
-                subject: (this.currentSubject === 'ALL') ? "Tất cả môn" : this.currentSubject
+                name: this.currentPlayerName || "Unknown",
+                score: finalScore, correct: score, total: this.currentData.length,
+                date: dateStr, subject: (this.currentSubject === 'ALL') ? "Tất cả môn" : this.currentSubject
             };
 
             GLOBAL_DATA.leaderboard.unshift(newEntry);
-            
             if (GLOBAL_DATA.leaderboard.length > 100) GLOBAL_DATA.leaderboard = GLOBAL_DATA.leaderboard.slice(0, 100);
 
-            DataManager.saveToLocal();
+            // SAVE TO CLOUD (Chỉ lưu điểm và history)
+            DataManager.requestSave();
 
             document.getElementById('submit-btn').style.display = 'none';
-            const rBox = document.getElementById('result-box');
-            rBox.style.display = 'block';
+            const rBox = document.getElementById('result-box'); rBox.style.display = 'block';
             document.getElementById('correct-count').innerText = score;
             document.getElementById('total-count').innerText = this.currentData.length;
             document.getElementById('final-score').innerText = finalScore;
@@ -2868,372 +2250,36 @@ render: function() {
         }
     };
 
-    DataManager.init();
-    Manager.initImageHandlers(); 
+    // ==========================================
+    // AUTHENTICATION
+    // ==========================================
+    function checkAdminLogin() {
+        const inp = document.getElementById('admin-password-input');
+        const inputHash = Utils.sha256(inp.value);
+        const storedHash = (GLOBAL_DATA.config && GLOBAL_DATA.config.adminHash) ? GLOBAL_DATA.config.adminHash : "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
+        if (inputHash === storedHash) {
+            document.getElementById('admin-login-panel').style.display = 'none';
+            document.getElementById('admin-content-panel').style.display = 'block';
+            inp.value = ''; Manager.renderList();
+        } else { alert("Mật khẩu không đúng!"); inp.value = ''; inp.focus(); }
+    }
+    function lockAdmin() {
+        document.getElementById('admin-login-panel').style.display = 'block';
+        document.getElementById('admin-content-panel').style.display = 'none';
+    }
+    function handleEnterLogin(e) { if(e.key === 'Enter') checkAdminLogin(); }
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === "Escape") {
-            if (document.getElementById('editor-modal').classList.contains('active')) Manager.closeModal();
-        }
+    // Tự động chạy init
+    document.addEventListener("DOMContentLoaded", () => {
+        DataManager.init();
+        Manager.initImageHandlers();
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") { if (document.getElementById('editor-modal').classList.contains('active')) Manager.closeModal(); }
+        });
     });
 
-// ============================================================
-// BỔ SUNG TÍNH NĂNG JSON & GOOGLE SHEET
-// ============================================================
-
-// 1. Hàm Xuất toàn bộ dữ liệu ra JSON (Đã cập nhật lưu Môn thi)
-DataManager.exportJSON = function() {
-    // Lấy danh sách môn thi từ Config (nơi lưu trữ chính xác nhất)
-    const currentSubjects = (GLOBAL_DATA.config && GLOBAL_DATA.config.subjects) 
-                            ? GLOBAL_DATA.config.subjects 
-                            : ["Chung"];
-
-    const fullData = {
-        meta: "TestTracNghiemPro_Backup",
-        date: new Date().toLocaleString(),
-        // Lưu cấu hình chứa danh sách môn
-        config: {
-            subjects: currentSubjects
-        },
-        // Lưu thêm ở ngoài để tương thích với các phiên bản cũ
-        subjects: currentSubjects, 
-        questions: GLOBAL_DATA.questions,
-        leaderboard: GLOBAL_DATA.leaderboard
-    };
-    
-    const dataStr = JSON.stringify(fullData, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "database_tracnghiem_" + new Date().toISOString().slice(0,10) + ".json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-};
-
-// 2. Hàm Nhập file JSON từ máy tính
-DataManager.importJSONFile = function(inputElement) {
-    const file = inputElement.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            DataManager.mergeData(data);
-        } catch (err) {
-            alert("Lỗi đọc file JSON: " + err);
-        }
-        inputElement.value = ''; // Reset input
-    };
-    reader.readAsText(file);
-};
-
-// 3. Hàm Tải dữ liệu từ Link (Google Apps Script / Raw JSON)
-DataManager.loadFromCloud = function() {
-    const url = document.getElementById('cloud-url').value.trim();
-    if (!url) {
-        alert("Vui lòng nhập đường dẫn URL!");
-        return;
-    }
-
-    const btn = event.target;
-    const oldText = btn.innerText;
-    btn.innerText = "Đang tải...";
-    btn.disabled = true;
-
-    fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error("HTTP " + response.status);
-            return response.json();
-        })
-        .then(data => {
-            DataManager.mergeData(data);
-            alert("✅ Đã cập nhật dữ liệu thành công từ Cloud!");
-        })
-        .catch(err => {
-            console.error(err);
-            alert("❌ Không tải được dữ liệu.\nLỗi: " + err.message + "\n\nLưu ý: Nếu link Google Sheet, hãy đảm bảo bạn đã Deploy Web App và set quyền 'Anyone'.");
-        })
-        .finally(() => {
-            btn.innerText = oldText;
-            btn.disabled = false;
-        });
-};
-
-// 4. Hàm xử lý trộn dữ liệu (Đã sửa lỗi mất mật khẩu)
-DataManager.mergeData = function(data) {
-    // 1. Kiểm tra định dạng sơ bộ
-    if (!data.questions && !data.subjects && !data.leaderboard && !data.config) {
-        alert("File không đúng định dạng dữ liệu của App!");
-        return;
-    }
-
-    // Đảm bảo GLOBAL_DATA.config luôn tồn tại
-    if (!GLOBAL_DATA.config) GLOBAL_DATA.config = { subjects: ["Chung"] };
-
-    // --- [FIX QUAN TRỌNG] LƯU GIỮ MẬT KHẨU HIỆN TẠI ---
-    const currentAdminHash = GLOBAL_DATA.config.adminHash;
-    // --------------------------------------------------
-
-    // 2. Hỏi người dùng chế độ nhập
-    if (confirm("Bạn có muốn GHI ĐÈ dữ liệu cũ không?\n\n- OK: Xóa cũ, thay bằng mới (Reset).\n- Cancel: Giữ cũ, gộp thêm mới vào (Merge).")) {
-        // === CHẾ ĐỘ GHI ĐÈ (RESET) ===
-        if (data.questions) GLOBAL_DATA.questions = data.questions;
-        if (data.leaderboard && Array.isArray(data.leaderboard)) {
-            GLOBAL_DATA.leaderboard = data.leaderboard;
-        } else {
-            GLOBAL_DATA.leaderboard = [];
-        }
-        
-        // Nếu file có config thì lấy danh sách môn, NHƯNG KHÔNG GHI ĐÈ PASSWORD
-        if (data.config) {
-            // Chỉ lấy subjects từ file mới
-            if(data.config.subjects) GLOBAL_DATA.config.subjects = data.config.subjects;
-            // Nếu muốn lấy các config khác thì gán ở đây, trừ adminHash
-        } else {
-            GLOBAL_DATA.config.subjects = ["Chung"];
-        }
-
-    } else {
-        // === CHẾ ĐỘ GỘP (MERGE) ===
-        if (data.questions) {
-            GLOBAL_DATA.questions = GLOBAL_DATA.questions.concat(data.questions);
-        }
-        if (data.leaderboard && Array.isArray(data.leaderboard)) {
-            GLOBAL_DATA.leaderboard = GLOBAL_DATA.leaderboard.concat(data.leaderboard);
-        }
-        // Giữ nguyên subjects cũ, lát nữa tự quét thêm
-    }
-
-    // --- [FIX QUAN TRỌNG] KHÔI PHỤC MẬT KHẨU ---
-    if (currentAdminHash) {
-        GLOBAL_DATA.config.adminHash = currentAdminHash;
-    }
-    // ------------------------------------------
-
-    // 3. Tự động quét và cập nhật danh sách môn thi từ tất cả câu hỏi
-    let subjectSet = new Set(GLOBAL_DATA.config.subjects || ["Chung"]);
-    
-    if (GLOBAL_DATA.questions && GLOBAL_DATA.questions.length > 0) {
-        GLOBAL_DATA.questions.forEach(q => {
-            if (q.subject && q.subject.trim() !== "") {
-                subjectSet.add(q.subject.trim());
-            }
-        });
-    }
-    GLOBAL_DATA.config.subjects = Array.from(subjectSet);
-
-    // 4. Cập nhật tham chiếu biến toàn cục
-    QUESTION_DB = GLOBAL_DATA.questions;
-
-    // 5. LƯU & LÀM MỚI GIAO DIỆN
-    DataManager.saveToLocal();
-    Manager.updateSubjectLists();
-    Manager.renderList();         
-    QuizApp.updateSubjectInfo();  
-    
-    if (typeof renderTable === "function") {
-        renderTable(GLOBAL_DATA.leaderboard);
-    } else {
-        DataManager.renderLeaderboard();
-    }
-    
-    alert("Đồng bộ dữ liệu thành công!");
-};
-
-// ============================================================
-// TÍCH HỢP GOOGLE SHEET (Cloud Leaderboard & Sync)
-// ============================================================
-
-// 1. CẤU HÌNH LINK (Thay Link Web App của bạn vào đây)
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXpd7D4uMu2qGt9EtzOXd1-yUf1OgOYegMdhtGSR2prZHm0WcCrrQ2JBZsXBe0DJxN/exec"; 
-
-// 2. LOGIC NỘP BÀI (Local trước -> Server sau)
-QuizApp.submit = function() {
-    console.log("--> Bắt đầu nộp bài...");
-
-    // --- BƯỚC 1: XỬ LÝ KẾT QUẢ TẠI CHỖ (LOCAL) ---
-    if(this.timerInterval) clearInterval(this.timerInterval);
-    
-    let score = 0;
-    if (!this.currentData || this.currentData.length === 0) return;
-
-    // Chấm điểm & Hiển thị giải thích
-    this.currentData.forEach((q, idx) => {
-        const card = document.getElementById(`card-${idx}`);
-        if (!card) return;
-
-        const inputs = card.querySelectorAll('input');
-        const labels = card.querySelectorAll('.option-label');
-        const isMulti = Array.isArray(q.answer);
-        let userAns = [];
-        
-        inputs.forEach((inp, i) => {
-            if(inp.checked) userAns.push(i);
-            inp.disabled = true; // Khóa đáp án
-        });
-
-        let isCorrect = false;
-        if(isMulti) {
-            if(userAns.length === q.answer.length && userAns.every(v => q.answer.includes(v))) isCorrect = true;
-            labels.forEach((lbl, i) => {
-                if(q.answer.includes(i)) lbl.classList.add('correct'); 
-                if(userAns.includes(i) && !q.answer.includes(i)) lbl.classList.add('incorrect'); 
-            });
-        } else {
-            if(userAns.length > 0 && userAns[0] === q.answer) isCorrect = true;
-            if(q.answer !== undefined && labels[q.answer]) labels[q.answer].classList.add('correct');
-            if(!isCorrect && userAns.length > 0 && labels[userAns[0]]) labels[userAns[0]].classList.add('incorrect');
-        }
-        
-        if(isCorrect) score++;
-        const explainDiv = card.querySelector('.explanation');
-        if(explainDiv) explainDiv.style.display = 'block';
-    });
-
-    // Tính toán số liệu
-    const finalScore = parseFloat((score / this.currentData.length * 10).toFixed(1));
-    const date = new Date();
-    const dateStr = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
-    
-    // Tạo object kết quả
-    const resultData = {
-        name: this.currentPlayerName || "Unknown",
-        score: finalScore,
-        correct: score, 
-        total: this.currentData.length,
-        date: dateStr,
-        subject: (this.currentSubject === 'ALL') ? "Tất cả môn" : this.currentSubject,
-        ip: "N/A"
-    };
-
-    // --- BƯỚC 2: HIỂN THỊ NGAY LẬP TỨC (LOCAL) ---
-    // Lưu vào biến toàn cục và LocalStorage
-    GLOBAL_DATA.leaderboard.unshift(resultData);
-    if (GLOBAL_DATA.leaderboard.length > 100) GLOBAL_DATA.leaderboard = GLOBAL_DATA.leaderboard.slice(0, 100);
-    DataManager.saveToLocal();
-
-    // Vẽ lại bảng xếp hạng NGAY LẬP TỨC bằng dữ liệu Local (để người dùng thấy tên mình ngay)
-    renderTable(GLOBAL_DATA.leaderboard);
-
-    // Hiển thị hộp kết quả (Score Box)
-    document.getElementById('submit-btn').style.display = 'none';
-    const rBox = document.getElementById('result-box');
-    rBox.style.display = 'block';
-    document.getElementById('correct-count').innerText = score;
-    document.getElementById('total-count').innerText = this.currentData.length;
-    document.getElementById('final-score').innerText = finalScore;
-    rBox.scrollIntoView({behavior: 'smooth'});
-
-    // --- BƯỚC 3: GỬI LÊN SERVER & LOAD LẠI DB (BACKGROUND) ---
-    if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.startsWith("http")) {
-        console.log("--> Đang đồng bộ với Server...");
-        
-        // Lấy IP (Optional)
-        fetch('https://api.ipify.org?format=json')
-            .then(res => res.json()).then(d => d.ip).catch(() => "N/A")
-            .then(ip => {
-                resultData.ip = ip;
-                
-                // Gửi dữ liệu đi (POST)
-                return fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Quan trọng để không bị lỗi CORS
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(resultData)
-                });
-            })
-            .then(() => {
-                console.log("✅ Đã gửi xong. Đang tải lại BXH từ Server...");
-                // Sau khi gửi xong thì mới gọi hàm tải lại dữ liệu
-                // Thêm một chút delay nhỏ (1s) để Google Sheet kịp cập nhật dòng mới
-                setTimeout(() => {
-                    DataManager.renderLeaderboard(true); // true = force reload from server
-                }, 1000);
-            })
-            .catch(err => console.error("❌ Lỗi đồng bộ:", err));
-    }
-};
-
-// 3. HÀM TẢI BẢNG XẾP HẠNG (Load DB)
-DataManager.renderLeaderboard = function(forceServer = false) {
-    const tbody = document.getElementById('rank-body');
-
-    // Nếu không bắt buộc tải từ server, hiển thị local trước cho nhanh
-    if (!forceServer && GLOBAL_DATA.leaderboard.length > 0) {
-        renderTable(GLOBAL_DATA.leaderboard);
-    }
-    
-    // Nếu không có link Server thì dừng
-    if(!GOOGLE_SCRIPT_URL || !GOOGLE_SCRIPT_URL.startsWith("http")) return;
-
-    // Nếu đang reload từ server, hiện trạng thái loading nhỏ (hoặc không hiện gì để tránh giật)
-    if(forceServer) {
-        // Có thể hiện loading icon nếu muốn, nhưng để mượt thì ta cứ fetch ngầm
-        console.log("Fetching new data from DB...");
-    }
-
-    fetch(GOOGLE_SCRIPT_URL)
-        .then(response => response.json())
-        .then(data => {
-            if(Array.isArray(data)) {
-                console.log("✅ Đã cập nhật BXH mới nhất từ Server.");
-                GLOBAL_DATA.leaderboard = data; // Cập nhật biến toàn cục
-                renderTable(data); // Vẽ lại bảng
-                
-                // Lưu cache lại
-                try { localStorage.setItem(DataManager.STORAGE_KEY, JSON.stringify(GLOBAL_DATA)); } catch(e){}
-            }
-        })
-        .catch(err => {
-            console.error("Lỗi tải DB:", err);
-            // Nếu lỗi thì giữ nguyên hiển thị Local cũ, không làm gì cả
-        });
-};
-
-// Hàm vẽ bảng (Helper)
-function renderTable(listData) {
-    const tbody = document.getElementById('rank-body');
-    tbody.innerHTML = '';
-    
-    if(!listData || listData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">Chưa có dữ liệu</td></tr>';
-        return;
-    }
-
-    listData.forEach((row, index) => {
-        // Kiểm tra xem đây có phải dòng vừa nộp xong không
-        const isHighlight = (index === 0 && row.name === document.getElementById('student-name').value); 
-
-        const tr = document.createElement('tr');
-        
-        // --- SỬA ĐỔI TẠI ĐÂY ---
-        // Thay vì dùng tr.style.backgroundColor = ..., ta thêm class:
-        if(isHighlight) {
-            tr.classList.add('history-highlight');
-        }
-        // -----------------------
-        
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td style="font-weight:600">${Utils.escapeHtml(row.name)}</td>
-            <td>${Utils.escapeHtml(row.subject)}</td>
-            <td><span style="color:var(--success-color)">${row.correct}</span>/${row.total}</td>
-            <td style="font-weight:bold; color:var(--primary-color)">${row.score}</td>
-            <td style="font-size:0.85em; color:inherit;">${row.date}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// Khởi chạy: Load Local trước, sau đó load Server ngầm
-document.addEventListener("DOMContentLoaded", () => {
-    DataManager.renderLeaderboard(true); 
-});
-
+    // Hàm gọi thủ công từ nút Sync trên UI
+    function syncLoadFromServer() { DataManager.loadFromCloudDB(); }
+    function syncSaveToServer() { DataManager.saveToCloudDB(); }
 </script>
 </body></html>
