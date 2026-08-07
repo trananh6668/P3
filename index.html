@@ -12,10 +12,10 @@
         .game-panel {
             background: #262635; padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 15px;
             border-bottom: 1px solid #363645; box-shadow: 0 4px 15px rgba(0,0,0,0.6); z-index: 100;
-            transition: margin-top 0.3s ease; /* Hiệu ứng trượt ẩn hiện */
+            transition: margin-top 0.3s ease; /* Thêm hiệu ứng trượt mượt mà */
         }
         
-        /* Class để ẩn Tab khi vuốt */
+        /* Class để giấu Tab khi vuốt xuống */
         .game-panel.hide {
             margin-top: -70px;
         }
@@ -774,6 +774,8 @@
     }
 
     function orderMoves(moves, b, ttMove, color) {
+        // TỐI ƯU MỚI: Xáo trộn (Shuffle) danh sách nước đi trước khi sort
+        // Giúp AI chơi khai cuộc đa dạng khi có nhiều nước đánh giá bằng điểm nhau, tránh lặp lại nhàm chán.
         for (let i = moves.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [moves[i], moves[j]] = [moves[j], moves[i]];
@@ -902,6 +904,7 @@ let pendingCaptureTimers = [];
 let positionHistory = new Map();
 let positionTimeline = [];
 
+// Mảng lưu trữ trạng thái để Hoàn nước
 let gameHistory = [];
 
 function cloneBoardState(b) {
@@ -926,7 +929,7 @@ function undoMoveAction() {
 
     let stepsToUndo = 1;
     if (gameMode === 'ai' && turn === playerSide && gameHistory.length >= 2) {
-        stepsToUndo = 2; 
+        stepsToUndo = 2; // AI mode: Lùi 2 bước để về lượt người chơi
     }
 
     let restoredState = null;
@@ -936,6 +939,7 @@ function undoMoveAction() {
     
     if (!restoredState) return;
 
+    // Phục hồi dữ liệu
     board = restoredState.board;
     turn = restoredState.turn;
     gameEpoch = restoredState.gameEpoch;
@@ -943,10 +947,12 @@ function undoMoveAction() {
     positionTimeline = restoredState.positionTimeline;
     isGameOver = false;
 
+    // Phục hồi HTML
     document.getElementById('log-list').innerHTML = restoredState.logHTML;
     document.getElementById('captured-red').innerHTML = restoredState.capRedHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
 
+    // Reset lại bàn cờ UI
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
     for (let r = 0; r < ROWS; r++) {
@@ -968,6 +974,7 @@ function undoMoveAction() {
     selectedCell = null;
     validMoves = [];
 
+    // Khởi động lại Worker AI để hủy luồng tính toán (nếu có)
     if (aiWorker) {
         aiWorker.terminate();
         setupAiWorker();
@@ -1466,6 +1473,7 @@ function getAllLegalMovesUI(color) {
 function executeMove(move) {
     if (isGameOver) return false;
 
+    // Lưu lại trạng thái ván cờ trước khi thực hiện nước đi để có thể Undo
     saveState();
 
     const { fromR, fromC, toR, toC } = move;
@@ -1540,6 +1548,7 @@ function logMove(piece, target, fR, fC, tR, tC) {
     
     logList.appendChild(item);
     
+    // Giới hạn hiển thị đúng 5 dòng gần nhất
     while (logList.children.length > 5) { 
         logList.removeChild(logList.firstChild); 
     }
@@ -2040,7 +2049,7 @@ window.onload = initGame;
             [-30,  0, 10, 15, 15, 10,  0,-30],
             [-30,  5, 15, 20, 20, 15,  5,-30],
             [-30,  0, 15, 20, 20, 15,  0,-30],
-            [-30,  5, 10, 15, 15, 15,  5,-30],
+            [-30,  5, 10, 15, 15, 10,  5,-30],
             [-40,-20,  0,  5,  5,  0,-20,-40],
             [-50,-40,-30,-30,-30,-30,-40,-50]
         ],
@@ -2418,6 +2427,7 @@ window.onload = initGame;
 
         let moves = getAllLegalMoves(bState, color);
         
+        // TỐI ƯU MỚI: Xáo trộn danh sách nước đi trước khi Sort để AI đánh linh hoạt khai cuộc
         for (let i = moves.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [moves[i], moves[j]] = [moves[j], moves[i]];
@@ -2525,6 +2535,7 @@ let halfMoveClock = 0;
 let positionHistory = {};
 let gamePly = 0;
 
+// Mảng lưu trữ trạng thái để Hoàn nước
 let gameHistory = [];
 
 function cloneBoardState(b) {
@@ -2551,7 +2562,7 @@ function undoMoveAction() {
 
     let stepsToUndo = 1;
     if (gameMode === 'ai' && turn === playerSide && gameHistory.length >= 2) {
-        stepsToUndo = 2; 
+        stepsToUndo = 2; // AI mode: Lùi 2 bước để về lượt người chơi
     }
 
     let restoredState = null;
@@ -2561,6 +2572,7 @@ function undoMoveAction() {
     
     if (!restoredState) return;
 
+    // Phục hồi dữ liệu
     board = restoredState.board;
     turn = restoredState.turn;
     castling = restoredState.castling;
@@ -2570,10 +2582,12 @@ function undoMoveAction() {
     positionHistory = restoredState.positionHistory;
     isGameOver = false;
 
+    // Phục hồi HTML
     document.getElementById('log-list').innerHTML = restoredState.logHTML;
     document.getElementById('captured-white').innerHTML = restoredState.capWhiteHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
 
+    // Reset lại bàn cờ UI
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
     for (let r = 0; r < ROWS; r++) {
@@ -2595,6 +2609,7 @@ function undoMoveAction() {
     selectedCell = null;
     validMoves = [];
 
+    // Khởi động lại Worker AI
     if (aiWorker) {
         aiWorker.terminate();
         setupAiWorker();
@@ -3025,6 +3040,7 @@ function executeMove(move) {
         move.promotionPiece = ['q','r','b','n'].includes(answer) ? answer : 'q';
     }
     
+    // Lưu lại trạng thái ván cờ trước khi thực hiện nước đi để có thể Undo
     saveState();
     
     const {fR,fC,tR,tC}=move;
@@ -3146,6 +3162,7 @@ function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,captur
     if(castle) text=`${pieceName} ${castle==='K'?'O-O':'O-O-O'} (${from} → ${to})`;
     else {
         text=`${pieceName} ${from} → ${to}`;
+        // Yêu cầu: thay đổi ký hiệu bắt quân bằng chữ "ăn"
         if(isCapture) text += ` ăn ${capturedPiece ? VI_NAMES[capturedPiece.type] : 'quân'}`;
         if(enPassantMove) text += ' (bắt tốt qua đường)';
         if(promote) text += ` → ${VI_NAMES[promotionType || 'q'] || 'Hậu'}`;
@@ -3153,6 +3170,7 @@ function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,captur
     item.innerHTML=`[<span class="${sideClass}">${sideName}</span>] ${text}`;
     logList.appendChild(item);
     
+    // Yêu cầu hiển thị đúng 5 dòng
     while(logList.children.length>5) { logList.removeChild(logList.firstChild); }
     requestAnimationFrame(() => logList.scrollTo({ top: logList.scrollHeight, behavior: 'smooth' }));
     setTimeout(() => item.classList.remove('new-move'), 260);
@@ -3234,7 +3252,7 @@ window.onload = initGame;
     <script>
         let currentGame = '';
 
-        // Lắng nghe sự kiện truyền từ bên trong Iframe ra ngoài
+        // Lắng nghe sự kiện truyền từ bên trong Iframe ra ngoài để điều khiển thanh Tab
         window.addEventListener('message', (e) => {
             const panel = document.querySelector('.game-panel');
             if(e.data === 'hidePanel') {
@@ -3251,51 +3269,68 @@ window.onload = initGame;
             document.querySelectorAll('.btn-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + gameId).classList.add('active');
 
+            // Lấy nguyên bản 100% text HTML gốc từ textarea
             let rawHtml = document.getElementById('code-' + gameId).value;
 
-            // CHUẨN HÓA CSS ZOOM + GESTURE VUỐT ẨN/HIỆN TAB
+            // XỬ LÝ RESPONSIVE MƯỢT MÀ VÀ BẮT SỰ KIỆN VUỐT BÊN TRONG IFRAME
             let responsivePatch = `
             <style>
                 @media (max-width: 768px) {
-                    body { padding: 10px 5px !important; align-items: flex-start !important; }
+                    body {
+                        /* Tăng padding trái 35px để chừa chỗ cho cột tọa độ */
+                        padding: 10px 5px 10px 35px !important; 
+                        align-items: flex-start !important; 
+                        overflow-x: hidden;
+                    }
                     .game-container { 
-                        /* Tăng padding trái lên 40px để lộ rõ cột tọa độ */
-                        padding: 15px 5px 15px 40px !important; 
+                        padding: 15px 10px !important; 
                         width: 100% !important; 
                         max-width: 100% !important; 
                         gap: 20px !important;
-                    }
-                    .board-wrapper { 
-                        /* Sử dụng thuộc tính zoom thay cho transform để tránh tạo khoảng trắng thừa. 660 là size gốc, 45 là tổng padding ngang */
-                        zoom: calc((100vw - 45px) / 660) !important; 
-                        transform: none !important; 
-                        margin-bottom: 0 !important;
-                        margin-left: 0 !important;
                     }
                     .sidebar { width: 100% !important; min-width: unset !important; }
                 }
             </style>
             <script>
-                // Logic theo dõi thao tác vuốt màn hình (bên trong iframe)
+                function autoScale() {
+                    if (window.innerWidth >= 768) {
+                        document.getElementById('board-wrapper').style.transform = '';
+                        document.getElementById('board-wrapper').style.marginBottom = '';
+                        return;
+                    }
+                    const wrapper = document.getElementById('board-wrapper');
+                    const isChess = document.getElementById('board-grid') !== null;
+                    const originalWidth = isChess ? 660 : 660; 
+                    
+                    // Khoảng trống thực tế: Trừ đi padding body (35 trái + 5 phải) và padding container (10x2 = 20)
+                    const availableWidth = window.innerWidth - 60;
+                    let scale = availableWidth / originalWidth;
+                    if (scale > 1) scale = 1;
+
+                    // Neo gốc tọa độ từ trên cùng bên trái để giữ nguyên cột tọa độ không bị đẩy ra ngoài
+                    wrapper.style.transformOrigin = 'top left'; 
+                    wrapper.style.transform = 'scale(' + scale + ')';
+
+                    // Cắt bỏ phần chiều cao ảo còn dư sau khi scale
+                    const originalHeight = wrapper.offsetHeight;
+                    const newHeight = originalHeight * scale;
+                    wrapper.style.marginBottom = (newHeight - originalHeight + 20) + 'px';
+                }
+
+                window.addEventListener('resize', autoScale);
+                setTimeout(autoScale, 100);
+
+                // Bắt sự kiện vuốt bên trong thẻ Iframe để gửi ra ngoài
                 let touchStartY = 0;
                 window.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY, {passive: true});
-                
                 window.addEventListener('touchmove', e => {
                     let dy = e.touches[0].clientY - touchStartY;
                     if (dy < -40) window.parent.postMessage('hidePanel', '*'); // Vuốt lên
                     if (dy > 40) window.parent.postMessage('showPanel', '*');  // Vuốt xuống
                 }, {passive: true});
-                
-                // Logic bổ trợ cho ai xài chuột cuộn trên điện thoại hoặc PC resize nhỏ
-                let lastScroll = window.scrollY;
-                window.addEventListener('scroll', () => {
-                    if (window.scrollY > 50 && window.scrollY > lastScroll) window.parent.postMessage('hidePanel', '*');
-                    if (window.scrollY < lastScroll) window.parent.postMessage('showPanel', '*');
-                    lastScroll = window.scrollY;
-                });
             <\/script>`;
             
-            // Ép patch vào cuối thẻ head
+            // Ép patch vào mà không đụng chạm đến phần HTML gốc của bạn
             rawHtml = rawHtml.replace('</head>', responsivePatch + '</head>');
 
             document.getElementById('game-frame').srcdoc = rawHtml;
