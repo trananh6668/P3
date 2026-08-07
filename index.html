@@ -3255,42 +3255,66 @@ window.onload = initGame;
             // Lấy nguyên bản 100% text HTML gốc từ textarea
             let rawHtml = document.getElementById('code-' + gameId).value;
 
-            // Chèn thêm 1 cục CSS nhỏ vào cuối thẻ </head> để responsive mobile chuẩn xác
-            let mobilePatch = '';
-            if (gameId === 'xiangqi') {
-                mobilePatch = `
-                <style>
-                    @media (max-width: 600px) {
-                        .game-container { padding: 10px !important; flex-direction: column; align-items: center; }
-                        .sidebar { width: 100% !important; max-width: 500px !important; min-width: unset !important; }
-                        .board-wrapper { transform: scale(0.55); transform-origin: top center; margin-bottom: -315px !important; }
+            // XÓA PHẦN MOBILE PATCH CŨ VÀ THAY BẰNG AUTO SCALE JS ĐỂ TỰ TÍNH TOÁN KÍCH THƯỚC TRÀN VIỀN
+            let autoScalePatch = `
+            <style>
+                /* Tối ưu hóa khoảng trống trên Mobile để bàn cờ có không gian lớn nhất */
+                @media (max-width: 700px) {
+                    body { padding: 4px !important; overflow-x: hidden; }
+                    .game-container { 
+                        padding: 12px 4px !important; 
+                        width: 100% !important; 
+                        max-width: 100% !important; 
+                        gap: 15px !important; 
+                        border-radius: 10px !important;
+                        box-sizing: border-box !important;
                     }
-                    @media (max-width: 450px) {
-                        .board-wrapper { transform: scale(0.48); margin-bottom: -364px !important; }
+                    .sidebar { 
+                        width: 100% !important; 
+                        max-width: 100% !important; 
+                        min-width: unset !important; 
                     }
-                    @media (max-width: 380px) {
-                        .board-wrapper { transform: scale(0.42); margin-bottom: -406px !important; }
+                }
+            </style>
+            <script>
+                function autoScaleBoard() {
+                    const wrapper = document.getElementById('board-wrapper');
+                    if (!wrapper) return;
+                    
+                    const sw = window.innerWidth;
+                    // Bàn cờ tướng gốc: 630 + 30 border = 660px, Bàn cờ vua gốc: 624 + 36 border = 660px
+                    const boardW = 660; 
+                    
+                    if (sw < boardW + 16) {
+                        // Tính toán tỷ lệ phóng to (scale) sao cho khít 100% màn hình, chỉ chừa 8px padding
+                        const scale = (sw - 8) / boardW;
+                        wrapper.style.transform = 'scale(' + scale + ')';
+                        wrapper.style.transformOrigin = 'top center';
+                        
+                        // Kích thước chiều cao gốc để tính bù trừ margin âm cho không gian trống
+                        const isChess = document.getElementById('board-grid') !== null;
+                        const boardH = isChess ? 660 : 730;
+                        
+                        // Chiều cao thực tế bị lệch sau khi scale
+                        const diff = (boardH * scale) - boardH;
+                        wrapper.style.marginBottom = (diff + 15) + 'px'; // +15px để cách Sidebar một khoảng đẹp
+                    } else {
+                        // Màn hình rộng (PC/Tablet to) thì trả lại kích thước gốc
+                        wrapper.style.transform = '';
+                        wrapper.style.marginBottom = '';
                     }
-                </style></head>`;
-            } else {
-                mobilePatch = `
-                <style>
-                    @media (max-width: 600px) {
-                        .game-container { padding: 10px !important; flex-direction: column; align-items: center; width: 100%; max-width: 100%; }
-                        .sidebar { width: 100% !important; max-width: 500px !important; min-width: unset !important; }
-                        .board-wrapper { transform: scale(0.55); transform-origin: top center; margin-bottom: -281px !important; }
-                    }
-                    @media (max-width: 450px) {
-                        .board-wrapper { transform: scale(0.48); margin-bottom: -325px !important; }
-                    }
-                    @media (max-width: 380px) {
-                        .board-wrapper { transform: scale(0.42); margin-bottom: -362px !important; }
-                    }
-                </style></head>`;
-            }
+                }
+                
+                // Lắng nghe sự kiện xoay/resize màn hình và tự tính lại tỷ lệ
+                window.addEventListener('resize', autoScaleBoard);
+                window.addEventListener('load', autoScaleBoard);
+                
+                // Kích hoạt ngay lập tức sau khi HTML render
+                setTimeout(autoScaleBoard, 10);
+            <\/script>`;
             
             // Ép patch vào mà không đụng chạm đến phần body hay script bên dưới
-            rawHtml = rawHtml.replace('</head>', mobilePatch);
+            rawHtml = rawHtml.replace('</head>', autoScalePatch + '</head>');
 
             // Đẩy vào iframe
             document.getElementById('game-frame').srcdoc = rawHtml;
