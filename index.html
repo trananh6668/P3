@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cờ Tướng_Cờ Vua</title>
+    <title>Board Games</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: #12121a; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -37,7 +37,7 @@
 </head>
 <body>
     <div class="game-panel">
-        <h1>🎮 Cờ Tướng_Cờ Vua</h1>
+        <h1>Board Games</h1>
         <button class="btn-tab active" id="btn-xiangqi" onclick="switchGame('xiangqi')">Cờ Tướng</button>
         <button class="btn-tab" id="btn-chess" onclick="switchGame('chess')">Cờ Vua</button>
     </div>
@@ -3275,57 +3275,138 @@ window.onload = initGame;
             // BẢN VÁ LỖI CĂN GIỮA TOÀN DIỆN VÀ AN TOÀN
             let responsivePatch = `
             <style>
-                @media (max-width: 768px) {
-                    body { 
-                        padding: 10px 0 !important; 
-                        overflow-x: hidden; 
+                /* =========================================================
+                   PATCH RESPONSIVE AN TOÀN - KHÔNG ĐỤNG VÀO GAME LOGIC
+                   ========================================================= */
+
+                /* Xóa scale cứng của CSS gốc ở desktop/tablet rộng.
+                   Tránh lỗi nhảy kích thước tại mốc 768/900/1000px. */
+                @media (min-width: 1000px) {
+                    .board-wrapper {
+                        transform: none !important;
+                        margin-bottom: 0 !important;
                     }
-                    .game-container { 
-                        padding: 15px 0 !important; 
-                        width: 100% !important; 
-                        max-width: 100% !important; 
+                }
+
+                /* Từ 999px trở xuống: autoScale() quyết định kích thước bàn.
+                   Inline style do JS đặt sẽ ghi đè transform CSS gốc. */
+                @media (max-width: 999px) {
+                    .board-wrapper {
+                        transform-origin: top center !important;
+                    }
+                }
+
+                /* Giữ hai game căn giữa trên màn hình nhỏ. */
+                @media (max-width: 768px) {
+                    body {
+                        padding: 10px 0 !important;
+                        overflow-x: hidden !important;
+                    }
+                    .game-container {
+                        padding: 15px 0 !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
                         gap: 15px !important;
                         display: flex !important;
                         flex-direction: column !important;
-                        align-items: center !important; /* Mấu chốt để phần tử nằm giữa màn hình */
+                        align-items: center !important;
                     }
-                    .sidebar { width: 95% !important; min-width: unset !important; margin: 0 auto; }
+                    .sidebar {
+                        width: 95% !important;
+                        min-width: unset !important;
+                        max-width: 620px !important;
+                        margin: 0 auto !important;
+                    }
+                }
+
+                /* Không dùng transition: all cho quân cờ Cờ Vua.
+                   Chỉ animate vị trí/hiệu ứng cần thiết, không thay đổi logic. */
+                .board-wrapper .piece {
+                    transition:
+                        left 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                        top 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                        transform 0.22s ease,
+                        opacity 0.22s ease !important;
                 }
             </style>
             <script>
                 function autoScale() {
-                    if (window.innerWidth >= 768) {
-                        document.getElementById('board-wrapper').style.transform = '';
-                        document.getElementById('board-wrapper').style.marginBottom = '';
+                    const wrapper = document.getElementById('board-wrapper');
+                    if (!wrapper) return;
+
+                    const viewportWidth = window.innerWidth;
+
+                    /* Từ 1000px trở lên: giữ đúng kích thước gốc.
+                       Không còn điểm nhảy tại 768px/900px/1000px. */
+                    if (viewportWidth >= 1000) {
+                        wrapper.style.transform = '';
+                        wrapper.style.marginBottom = '';
+                        wrapper.style.transformOrigin = '';
                         return;
                     }
-                    const wrapper = document.getElementById('board-wrapper');
-                    
-                    // Bàn cờ rộng 660px, tọa độ tràn qua trái 35px.
-                    // Để bàn cờ luôn nằm chuẩn giữa Flexbox mà số bên trái không lọt mép:
-                    // Ta cần một khoảng không gian tỷ lệ đối xứng là 365px x 2 = 730px.
-                    let scale = window.innerWidth / 730;
-                    if (scale > 1) scale = 1;
 
-                    wrapper.style.transformOrigin = 'top center'; 
+                    /*
+                     * Không hard-code 730px cho cả hai game.
+                     * Cờ Tướng và Cờ Vua có kích thước board khác nhau.
+                     * offsetWidth lấy đúng kích thước thực tế của board-wrapper.
+                     * Cộng vùng an toàn cho tọa độ nằm ngoài mép trái.
+                     */
+                    const boardWidth = wrapper.offsetWidth;
+                    const coordinateSafety = 70;
+                    const safeWidth = Math.max(1, viewportWidth - 20);
+
+                    let scale = safeWidth / (boardWidth + coordinateSafety);
+                    scale = Math.min(1, scale);
+                    scale = Math.max(0.35, scale);
+
+                    wrapper.style.transformOrigin = 'top center';
                     wrapper.style.transform = 'scale(' + scale + ')';
 
-                    // Tính bù margin để phần tử bên dưới (sidebar) không bị đẩy xuống quá xa
+                    /*
+                     * Vì transform không chiếm lại layout space, cần bù chiều cao
+                     * để sidebar không bị đẩy xuống quá xa.
+                     */
                     const originalHeight = wrapper.offsetHeight;
                     const newHeight = originalHeight * scale;
-                    wrapper.style.marginBottom = (newHeight - originalHeight + 15) + 'px';
+                    wrapper.style.marginBottom =
+                        (newHeight - originalHeight + 15) + 'px';
                 }
 
                 window.addEventListener('resize', autoScale);
                 setTimeout(autoScale, 50);
 
-                // Bắt sự kiện vuốt bên trong thẻ Iframe để gửi ra ngoài
+                /* =========================================================
+                   SWIPE PANEL - chỉ gửi 1 message cho mỗi lần vuốt
+                   ========================================================= */
                 let touchStartY = 0;
-                window.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY, {passive: true});
+                let touchGestureHandled = false;
+
+                window.addEventListener('touchstart', e => {
+                    if (!e.touches || !e.touches.length) return;
+                    touchStartY = e.touches[0].clientY;
+                    touchGestureHandled = false;
+                }, {passive: true});
+
                 window.addEventListener('touchmove', e => {
-                    let dy = e.touches[0].clientY - touchStartY;
-                    if (dy < -30) window.parent.postMessage('hidePanel', '*'); // Vuốt lên
-                    if (dy > 30) window.parent.postMessage('showPanel', '*');  // Vuốt xuống
+                    if (touchGestureHandled || !e.touches || !e.touches.length) return;
+
+                    const dy = e.touches[0].clientY - touchStartY;
+
+                    if (dy < -30) {
+                        touchGestureHandled = true;
+                        window.parent.postMessage('hidePanel', '*');
+                    } else if (dy > 30) {
+                        touchGestureHandled = true;
+                        window.parent.postMessage('showPanel', '*');
+                    }
+                }, {passive: true});
+
+                window.addEventListener('touchend', () => {
+                    touchGestureHandled = false;
+                }, {passive: true});
+
+                window.addEventListener('touchcancel', () => {
+                    touchGestureHandled = false;
                 }, {passive: true});
             <\/script>`;
             
