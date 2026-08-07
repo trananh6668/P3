@@ -2,6 +2,49 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cờ Tướng_Cờ Vua</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #12121a; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Game Panel */
+        .game-panel {
+            background: #262635; padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 15px;
+            border-bottom: 1px solid #363645; box-shadow: 0 4px 15px rgba(0,0,0,0.6); z-index: 100;
+        }
+        .game-panel h1 {
+            color: #fff; font-size: 18px; margin-right: auto; display: none;
+        }
+        .btn-tab {
+            background: #1a1a24; color: #aaa; border: 1px solid #444; padding: 10px 24px; border-radius: 8px;
+            font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+        }
+        .btn-tab:hover { background: #2b2b3c; color: #fff; }
+        .btn-tab.active { background: #2ecc71; color: #fff; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
+        
+        iframe { flex: 1; width: 100%; border: none; background: #1a1a24; }
+
+        @media (min-width: 600px) { .game-panel h1 { display: block; } }
+    </style>
+</head>
+<body>
+    <div class="game-panel">
+        <h1>🎮 Cờ Tướng_Cờ Vua</h1>
+        <button class="btn-tab active" id="btn-xiangqi" onclick="switchGame('xiangqi')">Cờ Tướng</button>
+        <button class="btn-tab" id="btn-chess" onclick="switchGame('chess')">Cờ Vua</button>
+    </div>
+
+    <iframe id="game-frame"></iframe>
+
+    <!-- ============================================== -->
+    <!-- SOURCE CỜ TƯỚNG GỐC 100% ĐƯỢC BỌC TRONG TEXTAREA -->
+    <!-- ============================================== -->
+    <textarea id="code-xiangqi" style="display:none;">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cờ Tướng</title>
     <style>
@@ -237,14 +280,14 @@
             transform: scale(1) !important; opacity: 1 !important;
         }
 
-        .log-section { flex: 1; display: flex; flex-direction: column; padding: 14px; min-height: 0; }
+        /* Đã tối ưu cho đúng 5 dòng */
+        .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { font-size: 12px; color: #999; margin-bottom: 8px; }
         .log-list {
-            flex: 1; overflow-y: auto; background: #1a1a24; padding: 10px;
+            flex: 1; overflow-y: hidden; background: #1a1a24; padding: 5px 10px;
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd;
         }
-
-        .log-item { border-bottom: 1px solid #2b2b36; padding: 6px 0; }
+        .log-item { height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .log-item span.red { color: #e74c3c; font-weight: bold; }
         .log-item span.black { color: #85c1e9; font-weight: bold; }
 
@@ -252,16 +295,19 @@
         ::-webkit-scrollbar-track { background: #1a1a24; }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
 
-        .btn-reset {
-            background: linear-gradient(to bottom, #e74c3c, #c0392b);
-            color: white; border: none; padding: 16px;
-            border-radius: 8px; font-size: 16px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5); flex-shrink: 0;
+        /* Group 2 nút */
+        .button-group { display: flex; gap: 10px; flex-shrink: 0; }
+        .btn-reset, .btn-undo {
+            flex: 1; color: white; border: none; padding: 16px;
+            border-radius: 8px; font-size: 15px; font-weight: bold;
+            cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
             transition: all 0.2s;
         }
+        .btn-reset { background: linear-gradient(to bottom, #e74c3c, #c0392b); box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+        .btn-undo { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3); }
         .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4); }
-        .btn-reset:active { transform: translateY(1px); }
+        .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
+        .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
 
         @media (max-width: 1000px) {
             body { padding: 10px; align-items: flex-start; }
@@ -275,7 +321,7 @@
                 margin-bottom: -210px; 
             }
             .sidebar { width: 100%; min-width: unset; }
-            .log-section { min-height: 180px; }
+            .log-section { height: 160px; min-height: 160px; }
         }
         @media (max-width: 500px) {
             .board-wrapper { transform: scale(0.55); margin-bottom: -320px; }
@@ -364,11 +410,14 @@
         </div>
 
         <div class="log-section">
-            <div class="log-title">LỊCH SỬ NƯỚC ĐI</div>
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI (5 NƯỚC GẦN NHẤT)</div>
             <div class="log-list" id="log-list"></div>
         </div>
 
-        <button class="btn-reset" onclick="initGame()">TẠO VÁN MỚI</button>
+        <div class="button-group">
+            <button class="btn-reset" onclick="initGame()">TẠO VÁN MỚI</button>
+            <button class="btn-undo" onclick="undoMoveAction()">HOÀN NƯỚC</button>
+        </div>
     </div>
 </div>
 
@@ -638,7 +687,7 @@
         const moves = pseudoMoves(r, c, b);
         return moves.filter(m => {
             const target = b[m.toR][m.toC];
-            if (target && target.type === 'k') return false; // Thi đấu: không bắt Tướng.
+            if (target && target.type === 'k') return false; 
             return !leavesInCheck(b, m, piece.color);
         });
     }
@@ -718,6 +767,12 @@
     }
 
     function orderMoves(moves, b, ttMove, color) {
+        // TỐI ƯU MỚI: Xáo trộn (Shuffle) danh sách nước đi trước khi sort
+        // Giúp AI chơi khai cuộc đa dạng khi có nhiều nước đánh giá bằng điểm nhau, tránh lặp lại nhàm chán.
+        for (let i = moves.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [moves[i], moves[j]] = [moves[j], moves[i]];
+        }
         return moves.sort((a,bm) => moveScore(bm,b,ttMove,color) - moveScore(a,b,ttMove,color));
     }
 
@@ -806,7 +861,6 @@
 <!-- ================= END AI WEB WORKER ================= -->
 
 <script>
-// Đã thay đổi kích thước bàn cờ lớn hơn
 const BOARD_SPECS = { offset: 35, spacing: 70, pieceSize: 58 };
 const COLS = 9, ROWS = 10;
 const RED = 'r', BLACK = 'b';
@@ -842,6 +896,85 @@ let gameEpoch = 0;
 let pendingCaptureTimers = [];
 let positionHistory = new Map();
 let positionTimeline = [];
+
+// Mảng lưu trữ trạng thái để Hoàn nước
+let gameHistory = [];
+
+function cloneBoardState(b) {
+    return b.map(row => row.map(p => p ? {...p} : null));
+}
+
+function saveState() {
+    gameHistory.push({
+        board: cloneBoardState(board),
+        turn: turn,
+        gameEpoch: gameEpoch,
+        positionHistory: new Map(positionHistory),
+        positionTimeline: [...positionTimeline],
+        logHTML: document.getElementById('log-list').innerHTML,
+        capRedHTML: document.getElementById('captured-red').innerHTML,
+        capBlackHTML: document.getElementById('captured-black').innerHTML
+    });
+}
+
+function undoMoveAction() {
+    if (gameHistory.length === 0 || isAiThinking) return;
+
+    let stepsToUndo = 1;
+    if (gameMode === 'ai' && turn === playerSide && gameHistory.length >= 2) {
+        stepsToUndo = 2; // AI mode: Lùi 2 bước để về lượt người chơi
+    }
+
+    let restoredState = null;
+    for(let i = 0; i < stepsToUndo; i++) {
+        if(gameHistory.length > 0) restoredState = gameHistory.pop();
+    }
+    
+    if (!restoredState) return;
+
+    // Phục hồi dữ liệu
+    board = restoredState.board;
+    turn = restoredState.turn;
+    gameEpoch = restoredState.gameEpoch;
+    positionHistory = restoredState.positionHistory;
+    positionTimeline = restoredState.positionTimeline;
+    isGameOver = false;
+
+    // Phục hồi HTML
+    document.getElementById('log-list').innerHTML = restoredState.logHTML;
+    document.getElementById('captured-red').innerHTML = restoredState.capRedHTML;
+    document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
+
+    // Reset lại bàn cờ UI
+    document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
+    pieceElements = {};
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const p = board[r][c];
+            if (p) {
+                const el = document.createElement('div');
+                el.className = `piece ${p.color === RED ? 'red' : 'black'}`;
+                el.innerText = TEXTS[p.type][p.color];
+                el.id = p.id;
+                positionPieceEl(el, r, c);
+                document.getElementById('board-wrapper').appendChild(el);
+                pieceElements[p.id] = el;
+            }
+        }
+    }
+
+    clearHighlights();
+    selectedCell = null;
+    validMoves = [];
+
+    // Khởi động lại Worker AI để hủy luồng tính toán (nếu có)
+    if (aiWorker) {
+        aiWorker.terminate();
+        setupAiWorker();
+        isAiThinking = false;
+    }
+    updateStatus();
+}
 
 function setupAiWorker() {
     if (aiWorker) aiWorker.terminate();
@@ -879,7 +1012,6 @@ function drawCoordinates() {
     const wrapper = document.getElementById('board-wrapper');
     const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
     
-    // Tọa độ Chữ nằm mép dưới bên ngoài
     for (let c = 0; c < COLS; c++) {
         let displayC = (playerSide === BLACK) ? (8 - c) : c;
         const xPos = BOARD_SPECS.offset + displayC * BOARD_SPECS.spacing;
@@ -893,11 +1025,10 @@ function drawCoordinates() {
         wrapper.appendChild(elBottom);
     }
     
-    // Tọa độ Số nằm mép trái bên ngoài
     for (let r = 0; r < ROWS; r++) {
         let displayR = (playerSide === BLACK) ? (9 - r) : r;
         const yPos = BOARD_SPECS.offset + displayR * BOARD_SPECS.spacing;
-        const yLabel = 10 - r; // Đếm số từ 1 đến 10 từ dưới lên
+        const yLabel = 10 - r; 
         
         const elLeft = document.createElement('div'); 
         elLeft.className = 'coord'; 
@@ -917,6 +1048,8 @@ function initGame() {
     pendingCaptureTimers = [];
     positionHistory = new Map();
     positionTimeline = [];
+    gameHistory = [];
+    
     gameMode = document.getElementById('game-mode').value;
     playerSide = document.getElementById('player-side').value;
     toggleAiSettings();
@@ -1174,7 +1307,7 @@ function getLegalMoves(r, c, bState) {
     const moves = getPseudoMovesUI(r, c, bState);
     return moves.filter(m => {
         const target = bState[m.toR][m.toC];
-        if (target && target.type === 'k') return false; // Thi đấu: không bắt Tướng.
+        if (target && target.type === 'k') return false; 
         return !leavesInCheckUI(bState, m, piece.color);
     });
 }
@@ -1255,8 +1388,6 @@ function checkRepetitionRule() {
     }
     if (occurrences.length < 3) return false;
 
-    // Phân xử chiếu dai cơ bản: nếu trong chu kỳ lặp, chỉ một bên liên tục
-    // thực hiện các nước chiếu thì bên đó thua. Hai bên cùng chiếu thì hòa.
     const from = occurrences[occurrences.length - 3];
     const cycle = positionTimeline.slice(from + 1);
     const moves = cycle.map(x => x.moveInfo).filter(Boolean);
@@ -1282,7 +1413,6 @@ function checkRepetitionRule() {
         return true;
     }
 
-    // Lặp thế không có chiếu dai: hòa cơ bản.
     endGame('HÒA — LẶP LẠI THẾ CỜ');
     return true;
 }
@@ -1299,7 +1429,6 @@ function endGame(text) {
 }
 
 function checkGameEnd() {
-    // Luật thi đấu: Tướng không bị bắt. Ván kết thúc bằng chiếu bí hoặc bế tắc.
     const redKing = findKingUI(board, RED);
     const blackKing = findKingUI(board, BLACK);
     if (!redKing || !blackKing) {
@@ -1337,12 +1466,15 @@ function getAllLegalMovesUI(color) {
 function executeMove(move) {
     if (isGameOver) return false;
 
+    // Lưu lại trạng thái ván cờ trước khi thực hiện nước đi để có thể Undo
+    saveState();
+
     const { fromR, fromC, toR, toC } = move;
     const piece = board[fromR][fromC];
     const target = board[toR][toC];
 
     if (!piece || piece.color !== turn) return false;
-    if (target && target.type === 'k') return false; // Không bắt Tướng trong thi đấu.
+    if (target && target.type === 'k') return false;
 
     if (target) {
         const targetEl = pieceElements[target.id];
@@ -1375,6 +1507,7 @@ function executeMove(move) {
     const moveInfo = { mover: piece.color, gaveCheck, fromR, fromC, toR, toC };
     turn = nextTurn;
     recordPosition(moveInfo);
+    
     if (checkGameEnd()) return true;
 
     updateStatus();
@@ -1401,14 +1534,17 @@ function logMove(piece, target, fR, fC, tR, tC) {
     const action = target ? `ăn ${VI_NAMES[target.type]} tại` : 'di chuyển tới';
     const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
     
-    // Convert tọa độ ra Số và Chữ
     const fromStr = cols[fC] + (10 - fR);
     const toStr = cols[tC] + (10 - tR);
 
     item.innerHTML = `[<span class="${sideClass}">${sideName}</span>] ${VI_NAMES[piece.type]} ${fromStr} ${action} ${toStr}`;
     
     logList.appendChild(item);
-    while (logList.children.length > 15) { logList.removeChild(logList.firstChild); }
+    
+    // Giới hạn hiển thị đúng 5 dòng gần nhất
+    while (logList.children.length > 5) { 
+        logList.removeChild(logList.firstChild); 
+    }
     logList.scrollTop = logList.scrollHeight;
 }
 
@@ -1452,8 +1588,6 @@ function requestAiMove() {
         for (let c = 0; c < COLS; c++) if (board[r][c]) currentPieceCount++;
     }
 
-    // Độ khó tăng theo cả thời gian và trần iterative-deepening.
-    // Time cap giúp Extreme không khóa trình duyệt; Worker chạy riêng nên UI vẫn mượt.
     const phase = currentPieceCount > 24 ? 'opening' : (currentPieceCount >= 13 ? 'mid' : 'end');
     const profiles = {
         easy:    { opening:[2,1000], mid:[3,1250], end:[3,1500] },
@@ -1477,5 +1611,1692 @@ function requestAiMove() {
 
 window.onload = initGame;
 </script>
+</body>
+</html>
+</textarea>
+
+    <!-- ============================================== -->
+    <!-- SOURCE CỜ VUA GỐC 100% ĐƯỢC BỌC TRONG TEXTAREA   -->
+    <!-- ============================================== -->
+    <textarea id="code-chess" style="display:none;">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cờ Vua</title>
+    <style>
+        :root {
+            --bg-color: #1a1a24;
+            --panel-bg: #262635;
+            --square-light: #e9c496;
+            --square-dark: #8b5a2b;
+            --wood-border: #4a2f1d;
+            --white-text: #ffffff;
+            --black-text: #111820;
+            --highlight: #2ecc71;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: linear-gradient(145deg, #2b2b3c, #1f1f2b);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 2px 2px rgba(255,255,255,0.05);
+            width: fit-content;
+            max-width: calc(100vw - 24px);
+            height: auto;
+            margin: 0 auto;
+        }
+
+        .board-wrapper {
+            position: relative;
+            width: 624px; /* 8 cột x 78px */
+            height: 624px; /* 8 hàng x 78px */
+            box-sizing: content-box; 
+            border: 18px solid var(--wood-border);
+            border-radius: 8px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.7), 
+                inset 0 0 5px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            margin: 0;
+            background: var(--square-light);
+        }
+
+        .board-grid {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            pointer-events: none;
+        }
+
+        .square.dark { background-color: var(--square-dark); }
+        .square.light { background-color: var(--square-light); }
+
+        .coord {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 15px;
+            font-weight: 900;
+            pointer-events: none;
+            font-family: monospace;
+        }
+
+        .coord.col { bottom: -34px; transform: translateX(-50%); }
+        .coord.row { left: -30px; transform: translateY(-50%); }
+
+        .click-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+        }
+
+        .cell {
+            position: absolute;
+            width: 78px;
+            height: 78px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .piece {
+            position: absolute;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 56px;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: left, top, transform, opacity;
+            z-index: 15;
+            pointer-events: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .piece.white {
+            color: #fff;
+            text-shadow:
+                0 2px 0 #333,
+                0 4px 7px rgba(0,0,0,.75),
+                0 0 2px #111;
+            transform: scale(1.02);
+        }
+        .piece.black {
+            color: #111;
+            text-shadow:
+                0 1px 0 #fff,
+                0 3px 5px rgba(0,0,0,.9);
+            transform: scale(1.02);
+        }
+        
+        .piece.selected { 
+            background: rgba(241, 196, 15, 0.5); 
+            box-shadow: 0 0 15px #f1c40f; 
+            transform: scale(1.15); 
+            z-index: 25; 
+        }
+        .piece.target-dim { opacity: 0.5; filter: grayscale(50%); }
+        .piece.in-check {
+            animation: kingCheck .65s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 10px #e74c3c);
+        }
+        @keyframes kingCheck {
+            from { transform: scale(1.02); }
+            to { transform: scale(1.13); }
+        }
+
+        .move-dot {
+            width: 24px; height: 24px;
+            background-color: rgba(46, 204, 113, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--highlight);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .thinking-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+
+        .sidebar {
+            flex: 0 0 340px;
+            width: 340px;
+            min-width: 340px;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .settings-panel {
+            background: var(--panel-bg); border-radius: 8px; padding: 12px;
+            display: flex; flex-direction: column; gap: 9px; border: 1px solid #363645;
+        }
+
+        .selector-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .selector-row label { font-size: 15px; font-weight: bold; color: #ccc; flex: 1; }
+        .selector-row select {
+            background: #1a1a24; color: #fff; border: 1px solid #444; padding: 7px 10px;
+            border-radius: 4px; outline: none; cursor: pointer; font-size: 13.5px; 
+            font-weight: bold; flex: 0 0 160px; max-width: 160px;
+        }
+        .selector-row select:focus { border-color: #2ecc71; box-shadow: 0 0 5px rgba(46, 204, 113, 0.3); }
+
+        .status-card, .captured-section, .log-section {
+            background: var(--panel-bg); border-radius: 10px; border: 1px solid #363645;
+        }
+
+        .status-card {
+            padding: 12px;
+            height: 72px;
+            min-height: 72px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+        }
+        .status-title { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .status-value { font-size: 18px; font-weight: bold; transition: color 0.3s; }
+
+        .captured-section {
+            padding: 10px;
+            height: 84px;
+            min-height: 84px;
+            overflow: hidden;
+        }
+        .captured-title { font-size: 11px; color: #999; margin-bottom: 8px; }
+        .captured-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            height: 42px;
+            min-height: 42px;
+            overflow: hidden;
+        }
+        .captured-box .piece {
+            position: relative !important; left: 0 !important; top: 0 !important;
+            width: 34px; height: 34px; font-size: 27px;
+            transform: scale(1) !important; opacity: 1 !important; text-shadow: none;
+            background: none; box-shadow: none; padding-bottom: 5px;
+        }
+
+        /* Tối ưu hiển thị đúng 5 dòng lịch sử (5 * 23px = 115px) */
+        .log-section {
+            flex: 0 0 155px;
+            height: 155px;
+            min-height: 155px;
+            max-height: 155px;
+            display: flex;
+            flex-direction: column;
+            padding: 9px 10px;
+            overflow: hidden;
+        }
+        .log-title { flex: 0 0 auto; font-size: 10px; color: #999; margin-bottom: 5px; }
+        .log-list {
+            flex: 0 0 115px;
+            height: 115px;
+            min-height: 115px;
+            max-height: 115px;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            background: #1a1a24;
+            padding: 0 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            scroll-behavior: smooth;
+            color: #ddd;
+        }
+        .log-item {
+            height: 23px;
+            line-height: 23px;
+            border-bottom: 1px solid #2b2b36;
+            padding: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .log-item span.white { color: #f1c40f; font-weight: bold; }
+        .log-item span.black { color: #85c1e9; font-weight: bold; }
+        .log-item.new-move {
+            animation: historyIn .22s ease-out;
+        }
+        @keyframes historyIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1a24; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+
+        /* Group nút chức năng */
+        .button-group { display: flex; gap: 10px; }
+        .btn-reset, .btn-undo {
+            flex: 1; color: white; border: none; padding: 14px;
+            border-radius: 8px; font-size: 14px; font-weight: bold;
+            cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .btn-reset { background: linear-gradient(to bottom, #3498db, #2980b9); box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+        .btn-undo { background: linear-gradient(to bottom, #f39c12, #d35400); box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3); }
+        
+        .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4); }
+        .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
+        .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
+
+        @media (max-width: 900px) {
+            body { padding: 10px; align-items: flex-start; }
+            .game-container { flex-direction: column; align-items: center; padding: 15px; height: auto; gap: 15px; }
+            .board-wrapper { transform: scale(.82); margin-bottom: -115px; }
+            .sidebar {
+                width: 100%;
+                min-width: unset;
+                max-width: 620px;
+                flex: 0 1 auto;
+            }
+        }
+        @media (max-width: 400px) {
+            .board-wrapper {
+                transform: scale(.64);
+                margin-bottom: -220px;
+            }
+            .game-container {
+                width: calc(100vw - 10px);
+                max-width: calc(100vw - 10px);
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="board-wrapper" id="board-wrapper">
+        <div class="board-grid" id="board-grid"></div>
+        <div class="click-layer" id="click-layer"></div>
+    </div>
+
+    <div class="sidebar">
+        <div class="settings-panel">
+            <div class="selector-row">
+                <label>Chế độ:</label>
+                <select id="game-mode" onchange="toggleAiSettings(); initGame();">
+                    <option value="ai">Đánh với Máy (AI)</option>
+                    <option value="pvp">Hai người (Chung máy)</option>
+                </select>
+            </div>
+            <div class="selector-row">
+                <label>Phe của bạn:</label>
+                <select id="player-side" onchange="initGame()">
+                    <option value="w">Trắng (Đi trước)</option>
+                    <option value="b">Đen (Đi sau)</option>
+                </select>
+            </div>
+            <div class="selector-row" id="ai-difficulty-row">
+                <label>Độ Khó AI:</label>
+                <select id="difficulty" onchange="initGame()">
+                    <option value="easy">Dễ</option>
+                    <option value="medium" selected>Vừa</option>
+                    <option value="hard">Khó</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-title">TRẠNG THÁI TRẬN ĐẤU</div>
+            <div class="status-value" id="turn-status" style="color:#2ecc71;">Trắng (Bạn đi)</div>
+        </div>
+
+        <div class="captured-section">
+            <div class="captured-title">BÊN TRẮNG ĐÃ BỊ ĂN:</div>
+            <div class="captured-box" id="captured-white"></div>
+        </div>
+        <div class="captured-section">
+            <div class="captured-title">BÊN ĐEN ĐÃ BỊ ĂN:</div>
+            <div class="captured-box" id="captured-black"></div>
+        </div>
+
+        <div class="log-section">
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI (5 NƯỚC GẦN NHẤT)</div>
+            <div class="log-list" id="log-list"></div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-reset" onclick="initGame()">TẠO VÁN MỚI</button>
+            <button class="btn-undo" onclick="undoMoveAction()">HOÀN NƯỚC</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= AI WEB WORKER SCRIPT (CHESS) ================= -->
+<script id="ai-worker-script" type="javascript/worker">
+    const COLS = 8, ROWS = 8;
+    const WHITE = 'w', BLACK = 'b';
+
+    const PIECE_VALUES = {
+        k: 200000,
+        q: 900,
+        r: 500,
+        b: 330,
+        n: 320,
+        p: 100
+    };
+
+    const INF = 2000000000;
+    const MATE_SCORE = 1000000;
+
+    const PST = {
+        p: [
+            [0,  0,  0,  0,  0,  0,  0,  0],
+            [50, 50, 50, 50, 50, 50, 50, 50],
+            [10, 10, 20, 30, 30, 20, 10, 10],
+            [5,  5, 10, 25, 25, 10,  5,  5],
+            [0,  0,  0, 20, 20,  0,  0,  0],
+            [5, -5,-10,  0,  0,-10, -5,  5],
+            [5, 10, 10,-20,-20, 10, 10,  5],
+            [0,  0,  0,  0,  0,  0,  0,  0]
+        ],
+        n: [
+            [-50,-40,-30,-30,-30,-30,-40,-50],
+            [-40,-20,  0,  0,  0,  0,-20,-40],
+            [-30,  0, 10, 15, 15, 10,  0,-30],
+            [-30,  5, 15, 20, 20, 15,  5,-30],
+            [-30,  0, 15, 20, 20, 15,  0,-30],
+            [-30,  5, 10, 15, 15, 10,  5,-30],
+            [-40,-20,  0,  5,  5,  0,-20,-40],
+            [-50,-40,-30,-30,-30,-30,-40,-50]
+        ],
+        b: [
+            [-20,-10,-10,-10,-10,-10,-10,-20],
+            [-10,  0,  0,  0,  0,  0,  0,-10],
+            [-10,  0,  5, 10, 10,  5,  0,-10],
+            [-10,  5,  5, 10, 10,  5,  5,-10],
+            [-10,  0, 10, 10, 10, 10,  0,-10],
+            [-10, 10, 10, 10, 10, 10, 10,-10],
+            [-10,  5,  0,  0,  0,  0,  5,-10],
+            [-20,-10,-10,-10,-10,-10,-10,-20]
+        ],
+        r: [
+            [0,  0,  0,  0,  0,  0,  0,  0],
+            [5, 10, 10, 10, 10, 10, 10,  5],
+            [-5,  0,  0,  0,  0,  0,  0, -5],
+            [-5,  0,  0,  0,  0,  0,  0, -5],
+            [-5,  0,  0,  0,  0,  0,  0, -5],
+            [-5,  0,  0,  0,  0,  0,  0, -5],
+            [-5,  0,  0,  0,  0,  0,  0, -5],
+            [0,  0,  0,  5,  5,  0,  0,  0]
+        ],
+        q: [
+            [-20,-10,-10, -5, -5,-10,-10,-20],
+            [-10,  0,  0,  0,  0,  0,  0,-10],
+            [-10,  0,  5,  5,  5,  5,  0,-10],
+            [-5,  0,  5,  5,  5,  5,  0, -5],
+            [0,  0,  5,  5,  5,  5,  0, -5],
+            [-10,  5,  5,  5,  5,  5,  0,-10],
+            [-10,  0,  5,  0,  0,  0,  0,-10],
+            [-20,-10,-10, -5, -5,-10,-10,-20]
+        ],
+        k: [
+            [-30,-40,-40,-50,-50,-40,-40,-30],
+            [-30,-40,-40,-50,-50,-40,-40,-30],
+            [-30,-40,-40,-50,-50,-40,-40,-30],
+            [-30,-40,-40,-50,-50,-40,-40,-30],
+            [-20,-30,-30,-40,-40,-30,-30,-20],
+            [-10,-20,-20,-20,-20,-20,-20,-10],
+            [20, 20,  0,  0,  0,  0, 20, 20],
+            [20, 30, 10,  0,  0, 10, 30, 20]
+        ]
+    };
+
+    function cloneBoard(b) {
+        return b.map(row => row.map(p => p ? {...p} : null));
+    }
+
+    function findKing(b, color) {
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const p = b[r][c];
+                if (p && p.color === color && p.type === 'k') return {r, c};
+            }
+        }
+        return null;
+    }
+
+    function isSquareAttacked(b, tr, tc, byColor) {
+        const pawnDir = byColor === WHITE ? 1 : -1; 
+        
+        for (let dc of [-1, 1]) {
+            let pr = tr + pawnDir, pc = tc + dc;
+            if (pr >= 0 && pr < ROWS && pc >= 0 && pc < COLS) {
+                const p = b[pr][pc];
+                if (p && p.color === byColor && p.type === 'p') return true;
+            }
+        }
+
+        const nDirs = [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]];
+        for (let [dr, dc] of nDirs) {
+            let nr = tr + dr, nc = tc + dc;
+            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                const p = b[nr][nc];
+                if (p && p.color === byColor && p.type === 'n') return true;
+            }
+        }
+
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+                let nr = tr + dr, nc = tc + dc;
+                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                    const p = b[nr][nc];
+                    if (p && p.color === byColor && p.type === 'k') return true;
+                }
+            }
+        }
+
+        for (let [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+            let nr = tr + dr, nc = tc + dc;
+            while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                const p = b[nr][nc];
+                if (p) {
+                    if (p.color === byColor && (p.type === 'r' || p.type === 'q')) return true;
+                    break;
+                }
+                nr += dr; nc += dc;
+            }
+        }
+
+        for (let [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
+            let nr = tr + dr, nc = tc + dc;
+            while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                const p = b[nr][nc];
+                if (p) {
+                    if (p.color === byColor && (p.type === 'b' || p.type === 'q')) return true;
+                    break;
+                }
+                nr += dr; nc += dc;
+            }
+        }
+
+        return false;
+    }
+
+    function isInCheck(b, color) {
+        const k = findKing(b, color);
+        if (!k) return true; 
+        const opponent = color === WHITE ? BLACK : WHITE;
+        return isSquareAttacked(b, k.r, k.c, opponent);
+    }
+
+    let workerCastling = {wK:false, wQ:false, bK:false, bQ:false};
+    let workerEnPassant = null;
+
+    function cloneCastlingRights(r) { return {...r}; }
+    function applyMoveForSearch(bState, move, rights, epState) {
+        const piece = bState[move.fR][move.fC];
+        let captured = bState[move.tR][move.tC];
+        const nextRights = {...rights};
+        let nextEp = null;
+
+        bState[move.tR][move.tC] = piece;
+        bState[move.fR][move.fC] = null;
+
+        if (move.enPassant) {
+            const rr = piece.color === WHITE ? move.tR + 1 : move.tR - 1;
+            captured = bState[rr][move.tC];
+            bState[rr][move.tC] = null;
+        }
+        if (move.castle === 'K') { bState[move.tR][5] = bState[move.tR][7]; bState[move.tR][7] = null; }
+        if (move.castle === 'Q') { bState[move.tR][3] = bState[move.tR][0]; bState[move.tR][0] = null; }
+
+        if (piece.type === 'p' && Math.abs(move.tR - move.fR) === 2)
+            nextEp = {r:(move.tR + move.fR) / 2, c:move.fC};
+
+        if (piece.type === 'k') {
+            nextRights[piece.color+'K'] = false;
+            nextRights[piece.color+'Q'] = false;
+        }
+        if (piece.type === 'r') {
+            if (piece.color===WHITE && move.fR===7 && move.fC===0) nextRights.wQ=false;
+            if (piece.color===WHITE && move.fR===7 && move.fC===7) nextRights.wK=false;
+            if (piece.color===BLACK && move.fR===0 && move.fC===0) nextRights.bQ=false;
+            if (piece.color===BLACK && move.fR===0 && move.fC===7) nextRights.bK=false;
+        }
+        if (captured && captured.type === 'r') {
+            if (captured.color===WHITE && move.tR===7 && move.tC===0) nextRights.wQ=false;
+            if (captured.color===WHITE && move.tR===7 && move.tC===7) nextRights.wK=false;
+            if (captured.color===BLACK && move.tR===0 && move.tC===0) nextRights.bQ=false;
+            if (captured.color===BLACK && move.tR===0 && move.tC===7) nextRights.bK=false;
+        }
+        if (move.promote) piece.type = 'q';
+        return {piece, captured, rights:nextRights, ep:nextEp};
+    }
+
+    function undoSearchMove(bState, move, snapshot) {
+        const piece = bState[move.tR][move.tC];
+        if (move.promote) piece.type = 'p';
+        if (move.castle === 'K') { bState[move.tR][7] = bState[move.tR][5]; bState[move.tR][5] = null; }
+        if (move.castle === 'Q') { bState[move.tR][0] = bState[move.tR][3]; bState[move.tR][3] = null; }
+        if (move.enPassant) {
+            const rr = piece.color === WHITE ? move.tR + 1 : move.tR - 1;
+            bState[rr][move.tC] = snapshot.captured;
+        }
+        bState[move.fR][move.fC] = piece;
+        bState[move.tR][move.tC] = move.enPassant ? null : snapshot.captured;
+    }
+
+    function pseudoLegalMoves(r, c, bState) {
+        const p = bState[r][c];
+        if (!p) return [];
+        const moves = [];
+        const color = p.color;
+
+        const addIfValid = (nr, nc, extra={}) => {
+            if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
+            if (!bState[nr][nc]) { moves.push({fR:r, fC:c, tR:nr, tC:nc, ...extra}); return true; }
+            if (bState[nr][nc].color !== color && bState[nr][nc].type !== 'k') {
+                moves.push({fR:r, fC:c, tR:nr, tC:nc, ...extra});
+            }
+            return false;
+        };
+
+        const slide = (dirs) => {
+            for (let [dr, dc] of dirs) {
+                let nr = r + dr, nc = c + dc;
+                while (addIfValid(nr, nc)) { nr += dr; nc += dc; }
+            }
+        };
+
+        if (p.type === 'k') {
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr !== 0 || dc !== 0) addIfValid(r+dr, c+dc);
+                }
+            }
+            const home = color === WHITE ? 7 : 0;
+            const enemy = color === WHITE ? BLACK : WHITE;
+            if (r === home && c === 4 && !isInCheck(bState, color)) {
+                if(workerCastling[color+'K'] && !bState[home][5] && !bState[home][6] && 
+                   bState[home][7] && bState[home][7].type === 'r' && bState[home][7].color === color &&
+                   !isSquareAttacked(bState,home,5,enemy) && !isSquareAttacked(bState,home,6,enemy)) {
+                    moves.push({fR:r,fC:c,tR:home,tC:6,castle:'K'});
+                }
+                if(workerCastling[color+'Q'] && !bState[home][1] && !bState[home][2] && !bState[home][3] && 
+                   bState[home][0] && bState[home][0].type === 'r' && bState[home][0].color === color &&
+                   !isSquareAttacked(bState,home,3,enemy) && !isSquareAttacked(bState,home,2,enemy)) {
+                    moves.push({fR:r,fC:c,tR:home,tC:2,castle:'Q'});
+                }
+            }
+        } 
+        else if (p.type === 'q') slide([[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+        else if (p.type === 'r') slide([[-1,0],[1,0],[0,-1],[0,1]]);
+        else if (p.type === 'b') slide([[-1,-1],[-1,1],[1,-1],[1,1]]);
+        else if (p.type === 'n') {
+            const nDirs = [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]];
+            for (let [dr, dc] of nDirs) addIfValid(r+dr, c+dc);
+        }
+        else if (p.type === 'p') {
+            const dir = color === WHITE ? -1 : 1;
+            const startRow = color === WHITE ? 6 : 1;
+            const promoteRow = color === WHITE ? 0 : 7;
+            
+            if (r+dir >= 0 && r+dir < ROWS && !bState[r+dir][c]) {
+                moves.push({fR:r, fC:c, tR:r+dir, tC:c, promote: (r+dir === promoteRow)});
+                if (r === startRow && !bState[r+dir*2][c]) {
+                    moves.push({fR:r, fC:c, tR:r+dir*2, tC:c});
+                }
+            }
+            for (let dc of [-1, 1]) {
+                if (r+dir >= 0 && r+dir < ROWS && c+dc >= 0 && c+dc < COLS) {
+                    const target = bState[r+dir][c+dc];
+                    if (target && target.color !== color) {
+                        moves.push({fR:r, fC:c, tR:r+dir, tC:c+dc, promote: (r+dir === promoteRow)});
+                    }
+                    if (workerEnPassant && workerEnPassant.r === r+dir && workerEnPassant.c === c+dc && 
+                        bState[r][c+dc] && bState[r][c+dc].color !== color && bState[r][c+dc].type === 'p') {
+                        moves.push({fR:r, fC:c, tR:r+dir, tC:c+dc, enPassant:true});
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
+    function getStrictLegalMovesForPiece(r, c, bState) {
+        const pseudo = pseudoLegalMoves(r, c, bState);
+        const legal = [];
+        const color = bState[r][c].color;
+
+        for (let m of pseudo) {
+            const tempCapture = bState[m.tR][m.tC];
+            const piece = bState[m.fR][m.fC];
+            
+            bState[m.tR][m.tC] = piece;
+            bState[m.fR][m.fC] = null;
+            let epPawn = null;
+            
+            if (m.enPassant) {
+                epPawn = bState[piece.color === WHITE ? m.tR+1 : m.tR-1][m.tC];
+                bState[piece.color === WHITE ? m.tR+1 : m.tR-1][m.tC] = null;
+            }
+            if (m.castle === 'K') { bState[m.tR][5] = bState[m.tR][7]; bState[m.tR][7] = null; }
+            if (m.castle === 'Q') { bState[m.tR][3] = bState[m.tR][0]; bState[m.tR][0] = null; }
+            
+            if (!isInCheck(bState, color)) legal.push(m);
+            
+            if (m.enPassant) bState[piece.color === WHITE ? m.tR+1 : m.tR-1][m.tC] = epPawn;
+            if (m.castle === 'K') { bState[m.tR][7] = bState[m.tR][5]; bState[m.tR][5] = null; }
+            if (m.castle === 'Q') { bState[m.tR][0] = bState[m.tR][3]; bState[m.tR][3] = null; }
+            
+            bState[m.fR][m.fC] = piece;
+            bState[m.tR][m.tC] = tempCapture;
+        }
+        return legal;
+    }
+
+    function getAllLegalMoves(bState, color) {
+        let moves = [];
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (bState[r][c] && bState[r][c].color === color) {
+                    moves = moves.concat(getStrictLegalMovesForPiece(r, c, bState));
+                }
+            }
+        }
+        return moves;
+    }
+
+    function positionalValue(p, r, c) {
+        if (!PST[p.type]) return 0;
+        let rr = p.color === WHITE ? r : (7 - r);
+        return PST[p.type][rr][c] || 0;
+    }
+
+    function evaluateBoard(bState) {
+        let score = 0;
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                const p = bState[r][c];
+                if (!p) continue;
+
+                let value = PIECE_VALUES[p.type] + positionalValue(p, r, c);
+                if (p.color === WHITE) score += value;
+                else score -= value;
+            }
+        }
+        return score; 
+    }
+
+    let nodesSearched = 0;
+    let startTime = 0;
+    let timeLimit = 1000;
+    let timedOut = false;
+
+    function moveScore(m, bState) {
+        let score = 0;
+        const target = m.enPassant ? bState[bState[m.fR][m.fC].color === WHITE ? m.tR+1 : m.tR-1][m.tC] : bState[m.tR][m.tC];
+        if (target) score += PIECE_VALUES[target.type] - PIECE_VALUES[bState[m.fR][m.fC].type]/10;
+        if (m.promote) score += 800;
+        return score;
+    }
+
+    function quiescence(bState, alpha, beta, color) {
+        if((nodesSearched++ % 1024) === 0 && Date.now() - startTime >= timeLimit) { timedOut = true; return 0; }
+        
+        let standPat = evaluateBoard(bState);
+        let score = color === WHITE ? standPat : -standPat;
+        
+        if (score >= beta) return beta;
+        if (score > alpha) alpha = score;
+
+        let moves = getAllLegalMoves(bState, color);
+        moves = moves.filter(m => bState[m.tR][m.tC] != null || m.promote || m.enPassant);
+        moves.sort((a,b) => moveScore(b, bState) - moveScore(a, bState));
+
+        for (let m of moves) {
+            const snapshot = applyMoveForSearch(bState, m, workerCastling, workerEnPassant);
+            const prevCastling = workerCastling;
+            const prevEnPassant = workerEnPassant;
+            workerCastling = snapshot.rights;
+            workerEnPassant = snapshot.ep;
+
+            let res = -quiescence(bState, -beta, -alpha, color === WHITE ? BLACK : WHITE);
+
+            workerCastling = prevCastling;
+            workerEnPassant = prevEnPassant;
+            undoSearchMove(bState, m, snapshot);
+
+            if (timedOut) return 0;
+            if (res >= beta) return beta;
+            if (res > alpha) alpha = res;
+        }
+        return alpha;
+    }
+
+    function minimax(bState, depth, alpha, beta, color, ply, useQS) {
+        if (timedOut) return {timeout:true, score:0};
+        if (++nodesSearched % 1024 === 0 && Date.now() - startTime >= timeLimit) {
+            timedOut = true; return {timeout:true, score:0};
+        }
+
+        let moves = getAllLegalMoves(bState, color);
+        
+        // TỐI ƯU MỚI: Xáo trộn danh sách nước đi trước khi Sort để AI đánh linh hoạt khai cuộc
+        for (let i = moves.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [moves[i], moves[j]] = [moves[j], moves[i]];
+        }
+
+        if (moves.length === 0) {
+            if (isInCheck(bState, color)) return {score: (color === WHITE ? -MATE_SCORE + ply : MATE_SCORE - ply)};
+            return {score: 0};
+        }
+        if (depth === 0) {
+            return {score: useQS ? quiescence(bState, alpha, beta, color) :
+                (color === WHITE ? evaluateBoard(bState) : -evaluateBoard(bState))};
+        }
+
+        moves.sort((a,b) => moveScore(b, bState) - moveScore(a, bState));
+        let bestScore = -INF;
+        let bestMove = moves[0];
+
+        for (let move of moves) {
+            const snapshot = applyMoveForSearch(bState, move, workerCastling, workerEnPassant);
+            const prevCastling = workerCastling;
+            const prevEnPassant = workerEnPassant;
+            workerCastling = snapshot.rights;
+            workerEnPassant = snapshot.ep;
+
+            const opponent = color === WHITE ? BLACK : WHITE;
+            const res = minimax(bState, depth - 1, -beta, -alpha, opponent, ply + 1, useQS);
+
+            workerCastling = prevCastling;
+            workerEnPassant = prevEnPassant;
+            undoSearchMove(bState, move, snapshot);
+
+            if (res.timeout) return res;
+            const score = -res.score;
+            if (score > bestScore) { bestScore = score; bestMove = move; }
+            if (score > alpha) alpha = score;
+            if (alpha >= beta) break;
+        }
+        return {score: bestScore, move: bestMove};
+    }
+
+    self.onmessage = function(e) {
+        const {boardState, turn, maxDepth, timeLimit:limit, castling, enPassant, useQS} = e.data;
+        startTime = Date.now(); timeLimit = limit;
+        nodesSearched = 0; timedOut = false;
+        
+        workerCastling = castling; 
+        workerEnPassant = enPassant;
+
+        let bestGlobalMove = null;
+        let completedDepth = 0;
+
+        for (let depth = 1; depth <= maxDepth; depth++) {
+            const b = cloneBoard(boardState);
+            const result = minimax(b, depth, -INF, INF, turn, 0, useQS);
+
+            if (result.timeout) break;
+
+            if (result.move) {
+                bestGlobalMove = result.move;
+                completedDepth = depth;
+            }
+        }
+
+        self.postMessage({
+            type:'result',
+            move: bestGlobalMove,
+            time: Date.now() - startTime,
+            depth: completedDepth
+        });
+    };
+</script>
+<!-- ================= END AI WEB WORKER ================= -->
+
+<script>
+const SQUARE_SIZE = 78;
+const COLS = 8, ROWS = 8;
+const WHITE = 'w', BLACK = 'b';
+
+const SYMBOLS = {
+    'w': { 'k': '♔', 'q': '♕', 'r': '♖', 'b': '♗', 'n': '♘', 'p': '♙' },
+    'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
+};
+const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
+
+const initialBoard = [
+    ['b_r','b_n','b_b','b_q','b_k','b_b','b_n','b_r'],
+    ['b_p','b_p','b_p','b_p','b_p','b_p','b_p','b_p'],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null],
+    ['w_p','w_p','w_p','w_p','w_p','w_p','w_p','w_p'],
+    ['w_r','w_n','w_b','w_q','w_k','w_b','w_n','w_r']
+];
+
+let board = [], turn = WHITE, selectedCell = null, validMoves = [];
+let pieceElements = {}, isAiThinking = false, isGameOver = false;
+let gameMode = 'ai', playerSide = WHITE;
+let aiWorker = null;
+let castling = {wK:true,wQ:true,bK:true,bQ:true};
+let enPassant = null;
+
+let halfMoveClock = 0;
+let positionHistory = {};
+let gamePly = 0;
+
+// Mảng lưu trữ trạng thái để Hoàn nước
+let gameHistory = [];
+
+function cloneBoardState(b) {
+    return b.map(row => row.map(p => p ? {...p} : null));
+}
+
+function saveState() {
+    gameHistory.push({
+        board: cloneBoardState(board),
+        turn: turn,
+        castling: {...castling},
+        enPassant: enPassant ? {...enPassant} : null,
+        halfMoveClock: halfMoveClock,
+        gamePly: gamePly,
+        positionHistory: {...positionHistory},
+        logHTML: document.getElementById('log-list').innerHTML,
+        capWhiteHTML: document.getElementById('captured-white').innerHTML,
+        capBlackHTML: document.getElementById('captured-black').innerHTML
+    });
+}
+
+function undoMoveAction() {
+    if (gameHistory.length === 0 || isAiThinking) return;
+
+    let stepsToUndo = 1;
+    if (gameMode === 'ai' && turn === playerSide && gameHistory.length >= 2) {
+        stepsToUndo = 2; // AI mode: Lùi 2 bước để về lượt người chơi
+    }
+
+    let restoredState = null;
+    for(let i = 0; i < stepsToUndo; i++) {
+        if(gameHistory.length > 0) restoredState = gameHistory.pop();
+    }
+    
+    if (!restoredState) return;
+
+    // Phục hồi dữ liệu
+    board = restoredState.board;
+    turn = restoredState.turn;
+    castling = restoredState.castling;
+    enPassant = restoredState.enPassant;
+    halfMoveClock = restoredState.halfMoveClock;
+    gamePly = restoredState.gamePly;
+    positionHistory = restoredState.positionHistory;
+    isGameOver = false;
+
+    // Phục hồi HTML
+    document.getElementById('log-list').innerHTML = restoredState.logHTML;
+    document.getElementById('captured-white').innerHTML = restoredState.capWhiteHTML;
+    document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
+
+    // Reset lại bàn cờ UI
+    document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
+    pieceElements = {};
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const p = board[r][c];
+            if (p) {
+                const el = document.createElement('div');
+                el.className = `piece ${p.color === WHITE ? 'white' : 'black'}`;
+                el.innerText = SYMBOLS[p.color][p.type];
+                el.id = p.id;
+                positionPieceEl(el, r, c);
+                document.getElementById('board-wrapper').appendChild(el);
+                pieceElements[p.id] = el;
+            }
+        }
+    }
+
+    clearHighlights();
+    selectedCell = null;
+    validMoves = [];
+
+    // Khởi động lại Worker AI
+    if (aiWorker) {
+        aiWorker.terminate();
+        setupAiWorker();
+        isAiThinking = false;
+    }
+    updateStatus();
+}
+
+function setupAiWorker() {
+    if (aiWorker) aiWorker.terminate();
+    const workerScript = document.getElementById('ai-worker-script').textContent;
+    const blob = new Blob([workerScript], { type: 'application/javascript' });
+    aiWorker = new Worker(URL.createObjectURL(blob));
+
+    aiWorker.onmessage = function(e) {
+        if (e.data.type === 'result') {
+            const bestMove = e.data.move;
+            isAiThinking = false;
+
+            if (isGameOver || turn === playerSide) return;
+
+            if (bestMove) {
+                executeMove(bestMove);
+            } else {
+                checkDrawAndEndgame();
+            }
+        }
+    };
+}
+
+function toggleAiSettings() {
+    gameMode = document.getElementById('game-mode').value;
+    document.getElementById('ai-difficulty-row').style.display = (gameMode === 'ai') ? 'flex' : 'none';
+}
+
+function getBoardCoords(r, c) {
+    const displayR = (playerSide === BLACK) ? (7 - r) : r;
+    const displayC = (playerSide === BLACK) ? (7 - c) : c;
+    return { 
+        x: displayC * SQUARE_SIZE, 
+        y: displayR * SQUARE_SIZE  
+    };
+}
+
+function drawBoardGrid() {
+    const grid = document.getElementById('board-grid');
+    grid.innerHTML = '';
+    for(let r=0; r<8; r++) {
+        for(let c=0; c<8; c++) {
+            const sq = document.createElement('div');
+            const isDark = (r + c) % 2 !== 0;
+            sq.className = `square ${isDark ? 'dark' : 'light'}`;
+            grid.appendChild(sq);
+        }
+    }
+}
+
+function drawCoordinates() {
+    document.querySelectorAll('.coord').forEach(e => e.remove());
+    const wrapper = document.getElementById('board-wrapper');
+    const colsStr = ['A','B','C','D','E','F','G','H'];
+    
+    for (let c = 0; c < COLS; c++) {
+        let displayC = (playerSide === BLACK) ? (7 - c) : c;
+        const xPos = displayC * SQUARE_SIZE + (SQUARE_SIZE/2);
+        
+        const elCol = document.createElement('div'); 
+        elCol.className = 'coord col'; 
+        elCol.innerText = colsStr[c];
+        elCol.style.left = `${xPos}px`; 
+        wrapper.appendChild(elCol);
+    }
+    
+    for (let r = 0; r < ROWS; r++) {
+        let displayR = (playerSide === BLACK) ? (7 - r) : r;
+        const yPos = displayR * SQUARE_SIZE + (SQUARE_SIZE/2);
+        
+        const elRow = document.createElement('div'); 
+        elRow.className = 'coord row'; 
+        elRow.innerText = 8 - r;
+        elRow.style.top = `${yPos}px`; 
+        wrapper.appendChild(elRow);
+    }
+}
+
+function initGame() {
+    gameMode = document.getElementById('game-mode').value;
+    playerSide = document.getElementById('player-side').value;
+    
+    setupAiWorker();
+    
+    board = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+    pieceElements = {};
+    document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
+    document.getElementById('captured-white').innerHTML = '';
+    document.getElementById('captured-black').innerHTML = '';
+    document.getElementById('log-list').innerHTML = '';
+    
+    turn = WHITE; selectedCell = null; validMoves = []; 
+    isAiThinking = false; isGameOver = false;
+    castling = {wK:true,wQ:true,bK:true,bQ:true};
+    enPassant = null;
+    halfMoveClock = 0;
+    positionHistory = {};
+    gamePly = 0;
+    gameHistory = [];
+
+    drawBoardGrid();
+    drawCoordinates();
+    const clickLayer = document.getElementById('click-layer');
+    clickLayer.innerHTML = '';
+
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            const coords = getBoardCoords(r, c);
+            cell.dataset.row = r; cell.dataset.col = c;
+            cell.style.left = `${coords.x}px`;
+            cell.style.top = `${coords.y}px`;
+            cell.addEventListener('click', () => handleCellClick(r, c));
+            clickLayer.appendChild(cell);
+
+            if (initialBoard[r][c]) {
+                const [color, type] = initialBoard[r][c].split('_');
+                createPiece(r, c, color, type);
+            }
+        }
+    }
+    
+    positionHistory[getPositionKey(board, turn, castling, enPassant)] = 1;
+    updateStatus();
+    if (gameMode === 'ai' && turn !== playerSide) requestAiMove();
+}
+
+function createPiece(r, c, color, type) {
+    const id = `piece_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    const pieceObj = { id, color, type, r, c };
+    board[r][c] = pieceObj;
+
+    const el = document.createElement('div');
+    el.className = `piece ${color === WHITE ? 'white' : 'black'}`;
+    el.innerText = SYMBOLS[color][type];
+    el.id = id;
+    positionPieceEl(el, r, c);
+    document.getElementById('board-wrapper').appendChild(el);
+    pieceElements[id] = el;
+}
+
+function positionPieceEl(el, r, c) {
+    const coords = getBoardCoords(r, c);
+    el.style.left = `${coords.x + 3}px`;
+    el.style.top = `${coords.y + 3}px`;
+}
+
+function isSquareAttackedUI(bState, tr, tc, byColor) {
+    const pawnDir = byColor === WHITE ? 1 : -1; 
+    for (let dc of [-1, 1]) {
+        let pr = tr + pawnDir, pc = tc + dc;
+        if (pr>=0 && pr<ROWS && pc>=0 && pc<COLS && bState[pr][pc] && bState[pr][pc].color === byColor && bState[pr][pc].type === 'p') return true;
+    }
+    const nDirs = [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]];
+    for (let [dr, dc] of nDirs) {
+        let nr=tr+dr, nc=tc+dc;
+        if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && bState[nr][nc] && bState[nr][nc].color === byColor && bState[nr][nc].type === 'n') return true;
+    }
+    for (let dr=-1; dr<=1; dr++) {
+        for (let dc=-1; dc<=1; dc++) {
+            if(dr===0 && dc===0) continue;
+            let nr=tr+dr, nc=tc+dc;
+            if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && bState[nr][nc] && bState[nr][nc].color === byColor && bState[nr][nc].type === 'k') return true;
+        }
+    }
+    for (let [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        let nr=tr+dr, nc=tc+dc;
+        while(nr>=0 && nr<ROWS && nc>=0 && nc<COLS) {
+            const p = bState[nr][nc];
+            if(p){ if(p.color === byColor && (p.type === 'r' || p.type === 'q')) return true; break; }
+            nr+=dr; nc+=dc;
+        }
+    }
+    for (let [dr, dc] of [[-1,-1],[-1,1],[1,-1],[1,1]]) {
+        let nr=tr+dr, nc=tc+dc;
+        while(nr>=0 && nr<ROWS && nc>=0 && nc<COLS) {
+            const p = bState[nr][nc];
+            if(p){ if(p.color === byColor && (p.type === 'b' || p.type === 'q')) return true; break; }
+            nr+=dr; nc+=dc;
+        }
+    }
+    return false;
+}
+
+function findKingUI(bState, color) {
+    for (let r=0; r<ROWS; r++) {
+        for (let c=0; c<COLS; c++) {
+            if(bState[r][c] && bState[r][c].color === color && bState[r][c].type === 'k') return {r, c};
+        }
+    }
+    return null;
+}
+
+function isInCheckUI(bState, color) {
+    const k = findKingUI(bState, color);
+    if (!k) return false;
+    return isSquareAttackedUI(bState, k.r, k.c, color === WHITE ? BLACK : WHITE);
+}
+
+function copyCastlingRights(){ return {...castling}; }
+
+function applyMoveToBoardState(bState, move, rightsState, epState, forSimulation=false) {
+    const piece=bState[move.fR][move.fC];
+    const captured=bState[move.tR][move.tC];
+    const result={captured, ep:null, rights:{...rightsState}};
+
+    bState[move.tR][move.tC]=piece;
+    bState[move.fR][move.fC]=null;
+
+    if(move.enPassant){
+        const rr=piece.color===WHITE ? move.tR+1 : move.tR-1;
+        result.captured=bState[rr][move.tC];
+        bState[rr][move.tC]=null;
+    }
+
+    if(move.castle==='K'){
+        bState[move.tR][5]=bState[move.tR][7];
+        bState[move.tR][7]=null;
+    } else if(move.castle==='Q'){
+        bState[move.tR][3]=bState[move.tR][0];
+        bState[move.tR][0]=null;
+    }
+
+    if(piece.type==='p' && Math.abs(move.tR-move.fR)===2)
+        result.ep={r:(move.tR+move.fR)/2,c:move.fC};
+
+    if(piece.type==='k'){
+        result.rights[piece.color+'K']=false;
+        result.rights[piece.color+'Q']=false;
+    }
+    if(piece.type==='r'){
+        if(piece.color===WHITE&&move.fR===7&&move.fC===0) result.rights.wQ=false;
+        if(piece.color===WHITE&&move.fR===7&&move.fC===7) result.rights.wK=false;
+        if(piece.color===BLACK&&move.fR===0&&move.fC===0) result.rights.bQ=false;
+        if(piece.color===BLACK&&move.fR===0&&move.fC===7) result.rights.bK=false;
+    }
+    if(result.captured && result.captured.type==='r'){
+        const q=result.captured;
+        if(q.color===WHITE&&move.tR===7&&move.tC===0) result.rights.wQ=false;
+        if(q.color===WHITE&&move.tR===7&&move.tC===7) result.rights.wK=false;
+        if(q.color===BLACK&&move.tR===0&&move.tC===0) result.rights.bQ=false;
+        if(q.color===BLACK&&move.tR===0&&move.tC===7) result.rights.bK=false;
+    }
+
+    if(piece.type==='p' && (move.tR===0||move.tR===7)){
+        piece.type = move.promotionPiece || 'q';
+        move.promote = true;
+    }
+    return result;
+}
+
+function getPseudoMovesUI(r, c, bState) {
+    const p=bState[r][c];
+    if(!p) return [];
+    const moves=[];
+    const color=p.color;
+
+    const add=(nr,nc,extra={})=>{
+        if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
+        if(!bState[nr][nc] || (bState[nr][nc].color!==color && bState[nr][nc].type!=='k'))
+            moves.push({fR:r,fC:c,tR:nr,tC:nc,...extra});
+    };
+    const slide=(dirs)=>{
+        for(const [dr,dc] of dirs){
+            let nr=r+dr,nc=c+dc;
+            while(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS){
+                if(!bState[nr][nc]) moves.push({fR:r,fC:c,tR:nr,tC:nc});
+                else{
+                    if(bState[nr][nc].color!==color&&bState[nr][nc].type!=='k')
+                        moves.push({fR:r,fC:c,tR:nr,tC:nc});
+                    break;
+                }
+                nr+=dr;nc+=dc;
+            }
+        }
+    };
+
+    if(p.type==='k'){
+        for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)if(dr||dc)add(r+dr,c+dc);
+        const home=color===WHITE?7:0;
+        const enemy=color===WHITE?BLACK:WHITE;
+        if(r===home&&c===4&&!isInCheckUI(bState,color)){
+            if(castling[color+'K'] && !bState[home][5]&&!bState[home][6] &&
+               bState[home][7]&&bState[home][7].color===color&&bState[home][7].type==='r' &&
+               !isSquareAttackedUI(bState,home,5,enemy)&&!isSquareAttackedUI(bState,home,6,enemy))
+                moves.push({fR:r,fC:c,tR:home,tC:6,castle:'K'});
+            if(castling[color+'Q'] && !bState[home][1]&&!bState[home][2]&&!bState[home][3] &&
+               bState[home][0]&&bState[home][0].color===color&&bState[home][0].type==='r' &&
+               !isSquareAttackedUI(bState,home,3,enemy)&&!isSquareAttackedUI(bState,home,2,enemy))
+                moves.push({fR:r,fC:c,tR:home,tC:2,castle:'Q'});
+        }
+    } else if(p.type==='q') slide([[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]]);
+    else if(p.type==='r') slide([[-1,0],[1,0],[0,-1],[0,1]]);
+    else if(p.type==='b') slide([[-1,-1],[-1,1],[1,-1],[1,1]]);
+    else if(p.type==='n')
+        [[-2,-1],[-2,1],[2,-1],[2,1],[-1,-2],[1,-2],[-1,2],[1,2]].forEach(([dr,dc])=>add(r+dr,c+dc));
+    else if(p.type==='p'){
+        const dir=color===WHITE?-1:1,startRow=color===WHITE?6:1,promoteRow=color===WHITE?0:7;
+        if(r+dir>=0&&r+dir<ROWS&&!bState[r+dir][c]){
+            moves.push({fR:r,fC:c,tR:r+dir,tC:c,promote:r+dir===promoteRow});
+            if(r===startRow&&!bState[r+2*dir][c])moves.push({fR:r,fC:c,tR:r+2*dir,tC:c});
+        }
+        for(const dc of [-1,1]){
+            const nc=c+dc;
+            if(nc<0||nc>=COLS)continue;
+            const target=bState[r+dir]?.[nc];
+            if(target&&target.color!==color&&target.type!=='k')
+                moves.push({fR:r,fC:c,tR:r+dir,tC:nc,promote:r+dir===promoteRow});
+            if(enPassant&&enPassant.r===r+dir&&enPassant.c===nc&&
+               bState[r][nc]&&bState[r][nc].color!==color&&bState[r][nc].type==='p')
+                moves.push({fR:r,fC:c,tR:r+dir,tC:nc,enPassant:true});
+        }
+    }
+    return moves;
+}
+
+function getStrictLegalMovesUI(r,c){
+    const p=board[r][c];
+    if(!p)return [];
+    const pseudo=getPseudoMovesUI(r,c,board),legal=[];
+    const color=p.color;
+    for(const m of pseudo){
+        const temp=board.map(row=>row.map(x=>x?{...x}:null));
+        const z=applyMoveToBoardState(temp,{...m},castling,enPassant,true);
+        if(!isInCheckUI(temp,color))legal.push(m);
+    }
+    return legal;
+}
+
+function isCheckmateOrStalemateUI(color) {
+    for (let r=0; r<ROWS; r++) {
+        for (let c=0; c<COLS; c++) {
+            if (board[r][c] && board[r][c].color === color) {
+                if (getStrictLegalMovesUI(r,c).length > 0) return false;
+            }
+        }
+    }
+    return true;
+}
+
+function getPositionKey(bState, turnColor, rights, ep) {
+    let s = '';
+    for(let r=0;r<ROWS;r++) {
+        for(let c=0;c<COLS;c++) s += bState[r][c] ? bState[r][c].type + bState[r][c].color : '-';
+    }
+    const rightsKey = ['wK','wQ','bK','bQ'].filter(k => rights[k]).join('') || '-';
+    let epKey = '-';
+    if (ep) {
+        const dir = turnColor === WHITE ? 1 : -1;
+        const pawnRow = ep.r - dir;
+        for (const dc of [-1, 1]) {
+            const pc = ep.c + dc;
+            if (pawnRow >= 0 && pawnRow < 8 && pc >= 0 && pc < 8) {
+                const pawn = bState[pawnRow][pc];
+                if (pawn && pawn.color === turnColor && pawn.type === 'p') {
+                    epKey = `${ep.r},${ep.c}`;
+                    break;
+                }
+            }
+        }
+    }
+    return `${s}|${turnColor}|${rightsKey}|${epKey}`;
+}
+
+function handleCellClick(r, c) {
+    if (isGameOver || isAiThinking) return;
+    if (gameMode === 'ai' && turn !== playerSide) return;
+
+    const clickedPiece = board[r][c];
+
+    if (clickedPiece && clickedPiece.color === turn) {
+        clearHighlights();
+        selectedCell = { r, c };
+        validMoves = getStrictLegalMovesUI(r, c);
+        highlightMoves();
+        return;
+    }
+
+    if (selectedCell) {
+        const move = validMoves.find(m => m.tR === r && m.tC === c);
+        if (move) {
+            executeMove(move);
+            clearHighlights();
+            selectedCell = null;
+            
+            if (!isGameOver && gameMode === 'ai' && turn !== playerSide) requestAiMove();
+        } else {
+            clearHighlights(); selectedCell = null;
+        }
+    }
+}
+
+function highlightMoves() {
+    const el = pieceElements[board[selectedCell.r][selectedCell.c].id];
+    if (el) el.classList.add('selected');
+
+    validMoves.forEach(m => {
+        const cellCoords = getBoardCoords(m.tR, m.tC);
+        if (board[m.tR][m.tC]) {
+            const enemyPiece = pieceElements[board[m.tR][m.tC].id];
+            if (enemyPiece) enemyPiece.classList.add('target-dim');
+        }
+        const dot = document.createElement('div');
+        dot.className = 'move-dot';
+        dot.style.position = 'absolute';
+        dot.style.left = `${cellCoords.x + SQUARE_SIZE/2 - 12}px`;
+        dot.style.top = `${cellCoords.y + SQUARE_SIZE/2 - 12}px`;
+        document.getElementById('click-layer').appendChild(dot);
+    });
+}
+
+function clearHighlights() {
+    document.querySelectorAll('.piece').forEach(p => p.classList.remove('selected', 'target-dim'));
+    document.querySelectorAll('.move-dot').forEach(d => d.remove());
+}
+
+function executeMove(move) {
+    if (move.promote && (gameMode === 'pvp' || (gameMode === 'ai' && board[move.fR][move.fC]?.color === playerSide))) {
+        const answer = (prompt('Phong cấp: nhập Q = Hậu, R = Xe, B = Tượng, N = Mã', 'Q') || 'Q').trim().toLowerCase();
+        move.promotionPiece = ['q','r','b','n'].includes(answer) ? answer : 'q';
+    }
+    
+    // Lưu lại trạng thái ván cờ trước khi thực hiện nước đi để có thể Undo
+    saveState();
+    
+    const {fR,fC,tR,tC}=move;
+    const piece=board[fR][fC];
+    if(!piece)return;
+    const target=move.enPassant
+        ? board[piece.color===WHITE?tR+1:tR-1][tC]
+        : board[tR][tC];
+    const capturedForLog = target ? {...target} : null;
+    const movingTypeForLog = piece.type;
+
+    if (piece.type === 'p' || target) halfMoveClock = 0;
+    else halfMoveClock++;
+
+    if(target){
+        const targetEl=pieceElements[target.id];
+        if(targetEl){
+            setTimeout(() => {
+                if (!targetEl.isConnected) return;
+                targetEl.style.transition='transform 0.12s ease-out, opacity 0.12s ease-out';
+                targetEl.style.transform='scale(0)';
+                targetEl.style.opacity='0';
+                setTimeout(()=>targetEl.remove(),130);
+            }, 670);
+        }
+        delete pieceElements[target.id];
+        addCapturedPiece(target);
+    }
+
+    const z=applyMoveToBoardState(board,move,castling,enPassant);
+    castling=z.rights; enPassant=z.ep;
+
+    piece.r=tR;piece.c=tC;
+    if(move.castle==='K'){
+        const rook=board[tR][5]; if(rook){rook.r=tR;rook.c=5;positionPieceEl(pieceElements[rook.id],tR,5);}
+    } else if(move.castle==='Q'){
+        const rook=board[tR][3]; if(rook){rook.r=tR;rook.c=3;positionPieceEl(pieceElements[rook.id],tR,3);}
+    }
+
+    if(move.promote){
+        piece.type=move.promotionPiece || 'q';
+        pieceElements[piece.id].innerText=SYMBOLS[piece.color][piece.type];
+    }
+
+    positionPieceEl(pieceElements[piece.id],tR,tC);
+    logMove({...piece, type:movingTypeForLog},fR,fC,tR,tC,!!target,!!move.promote,!!move.castle,!!move.enPassant,capturedForLog,move.promotionPiece || 'q');
+
+    turn=turn===WHITE?BLACK:WHITE;
+    gamePly++;
+    clearHighlights();selectedCell=null;validMoves=[];
+
+    const currentFen = getPositionKey(board, turn, castling, enPassant);
+    positionHistory[currentFen] = (positionHistory[currentFen] || 0) + 1;
+
+    checkDrawAndEndgame();
+}
+
+function checkDrawAndEndgame() {
+    let drawMsg = "";
+    
+    if (halfMoveClock >= 150) drawMsg = "HÒA (Luật 75 nước)";
+    if (Object.values(positionHistory).some(val => val >= 5)) drawMsg = "HÒA (Lặp lại 5 lần)";
+    
+    let wMat = [], bMat = [];
+    for(let r=0;r<ROWS;r++) {
+        for(let c=0;c<COLS;c++) {
+            let p = board[r][c];
+            if (p && p.type !== 'k') {
+                if (p.color === WHITE) wMat.push(p.type);
+                else bMat.push(p.type);
+            }
+        }
+    }
+    if (wMat.length === 0 && bMat.length === 0) drawMsg = "HÒA (Thiếu quân)";
+    else if ((wMat.length === 1 && (wMat[0] === 'b' || wMat[0] === 'n') && bMat.length === 0) ||
+             (bMat.length === 1 && (bMat[0] === 'b' || bMat[0] === 'n') && wMat.length === 0)) {
+        drawMsg = "HÒA (Thiếu quân)";
+    }
+
+    const statusEl = document.getElementById('turn-status');
+    statusEl.classList.remove('thinking-dots');
+
+    if (isCheckmateOrStalemateUI(turn)) {
+        isGameOver = true;
+        if(isInCheckUI(board,turn)){
+            statusEl.innerText = turn===WHITE ? 'ĐEN THẮNG — CHIẾU BÍ!' : 'TRẮNG THẮNG — CHIẾU BÍ!';
+            statusEl.style.color = '#f1c40f';
+        } else {
+            statusEl.innerText = 'HÒA — PAT (Stalemate)';
+            statusEl.style.color = '#95a5a6';
+        }
+    } else if (drawMsg) {
+        isGameOver = true;
+        statusEl.innerText = drawMsg;
+        statusEl.style.color = '#95a5a6';
+    } else {
+        updateStatus();
+    }
+}
+
+function addCapturedPiece(piece) {
+    const container = document.getElementById(piece.color === WHITE ? 'captured-white' : 'captured-black');
+    const div = document.createElement('div');
+    div.className = `piece ${piece.color === WHITE ? 'white' : 'black'}`;
+    div.innerText = SYMBOLS[piece.color][piece.type];
+    container.appendChild(div);
+}
+
+function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,capturedPiece,promotionType){
+    const logList=document.getElementById('log-list'),item=document.createElement('div');
+    item.className='log-item new-move';
+    const sideClass=piece.color===WHITE?'white':'black';
+    let sideName=piece.color===WHITE?'Trắng':'Đen';
+    if(gameMode==='ai')sideName=piece.color===playerSide?'Bạn':'Máy';
+    const cols=['A','B','C','D','E','F','G','H'];
+    const from=cols[fC]+(8-fR),to=cols[tC]+(8-tR);
+    const pieceName=VI_NAMES[piece.type];
+    let text='';
+    if(castle) text=`${pieceName} ${castle==='K'?'O-O':'O-O-O'} (${from} → ${to})`;
+    else {
+        text=`${pieceName} ${from} → ${to}`;
+        // Yêu cầu: thay đổi ký hiệu bắt quân bằng chữ "ăn"
+        if(isCapture) text += ` ăn ${capturedPiece ? VI_NAMES[capturedPiece.type] : 'quân'}`;
+        if(enPassantMove) text += ' (bắt tốt qua đường)';
+        if(promote) text += ` → ${VI_NAMES[promotionType || 'q'] || 'Hậu'}`;
+    }
+    item.innerHTML=`[<span class="${sideClass}">${sideName}</span>] ${text}`;
+    logList.appendChild(item);
+    
+    // Yêu cầu hiển thị đúng 5 dòng
+    while(logList.children.length>5) { logList.removeChild(logList.firstChild); }
+    requestAnimationFrame(() => logList.scrollTo({ top: logList.scrollHeight, behavior: 'smooth' }));
+    setTimeout(() => item.classList.remove('new-move'), 260);
+}
+
+function updateStatus() {
+    if (isGameOver) return;
+    const statusEl = document.getElementById('turn-status');
+    statusEl.classList.remove('thinking-dots');
+
+    let text = ''; let color = '#2ecc71';
+
+    if (gameMode === 'pvp') {
+        text = turn === WHITE ? 'Lượt Trắng' : 'Lượt Đen';
+        color = turn === WHITE ? '#f1c40f' : '#85c1e9';
+    } else if (turn === playerSide) {
+        text = playerSide === WHITE ? 'Trắng (Lượt Bạn)' : 'Đen (Lượt Bạn)';
+    } else {
+        text = playerSide === WHITE ? 'Đen (Máy nghĩ)' : 'Trắng (Máy nghĩ)';
+        color = '#e74c3c';
+        statusEl.classList.add('thinking-dots');
+    }
+
+    if (isInCheckUI(board, turn)) {
+        text += ' — CHIẾU!';
+        color = '#e67e22';
+    }
+
+    statusEl.innerText = text; statusEl.style.color = color;
+    document.querySelectorAll('.piece.in-check').forEach(el=>el.classList.remove('in-check'));
+    if(isInCheckUI(board,turn)){
+        const k=findKingUI(board,turn);
+        if(k&&board[k.r][k.c]) {
+            const el=pieceElements[board[k.r][k.c].id];
+            if(el)el.classList.add('in-check');
+        }
+    }
+}
+
+function requestAiMove() {
+    isAiThinking = true; updateStatus();
+    const difficulty = document.getElementById('difficulty').value;
+
+    const pieces = board.reduce((n,row) => n + row.filter(Boolean).length, 0);
+    const materialPhase = Math.max(0, Math.min(1, (32 - pieces) / 22));
+    const movePhase = Math.max(0, Math.min(1, gamePly / 80));
+    const phase = Math.max(materialPhase, movePhase);
+
+    const profiles = {
+        easy:   {min:1000, max:1500, startDepth:3, endDepth:5},
+        medium: {min:1000, max:3500, startDepth:4, endDepth:7},
+        hard:   {min:1000, max:6500, startDepth:5, endDepth:10}
+    };
+    const profile = profiles[difficulty] || profiles.medium;
+    const aiTime = Math.round(profile.min + (profile.max - profile.min) * Math.pow(phase, 0.8));
+    const aiDepth = Math.round(profile.startDepth + (profile.endDepth - profile.startDepth) * phase);
+    const useQS = difficulty !== 'easy' || phase > 0.35;
+
+    aiWorker.postMessage({
+        boardState: board,
+        turn: turn,
+        maxDepth: aiDepth,
+        timeLimit: aiTime,
+        castling: {...castling},
+        enPassant: enPassant ? {...enPassant} : null,
+        useQS: useQS
+    });
+}
+
+window.onload = initGame;
+</script>
+</body>
+</html>
+</textarea>
+
+    <!-- ============================================== -->
+    <!-- LOGIC BÊN NGOÀI ĐỂ ĐẨY DATA TỪ TEXTAREA VÀO IFRAME -->
+    <!-- ============================================== -->
+    <script>
+        let currentGame = '';
+
+        function switchGame(gameId) {
+            if (currentGame === gameId) return;
+            currentGame = gameId;
+
+            document.querySelectorAll('.btn-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn-' + gameId).classList.add('active');
+
+            // Lấy nguyên bản 100% text HTML gốc từ textarea
+            let rawHtml = document.getElementById('code-' + gameId).value;
+
+            // Chèn thêm 1 cục CSS nhỏ vào cuối thẻ </head> để responsive mobile chuẩn xác
+            let mobilePatch = '';
+            if (gameId === 'xiangqi') {
+                mobilePatch = `
+                <style>
+                    @media (max-width: 600px) {
+                        .game-container { padding: 10px !important; flex-direction: column; align-items: center; }
+                        .sidebar { width: 100% !important; max-width: 500px !important; min-width: unset !important; }
+                        .board-wrapper { transform: scale(0.55); transform-origin: top center; margin-bottom: -315px !important; }
+                    }
+                    @media (max-width: 450px) {
+                        .board-wrapper { transform: scale(0.48); margin-bottom: -364px !important; }
+                    }
+                    @media (max-width: 380px) {
+                        .board-wrapper { transform: scale(0.42); margin-bottom: -406px !important; }
+                    }
+                </style></head>`;
+            } else {
+                mobilePatch = `
+                <style>
+                    @media (max-width: 600px) {
+                        .game-container { padding: 10px !important; flex-direction: column; align-items: center; width: 100%; max-width: 100%; }
+                        .sidebar { width: 100% !important; max-width: 500px !important; min-width: unset !important; }
+                        .board-wrapper { transform: scale(0.55); transform-origin: top center; margin-bottom: -281px !important; }
+                    }
+                    @media (max-width: 450px) {
+                        .board-wrapper { transform: scale(0.48); margin-bottom: -325px !important; }
+                    }
+                    @media (max-width: 380px) {
+                        .board-wrapper { transform: scale(0.42); margin-bottom: -362px !important; }
+                    }
+                </style></head>`;
+            }
+            
+            // Ép patch vào mà không đụng chạm đến phần body hay script bên dưới
+            rawHtml = rawHtml.replace('</head>', mobilePatch);
+
+            // Đẩy vào iframe
+            document.getElementById('game-frame').srcdoc = rawHtml;
+        }
+
+        window.onload = () => switchGame('xiangqi');
+    </script>
 </body>
 </html>
