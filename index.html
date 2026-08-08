@@ -22,13 +22,13 @@
             width: 320px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: center; /* Đã căn giữa dọc cân đối */
+            justify-content: center; 
             align-items: center; 
             gap: 20px;
             padding: 20px;
             border-right: 1px solid #363645; 
             box-shadow: 4px 0 15px rgba(0,0,0,0.6); 
-            z-index: 100;
+            z-index: 1000;
             transition: transform 0.3s ease;
         }
 
@@ -45,22 +45,19 @@
         
         iframe { flex: 1; height: 100%; border: none; background: #1a1a24; }
 
-        /* Responsive Mobile & iPad (Màn dọc) */
+        /* Responsive Mobile & iPad (Màn dọc) - Tab Phải Trên / Trái Dưới */
         @media (max-width: 1050px) {
             body { flex-direction: column; }
             .game-panel {
-                width: 100%; height: auto; /* Chiều cao linh hoạt */
-                flex-direction: row; order: 0; /* Đưa lên top, bỏ ghim đáy */
-                border-right: none; border-bottom: 1px solid #363645;
+                width: 100%; height: 70px;
+                flex-direction: row; order: 2; /* Tab Trái (Menu) ở dưới đáy */
+                border-right: none; border-top: 1px solid #363645;
                 padding: 10px 15px; gap: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+                box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
             }
-            .game-panel h1 { display: none !important; } /* Ẩn title trên mobile */
+            .game-panel h1 { display: none !important; }
             .btn-tab { flex: 1; padding: 12px; font-size: 15px; }
-            iframe { order: 1; height: 100%; flex: 1; }
-            
-            /* Lệnh trượt giấu Tab vuốt lên thay vì trượt xuống */
-            .game-panel.hide { transform: translateY(-100%); margin-bottom: -60px; }
+            iframe { order: 1; height: calc(100vh - 70px); flex: 1; } /* Tab Phải (Game) ở trên */
         }
     </style>
 </head>
@@ -319,14 +316,25 @@
             transform: scale(1) !important; opacity: 1 !important;
         }
 
-        /* Đã tối ưu cho đúng 5 dòng */
         .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { font-size: 12px; color: #999; margin-bottom: 8px; }
         .log-list {
             flex: 1; overflow-y: hidden; background: #1a1a24; padding: 5px 10px;
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd;
         }
-        .log-item { height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Drag and Drop CSS */
+        .log-item { 
+            height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            cursor: grab; transition: transform 0.1s ease; user-select: none;
+        }
+        .log-item:active { cursor: grabbing; }
+        .log-item.dragging { 
+            opacity: 0.6; background: #2ecc7133; 
+            border: 1px dashed #2ecc71; transform: scale(0.98); 
+        }
+
         .log-item span.red { color: #e74c3c; font-weight: bold; }
         .log-item span.black { color: #85c1e9; font-weight: bold; }
 
@@ -449,7 +457,7 @@
         </div>
 
         <div class="log-section">
-            <div class="log-title">LỊCH SỬ NƯỚC ĐI (5 NƯỚC GẦN NHẤT)</div>
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI (Kéo thả để sắp xếp)</div>
             <div class="log-list" id="log-list"></div>
         </div>
 
@@ -978,6 +986,10 @@ function undoMoveAction() {
     document.getElementById('log-list').innerHTML = restoredState.logHTML;
     document.getElementById('captured-red').innerHTML = restoredState.capRedHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
+
+    // Phục hồi lại sự kiện kéo thả sau khi undo (vì innerHTML xoá hết listener)
+    const newItems = document.getElementById('log-list').querySelectorAll('.log-item');
+    newItems.forEach(item => attachDragEvents(item));
 
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
@@ -1553,6 +1565,39 @@ function addCapturedPiece(piece) {
     container.appendChild(div);
 }
 
+// ================= GẮN SỰ KIỆN KÉO THẢ CHO LỊCH SỬ NƯỚC ĐI =================
+function attachDragEvents(item) {
+    item.draggable = true;
+    
+    // Desktop Drag events
+    item.addEventListener('dragstart', () => {
+        setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+
+    // Mobile Touch events
+    item.addEventListener('touchstart', () => {
+        item.classList.add('dragging');
+    }, {passive: true});
+    item.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Ngăn cuộn trang
+        const touch = e.touches[0];
+        const list = document.getElementById('log-list');
+        const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
+        let nextSibling = siblings.find(sib => {
+            const rect = sib.getBoundingClientRect();
+            return touch.clientY <= rect.top + rect.height / 2;
+        });
+        if (nextSibling) list.insertBefore(item, nextSibling);
+        else list.appendChild(item);
+    }, {passive: false});
+    item.addEventListener('touchend', () => {
+        item.classList.remove('dragging');
+    });
+}
+
 function logMove(piece, target, fR, fC, tR, tC) {
     const logList = document.getElementById('log-list');
     const item = document.createElement('div');
@@ -1570,6 +1615,7 @@ function logMove(piece, target, fR, fC, tR, tC) {
 
     item.innerHTML = `[<span class="${sideClass}">${sideName}</span>] ${VI_NAMES[piece.type]} ${fromStr} ${action} ${toStr}`;
     
+    attachDragEvents(item);
     logList.appendChild(item);
     
     while (logList.children.length > 5) { 
@@ -1638,6 +1684,25 @@ function requestAiMove() {
         gameEpoch: epoch
     });
 }
+
+// Bắt sự kiện Drag Over cho List (chỉ cần chạy 1 lần khi load trang)
+document.addEventListener('DOMContentLoaded', () => {
+    const logList = document.getElementById('log-list');
+    if(logList) {
+        logList.addEventListener('dragover', e => {
+            e.preventDefault();
+            const dragging = logList.querySelector('.dragging');
+            if (!dragging) return;
+            const siblings = [...logList.querySelectorAll('.log-item:not(.dragging)')];
+            let nextSibling = siblings.find(sib => {
+                const rect = sib.getBoundingClientRect();
+                return e.clientY <= rect.top + rect.height / 2;
+            });
+            if (nextSibling) logList.insertBefore(dragging, nextSibling);
+            else logList.appendChild(dragging);
+        });
+    }
+});
 
 window.onload = initGame;
 </script>
@@ -1894,14 +1959,25 @@ window.onload = initGame;
             background: none; box-shadow: none; padding-bottom: 5px; display: flex; align-items: center; justify-content: center; border: none;
         }
 
-        /* Đã tối ưu cho đúng 5 dòng */
         .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; max-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { flex: 0 0 auto; font-size: 12px; color: #999; margin-bottom: 8px; }
         .log-list {
             flex: 1; overflow-y: hidden; overflow-x: hidden; background: #1a1a24; padding: 5px 10px;
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd; scroll-behavior: smooth;
         }
-        .log-item { height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Drag and Drop CSS */
+        .log-item { 
+            height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            cursor: grab; transition: transform 0.1s ease; user-select: none;
+        }
+        .log-item:active { cursor: grabbing; }
+        .log-item.dragging { 
+            opacity: 0.6; background: #2ecc7133; 
+            border: 1px dashed #2ecc71; transform: scale(0.98); 
+        }
+
         .log-item span.white { color: #f1c40f; font-weight: bold; }
         .log-item span.black { color: #85c1e9; font-weight: bold; }
         .log-item.new-move {
@@ -2004,7 +2080,7 @@ window.onload = initGame;
         </div>
 
         <div class="log-section">
-            <div class="log-title">LỊCH SỬ NƯỚC ĐI (5 NƯỚC GẦN NHẤT)</div>
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI (Kéo thả để sắp xếp)</div>
             <div class="log-list" id="log-list"></div>
         </div>
 
@@ -2583,6 +2659,10 @@ function undoMoveAction() {
     document.getElementById('captured-white').innerHTML = restoredState.capWhiteHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
 
+    // Phục hồi lại sự kiện kéo thả sau khi undo
+    const newItems = document.getElementById('log-list').querySelectorAll('.log-item');
+    newItems.forEach(item => attachDragEvents(item));
+
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
     for (let r = 0; r < ROWS; r++) {
@@ -3142,9 +3222,43 @@ function addCapturedPiece(piece) {
     container.appendChild(div);
 }
 
+// ================= GẮN SỰ KIỆN KÉO THẢ CHO LỊCH SỬ NƯỚC ĐI =================
+function attachDragEvents(item) {
+    item.draggable = true;
+    
+    // Desktop Drag events
+    item.addEventListener('dragstart', () => {
+        setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+    });
+
+    // Mobile Touch events
+    item.addEventListener('touchstart', () => {
+        item.classList.add('dragging');
+    }, {passive: true});
+    item.addEventListener('touchmove', (e) => {
+        e.preventDefault(); // Ngăn cuộn trang
+        const touch = e.touches[0];
+        const list = document.getElementById('log-list');
+        const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
+        let nextSibling = siblings.find(sib => {
+            const rect = sib.getBoundingClientRect();
+            return touch.clientY <= rect.top + rect.height / 2;
+        });
+        if (nextSibling) list.insertBefore(item, nextSibling);
+        else list.appendChild(item);
+    }, {passive: false});
+    item.addEventListener('touchend', () => {
+        item.classList.remove('dragging');
+    });
+}
+
 function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,capturedPiece,promotionType){
     const logList=document.getElementById('log-list'),item=document.createElement('div');
     item.className='log-item new-move';
+    
     const sideClass=piece.color===WHITE?'white':'black';
     let sideName=piece.color===WHITE?'Trắng':'Đen';
     if(gameMode==='ai')sideName=piece.color===playerSide?'Bạn':'Máy';
@@ -3160,6 +3274,8 @@ function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,captur
         if(promote) text += ` → ${VI_NAMES[promotionType || 'q'] || 'Hậu'}`;
     }
     item.innerHTML=`[<span class="${sideClass}">${sideName}</span>] ${text}`;
+    
+    attachDragEvents(item);
     logList.appendChild(item);
     
     while(logList.children.length>5) { logList.removeChild(logList.firstChild); }
@@ -3231,6 +3347,25 @@ function requestAiMove() {
     });
 }
 
+// Bắt sự kiện Drag Over cho List (chỉ cần chạy 1 lần khi load trang)
+document.addEventListener('DOMContentLoaded', () => {
+    const logList = document.getElementById('log-list');
+    if(logList) {
+        logList.addEventListener('dragover', e => {
+            e.preventDefault();
+            const dragging = logList.querySelector('.dragging');
+            if (!dragging) return;
+            const siblings = [...logList.querySelectorAll('.log-item:not(.dragging)')];
+            let nextSibling = siblings.find(sib => {
+                const rect = sib.getBoundingClientRect();
+                return e.clientY <= rect.top + rect.height / 2;
+            });
+            if (nextSibling) logList.insertBefore(dragging, nextSibling);
+            else logList.appendChild(dragging);
+        });
+    }
+});
+
 window.onload = initGame;
 </script>
 </body>
@@ -3262,7 +3397,7 @@ window.onload = initGame;
             let rawHtml = document.getElementById('code-' + gameId).value;
 
             // ========================================================
-            // BẢN VÁ LỖI CĂN GIỮA, SỬA TỶ LỆ MAC VÀ ĐIỀU CHỈNH IPAD
+            // BẢN VÁ LỖI CĂN GIỮA, SỬA TỶ LỆ MAC VÀ ĐIỀU CHỈNH MOBILE CỰC ĐẠI
             // ========================================================
             let responsivePatch = `
 <style>
@@ -3300,7 +3435,7 @@ html, body {
         gap: 40px !important;
         padding: 0 20px !important; 
     }
-    .board-wrapper { margin: 0 !important; }
+    .board-wrapper { margin: 40px !important; } /* Cho toạ độ */
     .sidebar {
         width: 340px !important; 
         min-width: 340px !important; 
@@ -3310,21 +3445,25 @@ html, body {
     }
 }
 
-/* MOBILE & IPAD (Dọc): Co vào khuôn hình */
+/* MOBILE & IPAD (Dọc): Ưu tiên Bàn cờ Center & Sidebar trên cùng */
 @media (max-width: 1050px), (orientation: portrait) {
     .game-container {
         flex-direction: column !important;
-        justify-content: center !important;
-        padding: 20px 10px !important;
-        gap: 20px !important;
+        justify-content: flex-start !important;
+        padding: 10px !important;
+        gap: 15px !important;
     }
-    .board-wrapper { margin: 0 auto !important; }
     .sidebar {
+        order: 1 !important; /* Sidebar Tab phải đẩy lên trên */
         width: 100% !important;
         max-width: 500px !important;
         min-width: unset !important;
         margin: 0 auto !important;
         flex: 0 0 auto !important;
+    }
+    .board-wrapper {
+        order: 2 !important; /* Bàn cờ xếp sau (đẩy xuống dưới) */
+        margin: 40px auto 50px auto !important; /* Không gian cực lớn đảm bảo không che lấp tọa độ */
     }
 }
 </style>
@@ -3350,21 +3489,26 @@ function autoScale() {
     let scale = 1;
 
     if (isColumnLayout) {
-        const safeWidth = winWidth - 20; 
-        scale = safeWidth / baseWidth;
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
+        
+        // Trừ hao 80px (margin trái/phải cho toạ độ và padding), trừ hao chiều cao sidebar và margin trên/dưới.
+        const safeWidth = winWidth - 80; 
+        const safeHeight = winHeight - sidebarHeight - 110; 
+        
+        scale = Math.min(safeWidth / baseWidth, safeHeight / baseHeight);
     } else {
-        // Trên Desktop/Mac: Iframe đã loại trừ kích thước của thanh Menu trái bên ngoài.
-        // Chỉ cần trừ Sidebar (340px) và Padding (60px)
-        const safeWidth = winWidth - 340 - 60; 
-        const safeHeight = winHeight - 40; 
+        // Trên Desktop/Mac: Iframe đã loại trừ kích thước của thanh Menu.
+        const safeWidth = winWidth - 340 - 120; // Trừ sidebar và khoảng trống padding+margin tọa độ
+        const safeHeight = winHeight - 80; 
         scale = Math.min(safeWidth / baseWidth, safeHeight / baseHeight);
     }
 
     scale = Math.min(1.15, Math.max(0.35, scale));
     
-    // Thu nhỏ thêm 5% cho cờ vua dọc để an toàn cho viền
+    // Thu nhỏ thêm 4% cho cờ vua dọc để an toàn cho viền
     const isChess = !!document.getElementById('board-grid');
-    if(isColumnLayout && isChess) scale = scale * 0.95;
+    if(isColumnLayout && isChess) scale = scale * 0.96;
 
     // Set origin top left sau đó dùng Margin để bù kích thước bounding box giúp flexbox tự căn giữa
     wrapper.style.transformOrigin = 'top left';
@@ -3393,12 +3537,14 @@ window.addEventListener('touchmove', e => {
 window.addEventListener('touchend', e => {
     if(!touchMoved || !e.changedTouches.length) return;
     const dy = e.changedTouches[0].clientY - touchStartY;
-    // Đảo ngược chiều ẩn hiện để tự nhiên với thanh tab đặt ở trên cùng màn hình
-    if (dy < -50) window.parent.postMessage('hidePanel', '*'); // Vuốt lên -> Ẩn tab
-    else if (dy > 50) window.parent.postMessage('showPanel', '*'); // Vuốt xuống -> Hiện tab
+    // Đảo ngược chiều ẩn hiện để tự nhiên với thanh tab đặt ở dưới đáy màn hình
+    if (dy > 50) window.parent.postMessage('hidePanel', '*'); // Vuốt xuống -> Ẩn menu
+    else if (dy < -50) window.parent.postMessage('showPanel', '*'); // Vuốt lên -> Hiện menu
 }, {passive: true});
 
-document.addEventListener('DOMContentLoaded', autoScale);
+document.addEventListener('DOMContentLoaded', () => {
+    autoScale();
+});
 setTimeout(autoScale, 50);
 setTimeout(autoScale, 300);
 <\/script>
