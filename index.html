@@ -120,7 +120,52 @@
             }
             iframe { height: calc(100dvh - 52px); }
         }
-    </style>
+    
+        /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .game-container {
+                width: 100% !important;
+                max-width: none !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                align-items: center !important;
+                overflow: visible !important;
+            }
+            .board-wrapper {
+                align-self: center !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                transform-origin: top center !important;
+            }
+            .log-section {
+                flex: 0 0 158px !important;
+                height: 158px !important;
+                min-height: 158px !important;
+                max-height: 158px !important;
+            }
+        }
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.54) !important;
+                margin-bottom: -336px !important;
+            }
+            /* Cờ Vua: 730px x 0.49 ≈ 358px, tương đương Cờ Tướng 660px x 0.54 ≈ 356px */
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.49) !important;
+                margin-bottom: -357px !important;
+            }
+        }
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.53) !important;
+                margin-bottom: -343px !important;
+            }
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.48) !important;
+                margin-bottom: -364px !important;
+            }
+        }
+</style>
 </head>
 <body>
     <div class="game-panel">
@@ -589,6 +634,51 @@
             .board-wrapper {
                 transform: scale(0.54);
                 margin-bottom: -336px;
+            }
+        }
+
+        /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .game-container {
+                width: 100% !important;
+                max-width: none !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                align-items: center !important;
+                overflow: visible !important;
+            }
+            .board-wrapper {
+                align-self: center !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                transform-origin: top center !important;
+            }
+            .log-section {
+                flex: 0 0 158px !important;
+                height: 158px !important;
+                min-height: 158px !important;
+                max-height: 158px !important;
+            }
+        }
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.54) !important;
+                margin-bottom: -336px !important;
+            }
+            /* Cờ Vua: 730px x 0.49 ≈ 358px, tương đương Cờ Tướng 660px x 0.54 ≈ 356px */
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.49) !important;
+                margin-bottom: -357px !important;
+            }
+        }
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.53) !important;
+                margin-bottom: -343px !important;
+            }
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.48) !important;
+                margin-bottom: -364px !important;
             }
         }
 </style>
@@ -2353,6 +2443,51 @@ window.onload = initGame;
             .board-wrapper {
                 transform: scale(0.49);
                 margin-bottom: -357px;
+            }
+        }
+
+        /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .game-container {
+                width: 100% !important;
+                max-width: none !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                align-items: center !important;
+                overflow: visible !important;
+            }
+            .board-wrapper {
+                align-self: center !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                transform-origin: top center !important;
+            }
+            .log-section {
+                flex: 0 0 158px !important;
+                height: 158px !important;
+                min-height: 158px !important;
+                max-height: 158px !important;
+            }
+        }
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.54) !important;
+                margin-bottom: -336px !important;
+            }
+            /* Cờ Vua: 730px x 0.49 ≈ 358px, tương đương Cờ Tướng 660px x 0.54 ≈ 356px */
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.49) !important;
+                margin-bottom: -357px !important;
+            }
+        }
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.53) !important;
+                margin-bottom: -343px !important;
+            }
+            .game-container:has(.board-grid) .board-wrapper {
+                transform: scale(0.48) !important;
+                margin-bottom: -364px !important;
             }
         }
 </style>
