@@ -141,6 +141,20 @@
         }
     
         /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
+        @media (max-width: 768px) {
+            /* Đồng bộ tuyệt đối form quân Cờ Vua với PC; không đổi glyph trên mobile. */
+            .piece {
+                font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
+                font-weight: 400;
+                font-style: normal;
+                line-height: 1;
+                -webkit-text-stroke: 0;
+            }
+            .piece.white, .piece.black {
+                transform: scale(1.02);
+            }
+        }
+
         @media (max-width: 768px) and (orientation: portrait) {
             .game-container {
                 width: 100% !important;
@@ -2060,20 +2074,29 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
         }
 
+        /* CỜ VUA: một bộ glyph duy nhất cho mọi màn hình.
+           PC và điện thoại chỉ thay đổi kích thước bàn; hình dáng quân không đổi. */
+        .piece.white,
+        .piece.black {
+            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            line-height: 1;
+            -webkit-text-stroke: 0;
+            transform: scale(1.02);
+        }
         .piece.white {
             color: #fff;
             text-shadow:
                 0 2px 0 #333,
                 0 4px 7px rgba(0,0,0,.75),
                 0 0 2px #111;
-            transform: scale(1.02);
         }
         .piece.black {
             color: #111;
             text-shadow:
                 0 1px 0 #fff,
                 0 3px 5px rgba(0,0,0,.9);
-            transform: scale(1.02);
         }
         
         .piece.selected { 
