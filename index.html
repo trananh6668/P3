@@ -582,63 +582,18 @@
             .selector-row label { flex-basis: 32%; }
             .btn-reset, .btn-undo { font-size: 12px; }
         }
-            /* === PORTRAIT MOBILE ONLY: final fine tuning === */
+    
+        /* ==========================================================
+           PORTRAIT MOBILE ONLY — UNIFIED BOARD WIDTH
+           Both modes use the same visible horizontal width.
+           The board is centered by flex; no left/right translation.
+           ========================================================== */
         @media (max-width: 768px) and (orientation: portrait) {
-            .log-section {
-                flex: 0 0 158px;
-                height: 158px;
-                min-height: 158px;
-                max-height: 158px;
+            body {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                overflow-x: hidden !important;
             }
-        }
-
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.57);
-                transform-origin: top center;
-                margin-bottom: -310px;
-            }
-        }
-
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.56);
-                margin-bottom: -316px;
-            }
-        }
-
-        /* === PORTRAIT MOBILE ONLY: đồng nhất kích thước 2 bàn cờ === */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .game-container {
-                padding-left: 0;
-                padding-right: 0;
-                overflow: visible;
-            }
-            .board-wrapper {
-                transform-origin: top left;
-            }
-        }
-
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                /* 660px gốc -> ~356px hiển thị, căn giữa màn hình. */
-                transform: scale(0.54);
-                transform-origin: top center;
-                margin-bottom: -336px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.54);
-                margin-bottom: -336px;
-            }
-        }
-
-        /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
-        @media (max-width: 768px) and (orientation: portrait) {
             .game-container {
                 width: 100% !important;
                 max-width: none !important;
@@ -649,36 +604,15 @@
             }
             .board-wrapper {
                 align-self: center !important;
-                margin-left: 0 !important;
-                margin-right: 0 !important;
                 transform-origin: top center !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
             }
             .log-section {
                 flex: 0 0 158px !important;
                 height: 158px !important;
                 min-height: 158px !important;
                 max-height: 158px !important;
-            }
-        }
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.54) !important;
-                margin-bottom: -336px !important;
-            }
-            /* Cờ Vua: 730px x 0.49 ≈ 358px, tương đương Cờ Tướng 660px x 0.54 ≈ 356px */
-            .game-container:has(.board-grid) .board-wrapper {
-                transform: scale(0.49) !important;
-                margin-bottom: -357px !important;
-            }
-        }
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.53) !important;
-                margin-bottom: -343px !important;
-            }
-            .game-container:has(.board-grid) .board-wrapper {
-                transform: scale(0.48) !important;
-                margin-bottom: -364px !important;
             }
         }
 </style>
@@ -1951,6 +1885,27 @@ function requestAiMove() {
     });
 }
 
+
+
+
+(function() {
+    function fitPortraitBoard() {
+        if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
+        const wrapper = document.getElementById('board-wrapper');
+        if (!wrapper) return;
+        const target = Math.max(280, window.innerWidth - 8);
+        const scale = Math.min(1, target / 660);
+        wrapper.style.transformOrigin = 'top center';
+        wrapper.style.transform = `scale(${scale})`;
+        wrapper.style.marginLeft = 'auto';
+        wrapper.style.marginRight = 'auto';
+        wrapper.style.marginBottom = `${-700 + (700 * scale)}px`;
+    }
+    window.addEventListener('resize', fitPortraitBoard, { passive: true });
+    window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 80), { passive: true });
+    window.addEventListener('load', fitPortraitBoard);
+    setTimeout(fitPortraitBoard, 0);
+})();
 window.onload = initGame;
 </script>
 </body>
@@ -2374,80 +2329,18 @@ window.onload = initGame;
             .btn-reset, .btn-undo { font-size: 12px; }
         }
 
-            /* === PORTRAIT MOBILE ONLY: final fine tuning === */
+    
+        /* ==========================================================
+           PORTRAIT MOBILE ONLY — UNIFIED BOARD WIDTH
+           Both modes use the same visible horizontal width.
+           The board is centered by flex; no left/right translation.
+           ========================================================== */
         @media (max-width: 768px) and (orientation: portrait) {
-            .log-section {
-                flex: 0 0 158px;
-                height: 158px;
-                min-height: 158px;
-                max-height: 158px;
+            body {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                overflow-x: hidden !important;
             }
-        }
-
-        /* === PORTRAIT MOBILE ONLY: đồng nhất 2 chế độ cờ ===
-           - Cùng scale cho Cờ Tướng và Cờ Vua để chiều cao hiển thị đồng nhất.
-           - Căn theo mép trái để cột tọa độ STT của Cờ Vua nằm sát viền màn hình.
-           - Không ảnh hưởng desktop / landscape. */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .game-container {
-                padding-left: 0;
-                padding-right: 0;
-                overflow: visible;
-            }
-
-            .board-wrapper {
-                transform-origin: top left;
-            }
-        }
-
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                /* Cờ Tướng: 660px gốc -> ~356px hiển thị, căn giữa, không dịch trái. */
-                transform: scale(0.54);
-                transform-origin: top center;
-                margin-bottom: -336px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.54);
-                margin-bottom: -336px;
-            }
-        }
-
-        /* PORTRAIT MOBILE - CỜ VUA: 730px gốc -> ~358px, bằng chiều dài hiển thị Cờ Tướng. */
-        @media (max-width: 768px) and (orientation: portrait) {
-            .game-container {
-                padding-left: 0;
-                padding-right: 0;
-            }
-            .board-wrapper {
-                transform-origin: top center;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.49);
-                transform-origin: top center;
-                margin-bottom: -357px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.49);
-                margin-bottom: -357px;
-            }
-        }
-
-        /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
-        @media (max-width: 768px) and (orientation: portrait) {
             .game-container {
                 width: 100% !important;
                 max-width: none !important;
@@ -2458,36 +2351,15 @@ window.onload = initGame;
             }
             .board-wrapper {
                 align-self: center !important;
-                margin-left: 0 !important;
-                margin-right: 0 !important;
                 transform-origin: top center !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
             }
             .log-section {
                 flex: 0 0 158px !important;
                 height: 158px !important;
                 min-height: 158px !important;
                 max-height: 158px !important;
-            }
-        }
-        @media (max-width: 500px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.54) !important;
-                margin-bottom: -336px !important;
-            }
-            /* Cờ Vua: 730px x 0.49 ≈ 358px, tương đương Cờ Tướng 660px x 0.54 ≈ 356px */
-            .game-container:has(.board-grid) .board-wrapper {
-                transform: scale(0.49) !important;
-                margin-bottom: -357px !important;
-            }
-        }
-        @media (max-width: 380px) and (orientation: portrait) {
-            .board-wrapper {
-                transform: scale(0.53) !important;
-                margin-bottom: -343px !important;
-            }
-            .game-container:has(.board-grid) .board-wrapper {
-                transform: scale(0.48) !important;
-                margin-bottom: -364px !important;
             }
         }
 </style>
@@ -3768,6 +3640,25 @@ function requestAiMove() {
     });
 }
 
+
+(function() {
+    function fitPortraitBoard() {
+        if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
+        const wrapper = document.getElementById('board-wrapper');
+        if (!wrapper) return;
+        const target = Math.max(280, window.innerWidth - 8);
+        const scale = Math.min(1, target / 730);
+        wrapper.style.transformOrigin = 'top center';
+        wrapper.style.transform = `scale(${scale})`;
+        wrapper.style.marginLeft = 'auto';
+        wrapper.style.marginRight = 'auto';
+        wrapper.style.marginBottom = `${-700 + (700 * scale)}px`;
+    }
+    window.addEventListener('resize', fitPortraitBoard, { passive: true });
+    window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 80), { passive: true });
+    window.addEventListener('load', fitPortraitBoard);
+    setTimeout(fitPortraitBoard, 0);
+})();
 window.onload = initGame;
 </script>
 </body>
