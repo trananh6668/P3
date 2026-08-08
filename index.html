@@ -38,11 +38,12 @@
             width: 100%;
             background: #1a1a24; color: #aaa; border: 1px solid #444; padding: 14px 24px; border-radius: 8px;
             font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+            text-align: center;
         }
         .btn-tab:hover { background: #2b2b3c; color: #fff; }
         .btn-tab.active { background: #2ecc71; color: #fff; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
         
-        iframe { flex: 1; height: 100%; border: none; background: #1a1a24; }
+        iframe { flex: 1; height: 100%; width: 100%; border: none; background: #1a1a24; }
 
         /* Tối ưu Mobile */
         @media (max-width: 768px) {
@@ -53,22 +54,27 @@
                 width: 100%;
                 height: auto;
                 flex-direction: row;
-                padding: 15px;
+                padding: 10px;
                 gap: 10px;
                 border-right: none;
                 border-top: 1px solid #363645;
                 order: 2; /* Đẩy xuống dưới iframe */
                 box-shadow: 0 -4px 15px rgba(0,0,0,0.6); 
+                justify-content: space-between;
             }
             .game-panel h1 {
                 display: none; /* Ẩn tiêu đề Board Games trên Mobile */
             }
             .btn-tab {
-                padding: 10px;
-                font-size: 14px;
+                flex: 1; /* Cân đều 2 tab full chiều ngang bằng bàn cờ */
+                padding: 12px 10px;
+                font-size: 15px;
+                margin: 0;
             }
             iframe {
                 order: 1; /* Hiển thị iframe lên trên cùng */
+                width: 100%;
+                flex: 1;
             }
         }
     </style>
@@ -335,7 +341,6 @@
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd; scroll-behavior: smooth;
         }
         
-        /* Hiển thị thanh Scrollbar trong Log List */
         .log-item { 
             height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -348,7 +353,6 @@
         ::-webkit-scrollbar-track { background: #1a1a24; }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
-        /* Group 2 nút */
         .button-group { display: flex; gap: 10px; flex-shrink: 0; }
         .btn-reset, .btn-undo {
             flex: 1; color: white; border: none; padding: 16px;
@@ -362,26 +366,27 @@
         .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
         .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
 
-        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile */
-        @media (max-width: 1200px) {
-            .board-wrapper { transform: scale(0.85); transform-origin: top center; margin-bottom: -105px; }
-        }
+        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile (Khử Padding để Full Chiều Ngang) */
         @media (max-width: 1000px) {
-            body { padding: 10px; align-items: flex-start; }
+            body { padding: 0; align-items: flex-start; }
             .game-container {
                 flex-direction: column; align-items: center;
-                padding: 15px; height: auto; gap: 20px;
+                padding: 15px 0; height: auto; gap: 15px; width: 100%; border-radius: 0;
             }
-            .board-wrapper { transform: scale(0.7); transform-origin: top center; margin-bottom: -210px; }
-            .sidebar { width: 100%; min-width: unset; max-width: 620px; margin: 0 auto; }
+            .board-wrapper { transform: scale(0.75); transform-origin: top center; margin-bottom: -182px; }
+            .sidebar { width: 100%; min-width: unset; max-width: 100%; padding: 0 15px; box-sizing: border-box; }
             .log-section { height: 160px; min-height: 160px; }
         }
         @media (max-width: 768px) {
-            .board-wrapper { transform: scale(0.55); margin-bottom: -315px; }
-            .game-container { padding: 10px; gap: 10px; }
+            .board-wrapper { transform: scale(0.58); margin-bottom: -306px; }
+            .game-container { padding: 10px 0; gap: 10px; }
+            .sidebar { padding: 0 10px; }
         }
         @media (max-width: 500px) {
-            .board-wrapper { transform: scale(0.45); margin-bottom: -385px; }
+            .board-wrapper { transform: scale(0.52); margin-bottom: -350px; }
+        }
+        @media (max-width: 390px) {
+            .board-wrapper { transform: scale(0.47); margin-bottom: -386px; }
         }
     </style>
 </head>
@@ -1915,7 +1920,6 @@ window.onload = initGame;
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd; scroll-behavior: smooth;
         }
         
-        /* Hiển thị thanh cuộn thay vì kéo thả */
         .log-item { 
             height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1935,7 +1939,6 @@ window.onload = initGame;
         ::-webkit-scrollbar-track { background: #1a1a24; }
         ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
-        /* Group 2 nút */
         .button-group { display: flex; gap: 10px; flex-shrink: 0; }
         .btn-reset, .btn-undo {
             flex: 1; color: white; border: none; padding: 16px;
@@ -1949,26 +1952,27 @@ window.onload = initGame;
         .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
         .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
 
-        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile */
-        @media (max-width: 1200px) {
-            .board-wrapper { transform: scale(0.85); transform-origin: top center; margin-bottom: -105px; }
-        }
+        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile (Khử Padding để Full Chiều Ngang) */
         @media (max-width: 1000px) {
-            body { padding: 10px; align-items: flex-start; }
+            body { padding: 0; align-items: flex-start; }
             .game-container {
                 flex-direction: column; align-items: center;
-                padding: 15px; height: auto; gap: 20px;
+                padding: 15px 0; height: auto; gap: 15px; width: 100%; border-radius: 0;
             }
-            .board-wrapper { transform: scale(0.7); transform-origin: top center; margin-bottom: -210px; }
-            .sidebar { width: 100%; min-width: unset; max-width: 620px; margin: 0 auto; }
+            .board-wrapper { transform: scale(0.75); transform-origin: top center; margin-bottom: -182px; }
+            .sidebar { width: 100%; min-width: unset; max-width: 100%; padding: 0 15px; box-sizing: border-box; }
             .log-section { height: 160px; min-height: 160px; }
         }
         @media (max-width: 768px) {
-            .board-wrapper { transform: scale(0.55); margin-bottom: -315px; }
-            .game-container { padding: 10px; gap: 10px; }
+            .board-wrapper { transform: scale(0.52); margin-bottom: -350px; }
+            .game-container { padding: 10px 0; gap: 10px; }
+            .sidebar { padding: 0 10px; }
         }
         @media (max-width: 500px) {
-            .board-wrapper { transform: scale(0.45); margin-bottom: -385px; }
+            .board-wrapper { transform: scale(0.47); margin-bottom: -386px; }
+        }
+        @media (max-width: 390px) {
+            .board-wrapper { transform: scale(0.42); margin-bottom: -423px; }
         }
 
     </style>
@@ -2067,7 +2071,7 @@ window.onload = initGame;
             [-30,  0, 10, 15, 15, 10,  0,-30],
             [-30,  5, 15, 20, 20, 15,  5,-30],
             [-30,  0, 15, 20, 20, 15,  0,-30],
-            [-30,  5, 10, 15, 15, 10,  5,-30],
+            [-30,  5, 10, 15, 15, 15,  5,-30],
             [-40,-20,  0,  5,  5,  0,-20,-40],
             [-50,-40,-30,-30,-30,-30,-40,-50]
         ],
