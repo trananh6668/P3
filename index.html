@@ -561,6 +561,34 @@
                 margin-bottom: -316px;
             }
         }
+
+        /* === PORTRAIT MOBILE ONLY: đồng nhất kích thước 2 bàn cờ === */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .game-container {
+                padding-left: 0;
+                padding-right: 0;
+                overflow: visible;
+            }
+            .board-wrapper {
+                transform-origin: top left;
+            }
+        }
+
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                /* Cùng scale với Cờ Vua để chiều cao hiển thị đồng nhất. */
+                transform: translateX(-14px) scale(0.54);
+                transform-origin: top left;
+                margin-bottom: -334px;
+            }
+        }
+
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: translateX(-13px) scale(0.52);
+                margin-bottom: -348px;
+            }
+        }
 </style>
 </head>
 <body>
@@ -2264,18 +2292,35 @@ window.onload = initGame;
             }
         }
 
+        /* === PORTRAIT MOBILE ONLY: đồng nhất 2 chế độ cờ ===
+           - Cùng scale cho Cờ Tướng và Cờ Vua để chiều cao hiển thị đồng nhất.
+           - Căn theo mép trái để cột tọa độ STT của Cờ Vua nằm sát viền màn hình.
+           - Không ảnh hưởng desktop / landscape. */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .game-container {
+                padding-left: 0;
+                padding-right: 0;
+                overflow: visible;
+            }
+
+            .board-wrapper {
+                transform-origin: top left;
+            }
+        }
+
         @media (max-width: 500px) and (orientation: portrait) {
             .board-wrapper {
-                transform: translateX(-1px) scale(0.535);
-                transform-origin: top center;
-                margin-bottom: -348px;
+                /* Hai bàn cùng scale: ưu tiên vừa ngang, vẫn lớn hơn bản cũ. */
+                transform: translateX(-14px) scale(0.54);
+                transform-origin: top left;
+                margin-bottom: -334px;
             }
         }
 
         @media (max-width: 380px) and (orientation: portrait) {
             .board-wrapper {
-                transform: translateX(-1px) scale(0.515);
-                margin-bottom: -362px;
+                transform: translateX(-13px) scale(0.52);
+                margin-bottom: -348px;
             }
         }
 </style>
