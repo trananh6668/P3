@@ -2,21 +2,21 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Board Games</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         
-        /* Đồng nhất màu nền gốc */
+        /* Đồng nhất màu nền gốc và layout ngang Desktop */
         body { 
             background: #1a1a24; 
             display: flex; 
-            flex-direction: row; /* Layout ngang cho Desktop */
+            flex-direction: row; 
             height: 100vh; 
             overflow: hidden; 
         }
         
-        /* Game Panel (Menu trái trên Desktop) */
+        /* Game Panel (Menu trái) */
         .game-panel {
             background: #262635; 
             width: 320px; 
@@ -28,8 +28,7 @@
             padding: 20px;
             border-right: 1px solid #363645; 
             box-shadow: 4px 0 15px rgba(0,0,0,0.6); 
-            z-index: 1000;
-            transition: transform 0.3s ease;
+            z-index: 100;
         }
 
         .game-panel h1 {
@@ -44,21 +43,6 @@
         .btn-tab.active { background: #2ecc71; color: #fff; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
         
         iframe { flex: 1; height: 100%; border: none; background: #1a1a24; }
-
-        /* Responsive Mobile & iPad (Màn dọc) - Tab Phải Trên / Trái Dưới */
-        @media (max-width: 1050px) {
-            body { flex-direction: column; }
-            .game-panel {
-                width: 100%; height: 70px;
-                flex-direction: row; order: 2; /* Tab Trái (Menu) ở dưới đáy */
-                border-right: none; border-top: 1px solid #363645;
-                padding: 10px 15px; gap: 10px;
-                box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
-            }
-            .game-panel h1 { display: none !important; }
-            .btn-tab { flex: 1; padding: 12px; font-size: 15px; }
-            iframe { order: 1; height: calc(100vh - 70px); flex: 1; } /* Tab Phải (Game) ở trên */
-        }
     </style>
 </head>
 <body>
@@ -1582,7 +1566,7 @@ function attachDragEvents(item) {
         item.classList.add('dragging');
     }, {passive: true});
     item.addEventListener('touchmove', (e) => {
-        e.preventDefault(); // Ngăn cuộn trang
+        e.preventDefault(); 
         const touch = e.touches[0];
         const list = document.getElementById('log-list');
         const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
@@ -1685,7 +1669,7 @@ function requestAiMove() {
     });
 }
 
-// Bắt sự kiện Drag Over cho List (chỉ cần chạy 1 lần khi load trang)
+// Bắt sự kiện Drag Over cho List 
 document.addEventListener('DOMContentLoaded', () => {
     const logList = document.getElementById('log-list');
     if(logList) {
@@ -2006,29 +1990,6 @@ window.onload = initGame;
         .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
         .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
 
-        @media (max-width: 900px) {
-            body { padding: 10px; align-items: flex-start; }
-            .game-container { flex-direction: column; align-items: center; padding: 15px; height: auto; gap: 20px; }
-            .board-wrapper { transform: none; margin-bottom: 0; }
-            .sidebar {
-                width: 100%;
-                min-width: unset;
-                max-width: 620px;
-                flex: 0 1 auto;
-            }
-            .log-section { height: 160px; min-height: 160px; }
-        }
-        @media (max-width: 400px) {
-            .board-wrapper {
-                transform: scale(.64);
-                margin-bottom: -220px;
-            }
-            .game-container {
-                width: calc(100vw - 10px);
-                max-width: calc(100vw - 10px);
-                padding: 8px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -3239,7 +3200,7 @@ function attachDragEvents(item) {
         item.classList.add('dragging');
     }, {passive: true});
     item.addEventListener('touchmove', (e) => {
-        e.preventDefault(); // Ngăn cuộn trang
+        e.preventDefault(); 
         const touch = e.touches[0];
         const list = document.getElementById('log-list');
         const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
@@ -3347,7 +3308,7 @@ function requestAiMove() {
     });
 }
 
-// Bắt sự kiện Drag Over cho List (chỉ cần chạy 1 lần khi load trang)
+// Bắt sự kiện Drag Over cho List 
 document.addEventListener('DOMContentLoaded', () => {
     const logList = document.getElementById('log-list');
     if(logList) {
@@ -3378,15 +3339,6 @@ window.onload = initGame;
     <script>
         let currentGame = '';
 
-        window.addEventListener('message', (e) => {
-            const panel = document.querySelector('.game-panel');
-            if(e.data === 'hidePanel') {
-                panel.classList.add('hide'); 
-            } else if (e.data === 'showPanel') {
-                panel.classList.remove('hide'); 
-            }
-        });
-
         function switchGame(gameId) {
             if (currentGame === gameId) return;
             currentGame = gameId;
@@ -3395,161 +3347,6 @@ window.onload = initGame;
             document.getElementById('btn-' + gameId).classList.add('active');
 
             let rawHtml = document.getElementById('code-' + gameId).value;
-
-            // ========================================================
-            // BẢN VÁ LỖI CĂN GIỮA, SỬA TỶ LỆ MAC VÀ ĐIỀU CHỈNH MOBILE CỰC ĐẠI
-            // ========================================================
-            let responsivePatch = `
-<style>
-/* Ghi đè triệt để các truy vấn CSS bên trong game gây xung đột tính toán */
-@media (max-width: 9999px) {
-    .board-wrapper {
-        transform: none !important;
-        margin: 0 !important;
-    }
-}
-html, body {
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow-x: hidden !important;
-    background: #1a1a24 !important;
-}
-.game-container {
-    width: 100% !important;
-    min-height: 100vh !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    background: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-}
-
-/* DESKTOP & MAC: Căn giữa tuyệt đối toàn bộ */
-@media (min-width: 1051px) {
-    .game-container {
-        flex-direction: row !important;
-        justify-content: center !important; 
-        align-items: center !important;
-        gap: 40px !important;
-        padding: 0 20px !important; 
-    }
-    .board-wrapper { margin: 40px !important; } /* Cho toạ độ */
-    .sidebar {
-        width: 340px !important; 
-        min-width: 340px !important; 
-        max-width: 340px !important; 
-        flex: 0 0 340px !important;
-        margin: 0 !important;
-    }
-}
-
-/* MOBILE & IPAD (Dọc): Ưu tiên Bàn cờ Center & Sidebar trên cùng */
-@media (max-width: 1050px), (orientation: portrait) {
-    .game-container {
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        padding: 10px !important;
-        gap: 15px !important;
-    }
-    .sidebar {
-        order: 1 !important; /* Sidebar Tab phải đẩy lên trên */
-        width: 100% !important;
-        max-width: 500px !important;
-        min-width: unset !important;
-        margin: 0 auto !important;
-        flex: 0 0 auto !important;
-    }
-    .board-wrapper {
-        order: 2 !important; /* Bàn cờ xếp sau (đẩy xuống dưới) */
-        margin: 40px auto 50px auto !important; /* Không gian cực lớn đảm bảo không che lấp tọa độ */
-    }
-}
-</style>
-<script>
-function autoScale() {
-    const wrapper = document.getElementById('board-wrapper');
-    const container = document.querySelector('.game-container');
-    if (!wrapper || !container) return;
-
-    // Reset lại để đo chính xác kích thước gốc tự nhiên
-    wrapper.style.transform = 'none';
-    wrapper.style.marginRight = '0px';
-    wrapper.style.marginBottom = '0px';
-
-    const baseWidth = wrapper.offsetWidth;
-    const baseHeight = wrapper.offsetHeight;
-    if (!baseWidth) return;
-
-    const winWidth = window.innerWidth;
-    const winHeight = window.innerHeight;
-
-    const isColumnLayout = winWidth <= 1050 || winHeight > winWidth;
-    let scale = 1;
-
-    if (isColumnLayout) {
-        const sidebar = document.querySelector('.sidebar');
-        const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
-        
-        // Trừ hao 80px (margin trái/phải cho toạ độ và padding), trừ hao chiều cao sidebar và margin trên/dưới.
-        const safeWidth = winWidth - 80; 
-        const safeHeight = winHeight - sidebarHeight - 110; 
-        
-        scale = Math.min(safeWidth / baseWidth, safeHeight / baseHeight);
-    } else {
-        // Trên Desktop/Mac: Iframe đã loại trừ kích thước của thanh Menu.
-        const safeWidth = winWidth - 340 - 120; // Trừ sidebar và khoảng trống padding+margin tọa độ
-        const safeHeight = winHeight - 80; 
-        scale = Math.min(safeWidth / baseWidth, safeHeight / baseHeight);
-    }
-
-    scale = Math.min(1.15, Math.max(0.35, scale));
-    
-    // Thu nhỏ thêm 4% cho cờ vua dọc để an toàn cho viền
-    const isChess = !!document.getElementById('board-grid');
-    if(isColumnLayout && isChess) scale = scale * 0.96;
-
-    // Set origin top left sau đó dùng Margin để bù kích thước bounding box giúp flexbox tự căn giữa
-    wrapper.style.transformOrigin = 'top left';
-    wrapper.style.transform = 'scale(' + scale + ')';
-    
-    const scaledWidth = baseWidth * scale;
-    const scaledHeight = baseHeight * scale;
-
-    wrapper.style.marginRight = (scaledWidth - baseWidth) + 'px';
-    wrapper.style.marginBottom = (scaledHeight - baseHeight) + 'px';
-}
-
-window.addEventListener('resize', autoScale);
-window.addEventListener('orientationchange', () => setTimeout(autoScale, 150));
-
-let touchStartY = 0, touchMoved = false;
-window.addEventListener('touchstart', e => {
-    if(e.touches.length) {
-        touchStartY = e.touches[0].clientY;
-        touchMoved = false;
-    }
-}, {passive: true});
-window.addEventListener('touchmove', e => {
-    if(e.touches.length) touchMoved = true;
-}, {passive: true});
-window.addEventListener('touchend', e => {
-    if(!touchMoved || !e.changedTouches.length) return;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    // Đảo ngược chiều ẩn hiện để tự nhiên với thanh tab đặt ở dưới đáy màn hình
-    if (dy > 50) window.parent.postMessage('hidePanel', '*'); // Vuốt xuống -> Ẩn menu
-    else if (dy < -50) window.parent.postMessage('showPanel', '*'); // Vuốt lên -> Hiện menu
-}, {passive: true});
-
-document.addEventListener('DOMContentLoaded', () => {
-    autoScale();
-});
-setTimeout(autoScale, 50);
-setTimeout(autoScale, 300);
-<\/script>
-`;
-            rawHtml = rawHtml.replace('</head>', responsivePatch + '</head>');
             document.getElementById('game-frame').srcdoc = rawHtml;
         }
 
