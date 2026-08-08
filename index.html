@@ -537,7 +537,31 @@
             .selector-row label { flex-basis: 32%; }
             .btn-reset, .btn-undo { font-size: 12px; }
         }
-    </style>
+            /* === PORTRAIT MOBILE ONLY: final fine tuning === */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .log-section {
+                flex: 0 0 158px;
+                height: 158px;
+                min-height: 158px;
+                max-height: 158px;
+            }
+        }
+
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.57);
+                transform-origin: top center;
+                margin-bottom: -310px;
+            }
+        }
+
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: scale(0.56);
+                margin-bottom: -316px;
+            }
+        }
+</style>
 </head>
 <body>
 
@@ -2230,7 +2254,31 @@ window.onload = initGame;
             .btn-reset, .btn-undo { font-size: 12px; }
         }
 
-    </style>
+            /* === PORTRAIT MOBILE ONLY: final fine tuning === */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .log-section {
+                flex: 0 0 158px;
+                height: 158px;
+                min-height: 158px;
+                max-height: 158px;
+            }
+        }
+
+        @media (max-width: 500px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: translateX(-1px) scale(0.535);
+                transform-origin: top center;
+                margin-bottom: -348px;
+            }
+        }
+
+        @media (max-width: 380px) and (orientation: portrait) {
+            .board-wrapper {
+                transform: translateX(-1px) scale(0.515);
+                margin-bottom: -362px;
+            }
+        }
+</style>
 </head>
 <body>
 
