@@ -2923,7 +2923,9 @@ const COLS = 8, ROWS = 8;
 const WHITE = 'w', BLACK = 'b';
 
 const SYMBOLS = {
-    'w': { 'k': '♔', 'q': '♕', 'r': '♖', 'b': '♗', 'n': '♘', 'p': '♙' },
+    // Cùng một bộ quân dạng đặc (filled) cho cả hai bên.
+    // Bên Trắng chỉ khác màu bằng CSS.
+    'w': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' },
     'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
 };
 const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
