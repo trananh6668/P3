@@ -462,31 +462,36 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        /* Cột điều khiển trên cùng: 3 ô select cùng kích thước, cùng mép trái. */
         .selector-row {
-            display: block;
-            width: 100%;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            gap: 10px;
         }
 
-        .selector-row label {
-            display: none;
+        .selector-row label { 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: #ccc; 
+            flex: 0 0 115px;
+            min-width: 115px;
+            white-space: nowrap;
         }
         
         .selector-row select {
-            display: block;
-            width: 100%;
-            max-width: none;
+            background: #1a1a24; 
+            color: #fff; 
+            border: 1px solid #444; 
+            padding: 8px 12px;
+            border-radius: 4px; 
+            outline: none; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold;
+            flex: 0 0 200px;
+            width: 200px;
+            max-width: 200px;
             min-width: 0;
-            height: 42px;
-            background: #1a1a24;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 8px 34px 8px 14px;
-            border-radius: 5px;
-            outline: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
@@ -649,13 +654,15 @@
             }
             .selector-row label {
                 font-size: 12px;
-                flex: 0 0 34%;
+                flex: 0 0 115px;
+                min-width: 115px;
             }
             .selector-row select {
                 min-height: 38px;
                 padding: 7px 9px;
                 font-size: 13px;
                 flex: 1 1 auto;
+                width: auto;
                 max-width: none;
             }
             .status-card { padding: 9px; }
@@ -701,8 +708,7 @@
                 transform: scale(0.49);
                 margin-bottom: -372px;
             }
-            .selector-row label { display: none; }
-            .selector-row select { width: 100%; }
+            .selector-row label { flex-basis: 108px; min-width: 108px; }
             .btn-reset, .btn-undo { font-size: 12px; }
         }
     
@@ -2442,39 +2448,38 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             text-rendering: geometricPrecision;
         }
 
-        /* CỜ VUA — dùng bộ ký hiệu quân cờ hệ thống theo phong cách iOS/SF.
-           ♔♕♖♗♘♙ / ♚♛♜♝♞♟ được trình duyệt render bằng font hệ thống,
-           nên hình dáng gọn, quen mắt và không cần bộ SVG riêng. */
-        .piece.chess-piece {
-            width: 81px;
-            height: 81px;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-                         "SF Pro Text", "Segoe UI Symbol", "Noto Sans Symbols 2", serif;
-            font-size: 74px;
+        /* CỜ VUA: dùng đúng data quân cờ dạng cũ. */
+        .piece.white,
+        .piece.black {
+            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
+            font-weight: 400;
+            font-style: normal;
             line-height: 1;
-            background: transparent;
-            border: 0;
-            border-radius: 0;
-            text-shadow: none;
-            transform: translateZ(0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: visible;
-            filter: none;
-            -webkit-font-smoothing: antialiased;
-            text-rendering: geometricPrecision;
+            -webkit-text-stroke: 0;
+            transform: scale(1.02);
         }
-        .piece.chess-piece .chess-piece-svg { display: none !important; }
-        .piece.chess-piece.white { color: #f8f8f8; text-shadow: 0 2px 2px rgba(0,0,0,.65); }
-        .piece.chess-piece.black { color: #151515; text-shadow: 0 2px 2px rgba(0,0,0,.55); }
-        .piece.chess-piece.selected {
-            transform: scale(1.10) translateZ(0);
-            z-index: 25;
+        .piece.white {
+            color: #fff;
+            text-shadow: 0 2px 0 #333, 0 4px 7px rgba(0,0,0,.75), 0 0 2px #111;
         }
-        .piece.chess-piece.target-dim { opacity: .48; }
-        .piece.chess-piece.in-check {
-            filter: drop-shadow(0 0 8px rgba(231,76,60,.9));
+        .piece.black {
+            color: #111;
+            text-shadow: 0 1px 0 #fff, 0 3px 5px rgba(0,0,0,.9);
+        }
+
+        /* iOS/iPadOS: Safari renders Unicode chess glyphs smaller than desktop.
+           Increase only the chess pieces so the board size/layout stays unchanged. */
+        @supports (-webkit-touch-callout: none) {
+            .piece.white,
+            .piece.black {
+                font-size: 79px;
+                transform: scale(1.08);
+                transform-origin: center center;
+            }
+
+            .piece.selected {
+                transform: scale(1.16);
+            }
         }
 
         .piece.selected { 
@@ -2534,8 +2539,10 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             font-size: 14px; 
             font-weight: bold; 
             color: #ccc; 
-            flex: 1;
-        }
+            flex: 0 0 115px;
+            min-width: 115px;
+            white-space: nowrap;
+}
         
         .selector-row select {
             background: #1a1a24; 
@@ -2547,8 +2554,10 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             cursor: pointer; 
             font-size: 14px; 
             font-weight: bold;
-            flex: 0 0 60%;
+            flex: 0 0 200px;
+            width: 200px;
             max-width: 200px;
+            min-width: 0;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
@@ -2601,12 +2610,10 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         .captured-box { display: flex; flex-wrap: wrap; gap: 6px; min-height: 44px; height: auto; overflow: visible; }
         .captured-box .piece {
             position: relative !important; left: 0 !important; top: 0 !important;
-            width: 36px; height: 36px; font-size: 0;
+            width: 36px; height: 36px; font-size: 28px;
             transform: scale(1) !important; opacity: 1 !important; text-shadow: none;
             background: none; box-shadow: none; padding-bottom: 5px; display: flex; align-items: center; justify-content: center; border: none;
         }
-        .captured-box .piece.chess-piece .chess-piece-svg { display: none !important; }
-        .captured-box .piece.chess-piece { font-size: 34px; }
 
         .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; max-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { flex: 0 0 auto; font-size: 12px; color: #999; margin-bottom: 8px; }
@@ -2697,9 +2704,9 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             .board-wrapper { transform: none !important; margin: 0 auto 8px !important; transform-origin: top center !important; }
             .sidebar { width: 100%; max-width: 100%; gap: 7px; }
             .settings-panel { padding: 9px; gap: 7px; }
-            .selector-row { width: 100%; }
-            .selector-row label { display: none; }
-            .selector-row select { width: 100%; min-height: 38px; height: 38px; padding: 7px 32px 7px 12px; font-size: 13px; flex: none; max-width: none; }
+            .selector-row { gap: 7px; }
+            .selector-row label { font-size: 12px; flex: 0 0 34%; }
+            .selector-row select { min-height: 38px; padding: 7px 9px; font-size: 13px; flex: 1 1 auto; max-width: none; }
             .status-card { padding: 9px; }
             .status-title { font-size: 11px; }
             .status-value { font-size: 16px; }
@@ -3322,71 +3329,12 @@ const SQUARE_SIZE = 87.5;
 const COLS = 8, ROWS = 8;
 const WHITE = 'w', BLACK = 'b';
 
-/* CỜ VUA — bộ quân SVG vector nội tuyến, không dùng Unicode/emoji.
-   Silhouette thiết kế theo phong cách Staunton thi đấu: hình khối riêng cho
-   từng loại quân, được rasterize bởi trình duyệt thay vì font hệ thống iOS. */
-const CHESS_PIECE_SVG = {
-    /* Bộ Staunton 2D mới: silhouette sạch, thân cân đối, đế nhiều tầng,
-       hoàn toàn SVG vector nội tuyến — không emoji, không Unicode font. */
-    k: `<g>
-        <path d="M45 7h10v10h8v7H55v8c11 4 17 12 18 23 1 8 4 13 11 18v7H16v-7c7-5 10-10 11-18 1-11 7-19 18-23v-8H37v-7h8V7z"/>
-        <path d="M29 61c7 3 35 3 42 0l4 10c1 4 4 7 9 10H16c5-3 8-6 9-10z"/>
-        <path d="M20 81h60l5 7H15z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`,
-    q: `<g>
-        <path d="M17 14l9 36c2 8 7 13 14 16h20c7-3 12-8 14-16l9-36-15 12-7-18-11 19-10-19-10 18z"/>
-        <circle cx="17" cy="12" r="5"/><circle cx="34" cy="8" r="5"/><circle cx="50" cy="12" r="5"/>
-        <circle cx="66" cy="8" r="5"/><circle cx="83" cy="12" r="5"/>
-        <path d="M31 62h38l5 9c1 4 4 7 9 10H17c5-3 8-6 9-10z"/>
-        <path d="M20 81h60l5 7H15z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`,
-    r: `<g>
-        <path d="M21 9h12v9h8V9h18v9h8V9h12v18H21z"/>
-        <path d="M27 27h46v27c0 9 4 15 11 20v6H16v-6c7-5 11-11 11-20z"/>
-        <path d="M23 52h54v10H23z"/>
-        <path d="M20 80h60l5 8H15z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`,
-    b: `<g>
-        <path d="M50 9c-10 9-16 19-16 30 0 10 5 17 13 24-6 5-9 10-10 16h26c-1-6-4-11-10-16 8-7 13-14 13-24 0-11-6-21-16-30z"/>
-        <path d="M50 17L40 58l10 12 10-12z"/>
-        <path d="M24 79h52l5 9H19z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`,
-    n: `<g>
-        <path d="M25 80c5-8 7-16 5-24-2-8 0-15 5-22 5-7 12-12 21-16-2-7 1-13 8-18 3 7 9 11 16 14 9 4 14 11 14 20 0 12-7 22-18 29-6 4-9 10-10 17z"/>
-        <path d="M60 20c7 2 12 6 16 11-8-2-15-1-21 3 0-6 1-10 5-14z"/>
-        <circle cx="75" cy="27" r="2.2" fill="#fff" opacity=".9"/>
-        <path d="M28 80h45l8 8H20z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`,
-    p: `<g>
-        <circle cx="50" cy="27" r="16"/>
-        <path d="M38 40c2 7 0 12-5 18-4 5-6 10-6 16 0 7 7 11 23 11s23-4 23-11c0-6-2-11-6-16-5-6-7-11-5-18-7 4-17 4-24 0z"/>
-        <path d="M26 78h48l7 10H19z"/>
-        <rect x="11" y="88" width="78" height="6" rx="2.5"/>
-        <rect x="7" y="94" width="86" height="4" rx="2"/>
-    </g>`
+const SYMBOLS = {
+    // Cùng một bộ quân dạng đặc (filled) cho cả hai bên.
+    // Bên Trắng chỉ khác màu bằng CSS.
+    'w': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' },
+    'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
 };
-
-function createChessPieceVisual(el, color, type) {
-    const glyphs = color === WHITE
-        ? { k:'♔', q:'♕', r:'♖', b:'♗', n:'♘', p:'♙' }
-        : { k:'♚', q:'♛', r:'♜', b:'♝', n:'♞', p:'♟' };
-
-    el.classList.add('chess-piece');
-    el.replaceChildren();
-    el.textContent = glyphs[type] || glyphs.p;
-    el.setAttribute('aria-label', `${color === WHITE ? 'Trắng' : 'Đen'} ${VI_NAMES?.[type] || type}`);
-}
-
 const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
 
 const initialBoard = [
@@ -3468,7 +3416,7 @@ function undoMoveAction() {
             if (p) {
                 const el = document.createElement('div');
                 el.className = `piece ${p.color === WHITE ? 'white' : 'black'}`;
-                createChessPieceVisual(el, p.color, p.type);
+                el.innerText = SYMBOLS[p.color][p.type];
                 el.id = p.id;
                 positionPieceEl(el, r, c);
                 document.getElementById('board-wrapper').appendChild(el);
@@ -3623,7 +3571,7 @@ function createPiece(r, c, color, type) {
 
     const el = document.createElement('div');
     el.className = `piece ${color === WHITE ? 'white' : 'black'}`;
-    createChessPieceVisual(el, color, type);
+    el.innerText = SYMBOLS[color][type];
     el.id = id;
     positionPieceEl(el, r, c);
     document.getElementById('board-wrapper').appendChild(el);
@@ -3952,7 +3900,7 @@ function executeMove(move) {
 
     if(move.promote){
         piece.type=move.promotionPiece || 'q';
-        createChessPieceVisual(pieceElements[piece.id], piece.color, piece.type);
+        pieceElements[piece.id].innerText=SYMBOLS[piece.color][piece.type];
     }
 
     positionPieceEl(pieceElements[piece.id],tR,tC);
@@ -4015,7 +3963,7 @@ function addCapturedPiece(piece) {
     const container = document.getElementById(piece.color === WHITE ? 'captured-white' : 'captured-black');
     const div = document.createElement('div');
     div.className = `piece ${piece.color === WHITE ? 'white' : 'black'}`;
-    createChessPieceVisual(div, piece.color, piece.type);
+    div.innerText = SYMBOLS[piece.color][piece.type];
     container.appendChild(div);
 }
 
