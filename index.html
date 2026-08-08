@@ -22,7 +22,7 @@
             width: 320px; 
             display: flex; 
             flex-direction: column; 
-            justify-content: center; 
+            justify-content: center; /* Đã căn giữa dọc cân đối */
             align-items: center; 
             gap: 20px;
             padding: 20px;
@@ -45,22 +45,22 @@
         
         iframe { flex: 1; height: 100%; border: none; background: #1a1a24; }
 
-        /* Responsive Mobile (Màn dọc) */
+        /* Responsive Mobile & iPad (Màn dọc) */
         @media (max-width: 1050px) {
             body { flex-direction: column; }
             .game-panel {
-                width: 100%; height: 70px;
-                flex-direction: row; order: 2; /* Đẩy xuống dưới cùng */
-                border-right: none; border-top: 1px solid #363645;
+                width: 100%; height: auto; /* Chiều cao linh hoạt */
+                flex-direction: row; order: 0; /* Đưa lên top, bỏ ghim đáy */
+                border-right: none; border-bottom: 1px solid #363645;
                 padding: 10px 15px; gap: 10px;
-                box-shadow: 0 -4px 15px rgba(0,0,0,0.6);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.6);
             }
-            .game-panel h1 { display: none; }
+            .game-panel h1 { display: none !important; } /* Ẩn title trên mobile */
             .btn-tab { flex: 1; padding: 12px; font-size: 15px; }
-            iframe { order: 1; height: calc(100vh - 70px); }
+            iframe { order: 1; height: 100%; flex: 1; }
             
-            /* Lệnh trượt giấu Tab khi vuốt xuống trên điện thoại */
-            .game-panel.hide { transform: translateY(100%); }
+            /* Lệnh trượt giấu Tab vuốt lên thay vì trượt xuống */
+            .game-panel.hide { transform: translateY(-100%); margin-bottom: -60px; }
         }
     </style>
 </head>
@@ -3262,56 +3262,63 @@ window.onload = initGame;
             let rawHtml = document.getElementById('code-' + gameId).value;
 
             // ========================================================
-            // BẢN VÁ LỖI CĂN GIỮA & CO GIÃN MỚI
+            // BẢN VÁ LỖI CĂN GIỮA, SỬA TỶ LỆ MAC VÀ ĐIỀU CHỈNH IPAD
             // ========================================================
             let responsivePatch = `
 <style>
+/* Ghi đè triệt để các truy vấn CSS bên trong game gây xung đột tính toán */
+@media (max-width: 9999px) {
+    .board-wrapper {
+        transform: none !important;
+        margin: 0 !important;
+    }
+}
 html, body {
     width: 100% !important;
     height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow-x: hidden !important;
-    background: #1a1a24 !important; /* Đồng nhất màu nền iframe */
+    background: #1a1a24 !important;
 }
 .game-container {
     width: 100% !important;
     min-height: 100vh !important;
     box-sizing: border-box !important;
     display: flex !important;
-    align-items: center !important;
-    gap: 0 !important;
-    margin: 0 !important; 
     background: none !important;
     box-shadow: none !important;
+    margin: 0 !important;
 }
 
-/* DESKTOP/MÀN NGANG: Thuật toán đẩy bàn cờ vào giữa màn hình */
+/* DESKTOP & MAC: Căn giữa tuyệt đối toàn bộ */
 @media (min-width: 1051px) {
     .game-container {
         flex-direction: row !important;
+        justify-content: center !important; 
+        align-items: center !important;
+        gap: 40px !important;
         padding: 0 20px !important; 
     }
-    .board-wrapper {
-        margin-left: auto; /* Chia đều khoảng trống để đẩy Sidebar qua sát mép phải, tự động cân bằng bàn cờ */
-    }
+    .board-wrapper { margin: 0 !important; }
     .sidebar {
-        margin-left: auto; /* Cùng margin-left auto với board tạo ra sự chia sẻ khoảng trống trung tâm */
-        width: 320px !important; 
-        min-width: 320px !important; 
-        max-width: 320px !important; 
-        flex: 0 0 320px !important;
+        width: 340px !important; 
+        min-width: 340px !important; 
+        max-width: 340px !important; 
+        flex: 0 0 340px !important;
+        margin: 0 !important;
     }
 }
 
-/* MOBILE/MÀN DỌC */
+/* MOBILE & IPAD (Dọc): Co vào khuôn hình */
 @media (max-width: 1050px), (orientation: portrait) {
     .game-container {
         flex-direction: column !important;
-        justify-content: flex-start !important;
+        justify-content: center !important;
         padding: 20px 10px !important;
         gap: 20px !important;
     }
+    .board-wrapper { margin: 0 auto !important; }
     .sidebar {
         width: 100% !important;
         max-width: 500px !important;
@@ -3327,10 +3334,10 @@ function autoScale() {
     const container = document.querySelector('.game-container');
     if (!wrapper || !container) return;
 
+    // Reset lại để đo chính xác kích thước gốc tự nhiên
     wrapper.style.transform = 'none';
-    wrapper.style.marginBottom = '0px';
     wrapper.style.marginRight = '0px';
-    wrapper.style.transformOrigin = 'top left';
+    wrapper.style.marginBottom = '0px';
 
     const baseWidth = wrapper.offsetWidth;
     const baseHeight = wrapper.offsetHeight;
@@ -3346,25 +3353,28 @@ function autoScale() {
         const safeWidth = winWidth - 20; 
         scale = safeWidth / baseWidth;
     } else {
-        // Màn ngang: Tính cả khoảng không gian an toàn bị chiếm bởi Tab menu bên trái (320px) + Sidebar bên phải (320px) + Padding
-        const safeWidth = winWidth - 320 - 320 - 60; 
+        // Trên Desktop/Mac: Iframe đã loại trừ kích thước của thanh Menu trái bên ngoài.
+        // Chỉ cần trừ Sidebar (340px) và Padding (60px)
+        const safeWidth = winWidth - 340 - 60; 
         const safeHeight = winHeight - 40; 
         scale = Math.min(safeWidth / baseWidth, safeHeight / baseHeight);
     }
 
     scale = Math.min(1.15, Math.max(0.35, scale));
     
-    // Tinh chỉnh nhỏ cho cờ vua trên di động để không bị lẹm
+    // Thu nhỏ thêm 5% cho cờ vua dọc để an toàn cho viền
     const isChess = !!document.getElementById('board-grid');
     if(isColumnLayout && isChess) scale = scale * 0.95;
 
+    // Set origin top left sau đó dùng Margin để bù kích thước bounding box giúp flexbox tự căn giữa
+    wrapper.style.transformOrigin = 'top left';
     wrapper.style.transform = 'scale(' + scale + ')';
     
     const scaledWidth = baseWidth * scale;
     const scaledHeight = baseHeight * scale;
 
-    wrapper.style.marginBottom = (scaledHeight - baseHeight) + 'px';
     wrapper.style.marginRight = (scaledWidth - baseWidth) + 'px';
+    wrapper.style.marginBottom = (scaledHeight - baseHeight) + 'px';
 }
 
 window.addEventListener('resize', autoScale);
@@ -3383,8 +3393,9 @@ window.addEventListener('touchmove', e => {
 window.addEventListener('touchend', e => {
     if(!touchMoved || !e.changedTouches.length) return;
     const dy = e.changedTouches[0].clientY - touchStartY;
-    if (dy < -50) window.parent.postMessage('hidePanel', '*');
-    else if (dy > 50) window.parent.postMessage('showPanel', '*');
+    // Đảo ngược chiều ẩn hiện để tự nhiên với thanh tab đặt ở trên cùng màn hình
+    if (dy < -50) window.parent.postMessage('hidePanel', '*'); // Vuốt lên -> Ẩn tab
+    else if (dy > 50) window.parent.postMessage('showPanel', '*'); // Vuốt xuống -> Hiện tab
 }, {passive: true});
 
 document.addEventListener('DOMContentLoaded', autoScale);
