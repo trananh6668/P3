@@ -43,6 +43,34 @@
         .btn-tab.active { background: #2ecc71; color: #fff; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
         
         iframe { flex: 1; height: 100%; border: none; background: #1a1a24; }
+
+        /* Tối ưu Mobile */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .game-panel {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 15px;
+                gap: 10px;
+                border-right: none;
+                border-top: 1px solid #363645;
+                order: 2; /* Đẩy xuống dưới iframe */
+                box-shadow: 0 -4px 15px rgba(0,0,0,0.6); 
+            }
+            .game-panel h1 {
+                display: none; /* Ẩn tiêu đề Board Games trên Mobile */
+            }
+            .btn-tab {
+                padding: 10px;
+                font-size: 14px;
+            }
+            iframe {
+                order: 1; /* Hiển thị iframe lên trên cùng */
+            }
+        }
     </style>
 </head>
 <body>
@@ -303,28 +331,22 @@
         .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { font-size: 12px; color: #999; margin-bottom: 8px; }
         .log-list {
-            flex: 1; overflow-y: hidden; background: #1a1a24; padding: 5px 10px;
-            border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd;
+            flex: 1; overflow-y: auto; overflow-x: hidden; background: #1a1a24; padding: 5px 10px;
+            border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd; scroll-behavior: smooth;
         }
         
-        /* Drag and Drop CSS */
+        /* Hiển thị thanh Scrollbar trong Log List */
         .log-item { 
             height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            cursor: grab; transition: transform 0.1s ease; user-select: none;
-        }
-        .log-item:active { cursor: grabbing; }
-        .log-item.dragging { 
-            opacity: 0.6; background: #2ecc7133; 
-            border: 1px dashed #2ecc71; transform: scale(0.98); 
         }
 
         .log-item span.red { color: #e74c3c; font-weight: bold; }
         .log-item span.black { color: #85c1e9; font-weight: bold; }
 
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a24; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
         /* Group 2 nút */
         .button-group { display: flex; gap: 10px; flex-shrink: 0; }
@@ -340,22 +362,26 @@
         .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
         .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
 
+        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile */
+        @media (max-width: 1200px) {
+            .board-wrapper { transform: scale(0.85); transform-origin: top center; margin-bottom: -105px; }
+        }
         @media (max-width: 1000px) {
             body { padding: 10px; align-items: flex-start; }
             .game-container {
                 flex-direction: column; align-items: center;
                 padding: 15px; height: auto; gap: 20px;
             }
-            .board-wrapper {
-                transform: scale(0.7);
-                transform-origin: top center;
-                margin-bottom: -210px; 
-            }
+            .board-wrapper { transform: scale(0.7); transform-origin: top center; margin-bottom: -210px; }
             .sidebar { width: 100%; min-width: unset; max-width: 620px; margin: 0 auto; }
             .log-section { height: 160px; min-height: 160px; }
         }
+        @media (max-width: 768px) {
+            .board-wrapper { transform: scale(0.55); margin-bottom: -315px; }
+            .game-container { padding: 10px; gap: 10px; }
+        }
         @media (max-width: 500px) {
-            .board-wrapper { transform: scale(0.55); margin-bottom: -320px; }
+            .board-wrapper { transform: scale(0.45); margin-bottom: -385px; }
         }
     </style>
 </head>
@@ -441,7 +467,7 @@
         </div>
 
         <div class="log-section">
-            <div class="log-title">LỊCH SỬ NƯỚC ĐI (Kéo thả để sắp xếp)</div>
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI</div>
             <div class="log-list" id="log-list"></div>
         </div>
 
@@ -970,10 +996,6 @@ function undoMoveAction() {
     document.getElementById('log-list').innerHTML = restoredState.logHTML;
     document.getElementById('captured-red').innerHTML = restoredState.capRedHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
-
-    // Phục hồi lại sự kiện kéo thả sau khi undo (vì innerHTML xoá hết listener)
-    const newItems = document.getElementById('log-list').querySelectorAll('.log-item');
-    newItems.forEach(item => attachDragEvents(item));
 
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
@@ -1549,39 +1571,6 @@ function addCapturedPiece(piece) {
     container.appendChild(div);
 }
 
-// ================= GẮN SỰ KIỆN KÉO THẢ CHO LỊCH SỬ NƯỚC ĐI =================
-function attachDragEvents(item) {
-    item.draggable = true;
-    
-    // Desktop Drag events
-    item.addEventListener('dragstart', () => {
-        setTimeout(() => item.classList.add('dragging'), 0);
-    });
-    item.addEventListener('dragend', () => {
-        item.classList.remove('dragging');
-    });
-
-    // Mobile Touch events
-    item.addEventListener('touchstart', () => {
-        item.classList.add('dragging');
-    }, {passive: true});
-    item.addEventListener('touchmove', (e) => {
-        e.preventDefault(); 
-        const touch = e.touches[0];
-        const list = document.getElementById('log-list');
-        const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
-        let nextSibling = siblings.find(sib => {
-            const rect = sib.getBoundingClientRect();
-            return touch.clientY <= rect.top + rect.height / 2;
-        });
-        if (nextSibling) list.insertBefore(item, nextSibling);
-        else list.appendChild(item);
-    }, {passive: false});
-    item.addEventListener('touchend', () => {
-        item.classList.remove('dragging');
-    });
-}
-
 function logMove(piece, target, fR, fC, tR, tC) {
     const logList = document.getElementById('log-list');
     const item = document.createElement('div');
@@ -1599,12 +1588,7 @@ function logMove(piece, target, fR, fC, tR, tC) {
 
     item.innerHTML = `[<span class="${sideClass}">${sideName}</span>] ${VI_NAMES[piece.type]} ${fromStr} ${action} ${toStr}`;
     
-    attachDragEvents(item);
     logList.appendChild(item);
-    
-    while (logList.children.length > 5) { 
-        logList.removeChild(logList.firstChild); 
-    }
     logList.scrollTop = logList.scrollHeight;
 }
 
@@ -1668,25 +1652,6 @@ function requestAiMove() {
         gameEpoch: epoch
     });
 }
-
-// Bắt sự kiện Drag Over cho List 
-document.addEventListener('DOMContentLoaded', () => {
-    const logList = document.getElementById('log-list');
-    if(logList) {
-        logList.addEventListener('dragover', e => {
-            e.preventDefault();
-            const dragging = logList.querySelector('.dragging');
-            if (!dragging) return;
-            const siblings = [...logList.querySelectorAll('.log-item:not(.dragging)')];
-            let nextSibling = siblings.find(sib => {
-                const rect = sib.getBoundingClientRect();
-                return e.clientY <= rect.top + rect.height / 2;
-            });
-            if (nextSibling) logList.insertBefore(dragging, nextSibling);
-            else logList.appendChild(dragging);
-        });
-    }
-});
 
 window.onload = initGame;
 </script>
@@ -1946,20 +1911,14 @@ window.onload = initGame;
         .log-section { flex: 0 0 160px; height: 160px; min-height: 160px; max-height: 160px; display: flex; flex-direction: column; padding: 14px; overflow: hidden; }
         .log-title { flex: 0 0 auto; font-size: 12px; color: #999; margin-bottom: 8px; }
         .log-list {
-            flex: 1; overflow-y: hidden; overflow-x: hidden; background: #1a1a24; padding: 5px 10px;
+            flex: 1; overflow-y: auto; overflow-x: hidden; background: #1a1a24; padding: 5px 10px;
             border-radius: 6px; font-family: monospace; font-size: 14px; color: #ddd; scroll-behavior: smooth;
         }
         
-        /* Drag and Drop CSS */
+        /* Hiển thị thanh cuộn thay vì kéo thả */
         .log-item { 
             height: 24px; line-height: 24px; border-bottom: 1px solid #2b2b36; padding: 0 5px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            cursor: grab; transition: transform 0.1s ease; user-select: none;
-        }
-        .log-item:active { cursor: grabbing; }
-        .log-item.dragging { 
-            opacity: 0.6; background: #2ecc7133; 
-            border: 1px dashed #2ecc71; transform: scale(0.98); 
         }
 
         .log-item span.white { color: #f1c40f; font-weight: bold; }
@@ -1972,9 +1931,9 @@ window.onload = initGame;
             to { opacity: 1; transform: translateY(0); }
         }
 
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a24; }
-        ::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 
         /* Group 2 nút */
         .button-group { display: flex; gap: 10px; flex-shrink: 0; }
@@ -1989,6 +1948,28 @@ window.onload = initGame;
         .btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(231, 76, 60, 0.4); }
         .btn-undo:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4); }
         .btn-reset:active, .btn-undo:active { transform: translateY(1px); }
+
+        /* Media Queries Tối Ưu Cho Màn Hình Win/Mac và Mobile */
+        @media (max-width: 1200px) {
+            .board-wrapper { transform: scale(0.85); transform-origin: top center; margin-bottom: -105px; }
+        }
+        @media (max-width: 1000px) {
+            body { padding: 10px; align-items: flex-start; }
+            .game-container {
+                flex-direction: column; align-items: center;
+                padding: 15px; height: auto; gap: 20px;
+            }
+            .board-wrapper { transform: scale(0.7); transform-origin: top center; margin-bottom: -210px; }
+            .sidebar { width: 100%; min-width: unset; max-width: 620px; margin: 0 auto; }
+            .log-section { height: 160px; min-height: 160px; }
+        }
+        @media (max-width: 768px) {
+            .board-wrapper { transform: scale(0.55); margin-bottom: -315px; }
+            .game-container { padding: 10px; gap: 10px; }
+        }
+        @media (max-width: 500px) {
+            .board-wrapper { transform: scale(0.45); margin-bottom: -385px; }
+        }
 
     </style>
 </head>
@@ -2041,7 +2022,7 @@ window.onload = initGame;
         </div>
 
         <div class="log-section">
-            <div class="log-title">LỊCH SỬ NƯỚC ĐI (Kéo thả để sắp xếp)</div>
+            <div class="log-title">LỊCH SỬ NƯỚC ĐI</div>
             <div class="log-list" id="log-list"></div>
         </div>
 
@@ -2620,10 +2601,6 @@ function undoMoveAction() {
     document.getElementById('captured-white').innerHTML = restoredState.capWhiteHTML;
     document.getElementById('captured-black').innerHTML = restoredState.capBlackHTML;
 
-    // Phục hồi lại sự kiện kéo thả sau khi undo
-    const newItems = document.getElementById('log-list').querySelectorAll('.log-item');
-    newItems.forEach(item => attachDragEvents(item));
-
     document.getElementById('board-wrapper').querySelectorAll('.piece').forEach(e => e.remove());
     pieceElements = {};
     for (let r = 0; r < ROWS; r++) {
@@ -3183,39 +3160,6 @@ function addCapturedPiece(piece) {
     container.appendChild(div);
 }
 
-// ================= GẮN SỰ KIỆN KÉO THẢ CHO LỊCH SỬ NƯỚC ĐI =================
-function attachDragEvents(item) {
-    item.draggable = true;
-    
-    // Desktop Drag events
-    item.addEventListener('dragstart', () => {
-        setTimeout(() => item.classList.add('dragging'), 0);
-    });
-    item.addEventListener('dragend', () => {
-        item.classList.remove('dragging');
-    });
-
-    // Mobile Touch events
-    item.addEventListener('touchstart', () => {
-        item.classList.add('dragging');
-    }, {passive: true});
-    item.addEventListener('touchmove', (e) => {
-        e.preventDefault(); 
-        const touch = e.touches[0];
-        const list = document.getElementById('log-list');
-        const siblings = [...list.querySelectorAll('.log-item:not(.dragging)')];
-        let nextSibling = siblings.find(sib => {
-            const rect = sib.getBoundingClientRect();
-            return touch.clientY <= rect.top + rect.height / 2;
-        });
-        if (nextSibling) list.insertBefore(item, nextSibling);
-        else list.appendChild(item);
-    }, {passive: false});
-    item.addEventListener('touchend', () => {
-        item.classList.remove('dragging');
-    });
-}
-
 function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,capturedPiece,promotionType){
     const logList=document.getElementById('log-list'),item=document.createElement('div');
     item.className='log-item new-move';
@@ -3236,10 +3180,7 @@ function logMove(piece,fR,fC,tR,tC,isCapture,promote,castle,enPassantMove,captur
     }
     item.innerHTML=`[<span class="${sideClass}">${sideName}</span>] ${text}`;
     
-    attachDragEvents(item);
     logList.appendChild(item);
-    
-    while(logList.children.length>5) { logList.removeChild(logList.firstChild); }
     requestAnimationFrame(() => logList.scrollTo({ top: logList.scrollHeight, behavior: 'smooth' }));
     setTimeout(() => item.classList.remove('new-move'), 260);
 }
@@ -3307,25 +3248,6 @@ function requestAiMove() {
         useQS: useQS
     });
 }
-
-// Bắt sự kiện Drag Over cho List 
-document.addEventListener('DOMContentLoaded', () => {
-    const logList = document.getElementById('log-list');
-    if(logList) {
-        logList.addEventListener('dragover', e => {
-            e.preventDefault();
-            const dragging = logList.querySelector('.dragging');
-            if (!dragging) return;
-            const siblings = [...logList.querySelectorAll('.log-item:not(.dragging)')];
-            let nextSibling = siblings.find(sib => {
-                const rect = sib.getBoundingClientRect();
-                return e.clientY <= rect.top + rect.height / 2;
-            });
-            if (nextSibling) logList.insertBefore(dragging, nextSibling);
-            else logList.appendChild(dragging);
-        });
-    }
-});
 
 window.onload = initGame;
 </script>
