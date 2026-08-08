@@ -583,30 +583,24 @@
             .btn-reset, .btn-undo { font-size: 12px; }
         }
     
-        /* ==========================================================
-           PORTRAIT MOBILE ONLY — UNIFIED BOARD WIDTH
-           Both modes use the same visible horizontal width.
-           The board is centered by flex; no left/right translation.
-           ========================================================== */
+        /* PORTRAIT MOBILE FINAL: JS sets zoom from the real viewport width.
+           No transform / translate / negative margins are used for the board. */
         @media (max-width: 768px) and (orientation: portrait) {
             body {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding: 0 0 14px !important;
                 overflow-x: hidden !important;
             }
             .game-container {
                 width: 100% !important;
                 max-width: none !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding: 6px 0 14px !important;
                 align-items: center !important;
                 overflow: visible !important;
             }
             .board-wrapper {
-                align-self: center !important;
-                transform-origin: top center !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
+                transform: none !important;
+                margin: 0 auto 8px !important;
+                transform-origin: initial !important;
             }
             .log-section {
                 flex: 0 0 158px !important;
@@ -1888,25 +1882,25 @@ function requestAiMove() {
 
 
 
-(function() {
-    function fitPortraitBoard() {
-        if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
-        const wrapper = document.getElementById('board-wrapper');
-        if (!wrapper) return;
-        const target = Math.max(280, window.innerWidth - 8);
-        const scale = Math.min(1, target / 660);
-        wrapper.style.transformOrigin = 'top center';
-        wrapper.style.transform = `scale(${scale})`;
-        wrapper.style.marginLeft = 'auto';
-        wrapper.style.marginRight = 'auto';
-        wrapper.style.marginBottom = `${-700 + (700 * scale)}px`;
-    }
-    window.addEventListener('resize', fitPortraitBoard, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 80), { passive: true });
-    window.addEventListener('load', fitPortraitBoard);
-    setTimeout(fitPortraitBoard, 0);
-})();
-window.onload = initGame;
+function fitPortraitBoard() {
+    if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
+    const wrapper = document.getElementById('board-wrapper');
+    if (!wrapper) return;
+    const viewport = document.documentElement.clientWidth || window.innerWidth;
+    // Include the left coordinate gutter so the STT column sits just inside the screen.
+    const baseWidth = wrapper.querySelector('.board-grid') ? 730 : 660;
+    const leftGutter = 30;
+    const targetEdge = 3;
+    const scale = Math.max(0.35, Math.min(1, (viewport - targetEdge * 2) / (baseWidth + leftGutter * 2)));
+    wrapper.style.zoom = scale.toFixed(5);
+    wrapper.style.transform = 'none';
+    wrapper.style.marginLeft = 'auto';
+    wrapper.style.marginRight = 'auto';
+}
+window.addEventListener('resize', fitPortraitBoard);
+window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 50));
+
+window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
 </script>
 </body>
 </html>
@@ -2330,30 +2324,24 @@ window.onload = initGame;
         }
 
     
-        /* ==========================================================
-           PORTRAIT MOBILE ONLY — UNIFIED BOARD WIDTH
-           Both modes use the same visible horizontal width.
-           The board is centered by flex; no left/right translation.
-           ========================================================== */
+        /* PORTRAIT MOBILE FINAL: JS sets zoom from the real viewport width.
+           No transform / translate / negative margins are used for the board. */
         @media (max-width: 768px) and (orientation: portrait) {
             body {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding: 0 0 14px !important;
                 overflow-x: hidden !important;
             }
             .game-container {
                 width: 100% !important;
                 max-width: none !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+                padding: 6px 0 14px !important;
                 align-items: center !important;
                 overflow: visible !important;
             }
             .board-wrapper {
-                align-self: center !important;
-                transform-origin: top center !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
+                transform: none !important;
+                margin: 0 auto 8px !important;
+                transform-origin: initial !important;
             }
             .log-section {
                 flex: 0 0 158px !important;
@@ -3641,25 +3629,25 @@ function requestAiMove() {
 }
 
 
-(function() {
-    function fitPortraitBoard() {
-        if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
-        const wrapper = document.getElementById('board-wrapper');
-        if (!wrapper) return;
-        const target = Math.max(280, window.innerWidth - 8);
-        const scale = Math.min(1, target / 730);
-        wrapper.style.transformOrigin = 'top center';
-        wrapper.style.transform = `scale(${scale})`;
-        wrapper.style.marginLeft = 'auto';
-        wrapper.style.marginRight = 'auto';
-        wrapper.style.marginBottom = `${-700 + (700 * scale)}px`;
-    }
-    window.addEventListener('resize', fitPortraitBoard, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 80), { passive: true });
-    window.addEventListener('load', fitPortraitBoard);
-    setTimeout(fitPortraitBoard, 0);
-})();
-window.onload = initGame;
+function fitPortraitBoard() {
+    if (!window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches) return;
+    const wrapper = document.getElementById('board-wrapper');
+    if (!wrapper) return;
+    const viewport = document.documentElement.clientWidth || window.innerWidth;
+    // Include the left coordinate gutter so the STT column sits just inside the screen.
+    const baseWidth = wrapper.querySelector('.board-grid') ? 730 : 660;
+    const leftGutter = 30;
+    const targetEdge = 3;
+    const scale = Math.max(0.35, Math.min(1, (viewport - targetEdge * 2) / (baseWidth + leftGutter * 2)));
+    wrapper.style.zoom = scale.toFixed(5);
+    wrapper.style.transform = 'none';
+    wrapper.style.marginLeft = 'auto';
+    wrapper.style.marginRight = 'auto';
+}
+window.addEventListener('resize', fitPortraitBoard);
+window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 50));
+
+window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
 </script>
 </body>
 </html>
