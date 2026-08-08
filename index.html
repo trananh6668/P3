@@ -193,6 +193,9 @@
     
         /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
         @media (max-width: 768px) and (orientation: portrait) {
+            /* Phone dọc: P2P hiển thị bên trong sidebar, ngay dưới trạng thái trận đấu. */
+            .outer-online-panel.is-visible { display: none !important; }
+            .online-panel.mobile-online-visible { display: flex !important; }
             .game-container {
                 width: 100% !important;
                 max-width: none !important;
@@ -505,6 +508,9 @@
         .online-panel[hidden] { display: none !important; }
         /* UI P2P được đặt ở tab trái; panel này chỉ giữ DOM/API nội bộ. */
         .online-panel { display: none !important; }
+        @media (max-width: 768px) and (orientation: portrait) {
+            .online-panel.mobile-online-visible { display: flex !important; }
+        }
         .online-title { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .4px; }
         .online-role-row, .online-code-row, .online-join-row { display: flex; gap: 6px; }
         .online-panel input {
@@ -2058,15 +2064,44 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
     }
     function onlineModeActive(){ return document.getElementById('game-mode')?.value === ONLINE_MODE; }
 
+    function onlineSyncMobilePlacement(active){
+        const panel = onlineEl('online-panel');
+        const settings = document.querySelector('.settings-panel');
+        const sidebar = document.querySelector('.sidebar');
+        const status = document.querySelector('.status-card');
+        if(!panel || !settings || !sidebar) return false;
+        const portrait = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
+        if(portrait && active && status){
+            if(panel.parentElement !== sidebar || panel.previousElementSibling !== status){
+                sidebar.insertBefore(panel, status.nextElementSibling);
+            }
+            panel.classList.add('mobile-online-visible');
+            panel.hidden = false;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(false, ONLINE_GAME); } catch(e) {}
+            return true;
+        }
+        panel.classList.remove('mobile-online-visible');
+        if(panel.parentElement !== settings){
+            const difficulty = onlineEl('ai-difficulty-row');
+            settings.insertBefore(panel, difficulty ? difficulty.nextSibling : null);
+        }
+        panel.hidden = true;
+        return false;
+    }
+
     function onlineUpdatePanel(){
         const panel = onlineEl('online-panel');
         const side = onlineEl('player-side');
         if(!panel) return;
-        panel.hidden = !onlineModeActive();
-        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(onlineModeActive(), ONLINE_GAME); } catch(e) {}
+        const active = onlineModeActive();
+        const mobilePlaced = onlineSyncMobilePlacement(active);
+        if(!mobilePlaced){
+            panel.hidden = !active;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(active, ONLINE_GAME); } catch(e) {}
+        }
         if(side){
-            side.disabled = onlineModeActive();
-            if(onlineModeActive()) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+            side.disabled = active;
+            if(active) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
         }
     }
 
@@ -2193,6 +2228,9 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         if(onlineModeActive()) initGame();
     }
 
+    window.addEventListener('resize', () => { if(typeof onlineUpdatePanel === 'function') onlineUpdatePanel(); });
+    window.addEventListener('orientationchange', () => setTimeout(() => { if(typeof onlineUpdatePanel === 'function') onlineUpdatePanel(); }, 60));
+
     function onlineSetup(){
         window.onlineCreateRoom = onlineCreateRoom;
         window.onlineJoinRoom = onlineJoinRoom;
@@ -2273,6 +2311,8 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cờ Vua</title>
+    <style>
+    </style>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -2402,20 +2442,15 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             text-rendering: geometricPrecision;
         }
 
-        /* CỜ VUA: dùng glyph Unicode dạng text (FE0E) và font symbol ổn định.
-           iOS/Safari không được phép chuyển glyph sang emoji, tránh quân bị đổi hình và nhỏ hơn thiết kế. */
+        /* CỜ VUA: dùng đúng data quân cờ dạng cũ. */
         .piece.white,
         .piece.black {
-            font-family: "Times New Roman", "DejaVu Sans", "Segoe UI Symbol", serif !important;
+            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
             font-weight: 400;
             font-style: normal;
-            line-height: 1 !important;
-            font-variant: normal !important;
-            font-variant-emoji: text !important;
-            -webkit-font-variant-emoji: text !important;
+            line-height: 1;
             -webkit-text-stroke: 0;
-            transform: scale(1.08);
-            text-rendering: geometricPrecision;
+            transform: scale(1.02);
         }
         .piece.white {
             color: #fff;
@@ -2518,6 +2553,9 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         .online-panel[hidden] { display: none !important; }
         /* UI P2P được đặt ở tab trái; panel này chỉ giữ DOM/API nội bộ. */
         .online-panel { display: none !important; }
+        @media (max-width: 768px) and (orientation: portrait) {
+            .online-panel.mobile-online-visible { display: flex !important; }
+        }
         .online-title { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .4px; }
         .online-role-row, .online-code-row, .online-join-row { display: flex; gap: 6px; }
         .online-panel input {
@@ -3269,8 +3307,8 @@ const WHITE = 'w', BLACK = 'b';
 const SYMBOLS = {
     // Cùng một bộ quân dạng đặc (filled) cho cả hai bên.
     // Bên Trắng chỉ khác màu bằng CSS.
-    'w': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' },
-    'b': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' }
+    'w': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' },
+    'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
 };
 const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
 
@@ -4036,15 +4074,44 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
     }
     function onlineModeActive(){ return document.getElementById('game-mode')?.value === ONLINE_MODE; }
 
+    function onlineSyncMobilePlacement(active){
+        const panel = onlineEl('online-panel');
+        const settings = document.querySelector('.settings-panel');
+        const sidebar = document.querySelector('.sidebar');
+        const status = document.querySelector('.status-card');
+        if(!panel || !settings || !sidebar) return false;
+        const portrait = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
+        if(portrait && active && status){
+            if(panel.parentElement !== sidebar || panel.previousElementSibling !== status){
+                sidebar.insertBefore(panel, status.nextElementSibling);
+            }
+            panel.classList.add('mobile-online-visible');
+            panel.hidden = false;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(false, ONLINE_GAME); } catch(e) {}
+            return true;
+        }
+        panel.classList.remove('mobile-online-visible');
+        if(panel.parentElement !== settings){
+            const difficulty = onlineEl('ai-difficulty-row');
+            settings.insertBefore(panel, difficulty ? difficulty.nextSibling : null);
+        }
+        panel.hidden = true;
+        return false;
+    }
+
     function onlineUpdatePanel(){
         const panel = onlineEl('online-panel');
         const side = onlineEl('player-side');
         if(!panel) return;
-        panel.hidden = !onlineModeActive();
-        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(onlineModeActive(), ONLINE_GAME); } catch(e) {}
+        const active = onlineModeActive();
+        const mobilePlaced = onlineSyncMobilePlacement(active);
+        if(!mobilePlaced){
+            panel.hidden = !active;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(active, ONLINE_GAME); } catch(e) {}
+        }
         if(side){
-            side.disabled = onlineModeActive();
-            if(onlineModeActive()) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+            side.disabled = active;
+            if(active) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
         }
     }
 
@@ -4170,6 +4237,9 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         onlineSetStatus('Đã ngắt kết nối', '#aaa');
         if(onlineModeActive()) initGame();
     }
+
+    window.addEventListener('resize', () => { if(typeof onlineUpdatePanel === 'function') onlineUpdatePanel(); });
+    window.addEventListener('orientationchange', () => setTimeout(() => { if(typeof onlineUpdatePanel === 'function') onlineUpdatePanel(); }, 60));
 
     function onlineSetup(){
         window.onlineCreateRoom = onlineCreateRoom;
