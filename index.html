@@ -2066,30 +2066,12 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
            PC và điện thoại chỉ thay đổi kích thước bàn; hình dáng quân không đổi. */
         .piece.white,
         .piece.black {
-            /* Cố định glyph dạng TEXT, không cho iOS Safari chuyển sang emoji. */
-            font-family: "Times New Roman", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif;
+            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
             font-weight: 400;
             font-style: normal;
-            font-variant-emoji: text;
-            font-feature-settings: "liga" 0, "clig" 0;
             line-height: 1;
             -webkit-text-stroke: 0;
-            -webkit-font-smoothing: antialiased;
-            text-rendering: geometricPrecision;
             transform: scale(1.02);
-        }
-
-        /* iOS/iPadOS Safari: giữ đúng glyph chữ và bù metric font để
-           kích thước quân cờ khớp với desktop, không đổi kích thước bàn cờ. */
-        @supports (-webkit-touch-callout: none) {
-            .piece.white,
-            .piece.black {
-                font-family: "Times New Roman", "Apple Symbols", "Segoe UI Symbol", serif;
-                font-size: 68px;
-                font-variant-emoji: text;
-                -webkit-text-stroke: 0;
-                transform: scale(1.02);
-            }
         }
         .piece.white {
             color: #fff;
@@ -2954,8 +2936,8 @@ const WHITE = 'w', BLACK = 'b';
 const SYMBOLS = {
     // Cùng một bộ quân dạng đặc (filled) cho cả hai bên.
     // Bên Trắng chỉ khác màu bằng CSS.
-    'w': { 'k': '♚︎', 'q': '♛︎', 'r': '♜︎', 'b': '♝︎', 'n': '♞︎', 'p': '♟︎' },
-    'b': { 'k': '♚︎', 'q': '♛︎', 'r': '♜︎', 'b': '♝︎', 'n': '♞︎', 'p': '♟︎' }
+    'w': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' },
+    'b': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' }
 };
 const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
 
