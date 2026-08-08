@@ -141,20 +141,6 @@
         }
     
         /* FINAL PORTRAIT FIX: center board by flex layout, never use left/right translation */
-        @media (max-width: 768px) {
-            /* Đồng bộ tuyệt đối form quân Cờ Vua với PC; không đổi glyph trên mobile. */
-            .piece {
-                font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
-                font-weight: 400;
-                font-style: normal;
-                line-height: 1;
-                -webkit-text-stroke: 0;
-            }
-            .piece.white, .piece.black {
-                transform: scale(1.02);
-            }
-        }
-
         @media (max-width: 768px) and (orientation: portrait) {
             .game-container {
                 width: 100% !important;
