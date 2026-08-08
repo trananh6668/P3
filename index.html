@@ -18,21 +18,26 @@
         
         /* Game Panel (Menu trái) */
         .game-panel {
-            background: #262635; 
-            width: 320px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 20px;
-            padding: 20px;
-            border-right: 1px solid #363645; 
-            box-shadow: 4px 0 15px rgba(0,0,0,0.6); 
+            background: #262635;
+            width: 320px;
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            gap: 12px;
+            padding: 22px 15px 18px;
+            border-right: 1px solid #363645;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.6);
             z-index: 100;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform: none !important;
+            zoom: 1 !important;
         }
 
         .game-panel h1 {
-            color: #fff; font-size: 24px; text-align: center; margin-bottom: 10px; width: 100%;
+            color: #fff; font-size: 24px; text-align: center; margin: 0 0 6px; width: 100%;
         }
         .btn-tab {
             width: 100%;
@@ -41,7 +46,37 @@
         }
         .btn-tab:hover { background: #2b2b3c; color: #fff; }
         .btn-tab.active { background: #2ecc71; color: #fff; border-color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.4); }
-        
+
+        /* P2P nằm ở tab trái; iframe vẫn giữ layout bàn cờ/setting cũ. */
+        .outer-online-panel {
+            display: none;
+            width: 100%;
+            background: #1a1a24;
+            border: 1px solid #3d3d50;
+            border-radius: 9px;
+            padding: 10px;
+            gap: 8px;
+            flex-direction: column;
+        }
+        .outer-online-panel.is-visible { display: flex; }
+        .outer-online-title { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .4px; }
+        .outer-online-row { display: flex; gap: 6px; width: 100%; }
+        .outer-online-panel input {
+            min-width: 0; flex: 1; width: 100%; background: #262635; color: #fff;
+            border: 1px solid #444; border-radius: 5px; padding: 8px 9px; font-size: 12px;
+            outline: none; user-select: text;
+        }
+        .outer-online-panel input:focus { border-color: #2ecc71; }
+        .outer-online-btn {
+            flex: 1; min-width: 0; border: 0; border-radius: 5px; padding: 8px 7px;
+            background: #2ecc71; color: #fff; font-size: 11px; font-weight: 800;
+            cursor: pointer; touch-action: manipulation;
+        }
+        .outer-online-btn.secondary { background: #555; }
+        .outer-online-btn.copy { flex: 0 0 auto; background: #34495e; }
+        .outer-online-status { min-height: 16px; color: #aaa; font-size: 11px; line-height: 16px; }
+        .outer-online-hint { color: #777; font-size: 10px; line-height: 14px; }
+
         .frame-stack { position: relative; flex: 1; min-width: 0; height: 100%; overflow: hidden; background: #1a1a24; }
         .frame-stack iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; background: #1a1a24; opacity: 0; visibility: hidden; pointer-events: none; }
         .frame-stack iframe.is-active { opacity: 1; visibility: visible; pointer-events: auto; }
@@ -53,8 +88,9 @@
         @media (max-width: 1250px) {
             .game-panel {
                 width: 230px;
-                padding: 16px;
-                gap: 12px;
+                flex-basis: 230px;
+                padding: 16px 11px;
+                gap: 10px;
             }
             .game-panel h1 { font-size: 21px; }
             .btn-tab { padding: 12px 16px; font-size: 15px; }
@@ -63,8 +99,9 @@
         @media (max-width: 900px) {
             .game-panel {
                 width: 190px;
-                padding: 12px;
-                gap: 10px;
+                flex-basis: 190px;
+                padding: 12px 9px;
+                gap: 9px;
             }
             .game-panel h1 { font-size: 19px; }
             .btn-tab { padding: 11px 12px; font-size: 14px; }
@@ -84,11 +121,13 @@
                 left: 0;
                 right: 0;
                 width: 100%;
-                height: 56px;
+                height: auto;
                 min-height: 56px;
-                flex: 0 0 56px;
+                flex: 0 0 auto;
                 flex-direction: row;
+                flex-wrap: wrap;
                 justify-content: center;
+                align-items: center;
                 padding: 7px 10px;
                 gap: 8px;
                 border-right: none;
@@ -96,15 +135,27 @@
                 border-top: none;
                 box-shadow: 0 3px 12px rgba(0,0,0,0.45);
                 z-index: 1000;
+                overflow: visible;
             }
             .game-panel h1 { display: none; }
             .btn-tab {
-                width: min(190px, 50%);
+                width: min(190px, 48%);
                 height: 42px;
                 padding: 8px 10px;
                 font-size: 14px;
                 border-radius: 9px;
                 touch-action: manipulation;
+                flex: 0 1 190px;
+            }
+            .outer-online-panel {
+                position: absolute;
+                top: calc(100% + 1px);
+                left: 0;
+                right: 0;
+                width: 100%;
+                border-radius: 0 0 10px 10px;
+                box-shadow: 0 8px 18px rgba(0,0,0,.45);
+                padding: 8px 10px;
             }
             .frame-stack {
                 order: 2;
@@ -191,6 +242,24 @@
         <h1>🎮 Board Games</h1>
         <button class="btn-tab active" id="btn-xiangqi" onclick="switchGame('xiangqi')">Cờ Tướng</button>
         <button class="btn-tab" id="btn-chess" onclick="switchGame('chess')">Cờ Vua</button>
+
+        <div class="outer-online-panel" id="outer-online-panel" aria-label="Cài đặt chơi online P2P">
+            <div class="outer-online-title">CHƠI ONLINE P2P</div>
+            <div class="outer-online-row">
+                <button type="button" class="outer-online-btn" id="outer-create-btn">TẠO PHÒNG</button>
+                <button type="button" class="outer-online-btn secondary" id="outer-disconnect-btn">NGẮT</button>
+            </div>
+            <div class="outer-online-row">
+                <input id="outer-peer-id" type="text" readonly placeholder="Mã phòng 6 ký tự">
+                <button type="button" class="outer-online-btn copy" id="outer-copy-btn">SAO CHÉP</button>
+            </div>
+            <div class="outer-online-row">
+                <input id="outer-join-id" type="text" autocomplete="off" maxlength="6" placeholder="Nhập mã phòng">
+                <button type="button" class="outer-online-btn" id="outer-join-btn">VÀO PHÒNG</button>
+            </div>
+            <div class="outer-online-status" id="outer-online-status">Chưa kết nối</div>
+            <div class="outer-online-hint">Mã phòng được rút gọn để dễ gửi. Mỗi game có phòng P2P riêng.</div>
+        </div>
     </div>
 
     <div class="frame-stack"><iframe id="game-frame" class="is-active"></iframe><iframe id="game-frame-b"></iframe></div>
@@ -205,6 +274,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cờ Tướng</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         :root {
             --bg-color: #1a1a24;
@@ -422,6 +492,34 @@
             border-color: #2ecc71; 
             box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
         }
+
+        .online-panel {
+            background: #1a1a24;
+            border: 1px solid #3d3d50;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .online-panel[hidden] { display: none !important; }
+        /* UI P2P được đặt ở tab trái; panel này chỉ giữ DOM/API nội bộ. */
+        .online-panel { display: none !important; }
+        .online-title { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .4px; }
+        .online-role-row, .online-code-row, .online-join-row { display: flex; gap: 6px; }
+        .online-panel input {
+            min-width: 0; flex: 1; width: 100%; background: #262635; color: #fff;
+            border: 1px solid #444; border-radius: 5px; padding: 8px 9px; font-size: 12px; outline: none;
+        }
+        .online-panel input:focus { border-color: #2ecc71; }
+        .online-action, .online-copy {
+            flex: 1; border: 0; border-radius: 5px; padding: 8px 7px; background: #2ecc71; color: #fff;
+            font-size: 11px; font-weight: 800; cursor: pointer; touch-action: manipulation;
+        }
+        .online-action.secondary { background: #555; }
+        .online-copy { flex: 0 0 auto; background: #34495e; }
+        .online-status { min-height: 16px; color: #aaa; font-size: 11px; line-height: 16px; }
+
 
         .status-card, .captured-section, .log-section {
             background: var(--panel-bg); border-radius: 10px; border: 1px solid #363645;
@@ -677,6 +775,7 @@
                 <select id="game-mode" onchange="initGame();">
                     <option value="ai">Đánh với Máy (AI)</option>
                     <option value="pvp">Hai người (Chung máy)</option>
+                    <option value="online">Chơi Online (P2P)</option>
                 </select>
             </div>
             <div class="selector-row">
@@ -694,6 +793,22 @@
                     <option value="hard">Khó</option>
                     <option value="extreme">Cực Khó</option>
                 </select>
+            </div>
+            <div class="online-panel" id="online-panel" hidden>
+                <div class="online-title">CHƠI ONLINE P2P</div>
+                <div class="online-role-row">
+                    <button type="button" class="online-action" id="online-create-btn">TẠO PHÒNG</button>
+                    <button type="button" class="online-action secondary" id="online-disconnect-btn">NGẮT KẾT NỐI</button>
+                </div>
+                <div class="online-code-row">
+                    <input id="online-peer-id" type="text" readonly placeholder="Mã phòng của bạn">
+                    <button type="button" class="online-copy" id="online-copy-btn">SAO CHÉP</button>
+                </div>
+                <div class="online-join-row">
+                    <input id="online-join-id" type="text" autocomplete="off" placeholder="Nhập mã phòng đối thủ">
+                    <button type="button" class="online-action" id="online-join-btn">THAM GIA</button>
+                </div>
+                <div class="online-status" id="online-status">Chưa kết nối</div>
             </div>
         </div>
 
@@ -1921,6 +2036,229 @@ window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 
 
 window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
 </script>
+
+<!-- ================= PEERJS ONLINE MODE ================= -->
+<script>
+(function(){
+    const ONLINE_MODE = 'online';
+    const ONLINE_GAME = 'xiangqi';
+    const ONLINE_SELF_SIDE = 'r';
+    const ONLINE_REMOTE_SIDE = 'b';
+
+    let onlinePeer = null;
+    let onlineConn = null;
+    let onlineRole = 'host';
+    let onlineApplyingRemote = false;
+
+    function onlineEl(id){ return document.getElementById(id); }
+    function onlineSetStatus(text, color){
+        const el = onlineEl('online-status');
+        if(el){ el.textContent = text; if(color) el.style.color = color; }
+        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlineStatus) window.parent.setOuterOnlineStatus(text, color); } catch(e) {}
+    }
+    function onlineModeActive(){ return document.getElementById('game-mode')?.value === ONLINE_MODE; }
+
+    function onlineUpdatePanel(){
+        const panel = onlineEl('online-panel');
+        const side = onlineEl('player-side');
+        if(!panel) return;
+        panel.hidden = !onlineModeActive();
+        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(onlineModeActive(), ONLINE_GAME); } catch(e) {}
+        if(side){
+            side.disabled = onlineModeActive();
+            if(onlineModeActive()) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+        }
+    }
+
+    function onlineCloseConnection(){
+        try { if(onlineConn) onlineConn.close(); } catch(e){}
+        onlineConn = null;
+        try { if(onlinePeer && !onlinePeer.destroyed) onlinePeer.destroy(); } catch(e){}
+        onlinePeer = null;
+    }
+
+    function onlineBindConnection(conn){
+        onlineConn = conn;
+        conn.on('open', function(){
+            onlineSetStatus('Đã kết nối P2P • đang đồng bộ bàn...', '#2ecc71');
+            if(onlineRole === 'guest'){
+                conn.send({type:'hello', game:ONLINE_GAME});
+            } else {
+                initGame();
+                conn.send({type:'start', game:ONLINE_GAME, side:ONLINE_REMOTE_SIDE});
+                onlineSetStatus('Đối thủ đã vào phòng • Bạn đi trước', '#2ecc71');
+            }
+        });
+        conn.on('data', function(msg){
+            if(!msg || msg.game !== ONLINE_GAME) return;
+            if(msg.type === 'start' && onlineRole === 'guest'){
+                onlineRole = 'guest';
+                document.getElementById('player-side').value = ONLINE_REMOTE_SIDE;
+                initGame();
+                onlineSetStatus('Đã vào phòng • Bạn cầm Đen • chờ Đỏ', '#2ecc71');
+                return;
+            }
+            if(msg.type === 'hello' && onlineRole === 'host'){
+                document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+                initGame();
+                conn.send({type:'start', game:ONLINE_GAME, side:ONLINE_REMOTE_SIDE});
+                onlineSetStatus('Kết nối P2P thành công • Bạn cầm Đỏ', '#2ecc71');
+                return;
+            }
+            if(msg.type === 'move' && onlineModeActive()){
+                onlineApplyingRemote = true;
+                try { executeMove(msg.move); }
+                finally { onlineApplyingRemote = false; }
+                onlineSetStatus(turn === playerSide ? 'Đến lượt bạn' : 'Đối thủ đang đi...', '#2ecc71');
+            }
+            if(msg.type === 'reset' && onlineModeActive()){
+                onlineApplyingRemote = true;
+                try { initGame(); } finally { onlineApplyingRemote = false; }
+                onlineSetStatus('Đối thủ đã tạo ván mới', '#2ecc71');
+            }
+        });
+        conn.on('close', function(){
+            onlineConn = null;
+            onlineSetStatus('Đối thủ đã ngắt kết nối', '#e67e22');
+        });
+        conn.on('error', function(err){
+            onlineSetStatus('Lỗi kết nối: ' + (err?.type || 'P2P'), '#e74c3c');
+        });
+    }
+
+    function onlineEnsurePeer(){
+        if(onlinePeer && !onlinePeer.destroyed) return onlinePeer;
+        if(typeof Peer === 'undefined'){
+            onlineSetStatus('Không tải được PeerJS. Kiểm tra Internet rồi thử lại.', '#e74c3c');
+            return null;
+        }
+        const makeShortId = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let out = '';
+            for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+            return out;
+        };
+        onlinePeer = new Peer(makeShortId());
+        onlinePeer.on('open', id => {
+            onlineEl('online-peer-id').value = id;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePeerId) window.parent.setOuterOnlinePeerId(id); } catch(e) {}
+            onlineSetStatus('Phòng sẵn sàng • gửi mã này cho đối thủ', '#2ecc71');
+        });
+        onlinePeer.on('connection', conn => {
+            if(!onlineModeActive()) { conn.close(); return; }
+            onlineRole = 'host';
+            onlineBindConnection(conn);
+        });
+        onlinePeer.on('error', err => {
+            if(err?.type === 'unavailable-id') {
+                try { onlinePeer.destroy(); } catch(e) {}
+                onlinePeer = null;
+                onlineSetStatus('Mã phòng vừa trùng • đang tạo mã mới...', '#e67e22');
+                setTimeout(() => { if(onlineModeActive()) onlineEnsurePeer(); }, 120);
+                return;
+            }
+            onlineSetStatus('PeerJS: ' + (err?.type || 'lỗi'), '#e74c3c');
+        });
+        onlinePeer.on('disconnected', () => onlineSetStatus('PeerJS đã mất kết nối máy chủ', '#e67e22'));
+        return onlinePeer;
+    }
+
+    function onlineCreateRoom(){
+        onlineRole = 'host';
+        onlineCloseConnection();
+        document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+        onlineEnsurePeer();
+        initGame();
+        onlineSetStatus('Đang tạo phòng P2P...', '#aaa');
+    }
+
+    function onlineJoinRoom(){
+        const target = (onlineEl('online-join-id')?.value || '').trim();
+        if(!target){ onlineSetStatus('Hãy nhập mã phòng của đối thủ.', '#e67e22'); return; }
+        onlineRole = 'guest';
+        const peer = onlineEnsurePeer();
+        if(!peer) return;
+        document.getElementById('player-side').value = ONLINE_REMOTE_SIDE;
+        initGame();
+        onlineSetStatus('Đang kết nối tới phòng...', '#aaa');
+        try { onlineBindConnection(peer.connect(target, {reliable:true})); }
+        catch(e){ onlineSetStatus('Không thể kết nối tới mã phòng này.', '#e74c3c'); }
+    }
+
+    function onlineDisconnect(){
+        onlineCloseConnection();
+        onlineRole = 'host';
+        document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+        onlineSetStatus('Đã ngắt kết nối', '#aaa');
+        if(onlineModeActive()) initGame();
+    }
+
+    function onlineSetup(){
+        window.onlineCreateRoom = onlineCreateRoom;
+        window.onlineJoinRoom = onlineJoinRoom;
+        window.onlineDisconnect = onlineDisconnect;
+        onlineUpdatePanel();
+        onlineEl('online-create-btn')?.addEventListener('click', onlineCreateRoom);
+        onlineEl('online-join-btn')?.addEventListener('click', onlineJoinRoom);
+        onlineEl('online-disconnect-btn')?.addEventListener('click', onlineDisconnect);
+        onlineEl('online-copy-btn')?.addEventListener('click', async () => {
+            const value = onlineEl('online-peer-id')?.value;
+            if(!value) return;
+            try { await navigator.clipboard.writeText(value); onlineSetStatus('Đã sao chép mã phòng', '#2ecc71'); }
+            catch(e){ onlineEl('online-peer-id').select(); document.execCommand('copy'); onlineSetStatus('Đã sao chép mã phòng', '#2ecc71'); }
+        });
+        document.getElementById('game-mode')?.addEventListener('change', function(){
+            onlineUpdatePanel();
+            if(this.value === ONLINE_MODE) {
+                onlineRole = 'host';
+                document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+                onlineEnsurePeer();
+            } else if(onlineConn || onlinePeer) {
+                onlineCloseConnection();
+            }
+        });
+        onlineUpdatePanel();
+    }
+
+    const baseInitGame = initGame;
+    initGame = function(){
+        const mode = document.getElementById('game-mode').value;
+        if(mode === ONLINE_MODE){
+            document.getElementById('player-side').value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+        }
+        baseInitGame();
+        onlineUpdatePanel();
+        if(mode === ONLINE_MODE) updateStatus();
+    };
+
+    const baseExecuteMove = executeMove;
+    executeMove = function(move){
+        if(onlineModeActive() && !onlineApplyingRemote && turn !== playerSide) return false;
+        const result = baseExecuteMove(move);
+        if(result !== false && onlineModeActive() && !onlineApplyingRemote && onlineConn && onlineConn.open){
+            onlineConn.send({type:'move', game:ONLINE_GAME, move:move});
+        }
+        return result;
+    };
+
+    const baseHandleCellClick = handleCellClick;
+    handleCellClick = function(r,c){
+        if(onlineModeActive() && turn !== playerSide) return;
+        return baseHandleCellClick(r,c);
+    };
+
+    const originalStatus = updateStatus;
+    updateStatus = function(){
+        originalStatus();
+        if(onlineModeActive() && onlineEl('online-status') && onlineConn?.open){
+            onlineSetStatus(turn === playerSide ? 'Đến lượt bạn' : 'Đối thủ đang đi...', '#2ecc71');
+        }
+    };
+
+    window.addEventListener('load', onlineSetup);
+})();
+</script>
+
 </body>
 </html>
 </textarea>
@@ -1935,6 +2273,7 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cờ Vua</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         :root {
             --bg-color: #1a1a24;
@@ -2052,41 +2391,41 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 63px;
-        transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), top 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s ease, opacity 0.22s ease;
+            font-size: 72px;
+            line-height: 1;
+            transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1), top 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s ease, opacity 0.22s ease;
             will-change: left, top, transform, opacity;
             z-index: 15;
             pointer-events: none;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-            font-variant-emoji: text;
-            -webkit-appearance: none;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: geometricPrecision;
         }
 
-        /* CỜ VUA: một bộ glyph duy nhất cho mọi màn hình.
-           PC và điện thoại chỉ thay đổi kích thước bàn; hình dáng quân không đổi. */
+        /* CỜ VUA: dùng glyph Unicode dạng text (FE0E) và font symbol ổn định.
+           iOS/Safari không được phép chuyển glyph sang emoji, tránh quân bị đổi hình và nhỏ hơn thiết kế. */
         .piece.white,
         .piece.black {
-            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
+            font-family: "Times New Roman", "DejaVu Sans", "Segoe UI Symbol", serif !important;
             font-weight: 400;
             font-style: normal;
-            line-height: 1;
+            line-height: 1 !important;
+            font-variant: normal !important;
+            font-variant-emoji: text !important;
+            -webkit-font-variant-emoji: text !important;
             -webkit-text-stroke: 0;
-            transform: scale(1.02);
+            transform: scale(1.08);
+            text-rendering: geometricPrecision;
         }
         .piece.white {
             color: #fff;
-            text-shadow:
-                0 2px 0 #333,
-                0 4px 7px rgba(0,0,0,.75),
-                0 0 2px #111;
+            text-shadow: 0 2px 0 #333, 0 4px 7px rgba(0,0,0,.75), 0 0 2px #111;
         }
         .piece.black {
             color: #111;
-            text-shadow:
-                0 1px 0 #fff,
-                0 3px 5px rgba(0,0,0,.9);
+            text-shadow: 0 1px 0 #fff, 0 3px 5px rgba(0,0,0,.9);
         }
-        
+
         .piece.selected { 
             background: rgba(241, 196, 15, 0.5); 
             box-shadow: 0 0 15px #f1c40f; 
@@ -2166,6 +2505,34 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             border-color: #2ecc71; 
             box-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
         }
+
+        .online-panel {
+            background: #1a1a24;
+            border: 1px solid #3d3d50;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .online-panel[hidden] { display: none !important; }
+        /* UI P2P được đặt ở tab trái; panel này chỉ giữ DOM/API nội bộ. */
+        .online-panel { display: none !important; }
+        .online-title { font-size: 11px; font-weight: 800; color: #aaa; letter-spacing: .4px; }
+        .online-role-row, .online-code-row, .online-join-row { display: flex; gap: 6px; }
+        .online-panel input {
+            min-width: 0; flex: 1; width: 100%; background: #262635; color: #fff;
+            border: 1px solid #444; border-radius: 5px; padding: 8px 9px; font-size: 12px; outline: none;
+        }
+        .online-panel input:focus { border-color: #2ecc71; }
+        .online-action, .online-copy {
+            flex: 1; border: 0; border-radius: 5px; padding: 8px 7px; background: #2ecc71; color: #fff;
+            font-size: 11px; font-weight: 800; cursor: pointer; touch-action: manipulation;
+        }
+        .online-action.secondary { background: #555; }
+        .online-copy { flex: 0 0 auto; background: #34495e; }
+        .online-status { min-height: 16px; color: #aaa; font-size: 11px; line-height: 16px; }
+
 
         .status-card, .captured-section, .log-section {
             background: var(--panel-bg); border-radius: 10px; border: 1px solid #363645;
@@ -2264,91 +2631,40 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             }
         }
 
-        /* Tablet / điện thoại: bàn cờ ưu tiên lớn, điều khiển xếp gọn phía dưới */
+        /* Tablet / điện thoại: không scale riêng bằng transform; fitPortraitBoard() dùng zoom theo viewport. */
         @media (max-width: 768px) {
-            body {
-                padding: 4px 0 14px;
-                align-items: flex-start;
-            }
+            body { padding: 4px 0 14px; align-items: flex-start; }
             .game-container {
-                width: 100%;
-                max-width: none;
-                padding: 6px 5px 14px;
-                gap: 7px;
-                border-radius: 0;
-                box-shadow: none;
+                width: 100%; max-width: none; padding: 6px 5px 14px; gap: 7px;
+                border-radius: 0; box-shadow: none;
             }
-            .board-wrapper {
-                transform: scale(0.54);
-                transform-origin: top center;
-                margin-bottom: -336px;
-            }
-            .sidebar {
-                width: 100%;
-                max-width: 100%;
-                gap: 7px;
-            }
-            .settings-panel {
-                padding: 9px;
-                gap: 7px;
-            }
-            .selector-row {
-                gap: 7px;
-            }
-            .selector-row label {
-                font-size: 12px;
-                flex: 0 0 34%;
-            }
-            .selector-row select {
-                min-height: 38px;
-                padding: 7px 9px;
-                font-size: 13px;
-                flex: 1 1 auto;
-                max-width: none;
-            }
+            .board-wrapper { transform: none !important; margin: 0 auto 8px !important; transform-origin: top center !important; }
+            .sidebar { width: 100%; max-width: 100%; gap: 7px; }
+            .settings-panel { padding: 9px; gap: 7px; }
+            .selector-row { gap: 7px; }
+            .selector-row label { font-size: 12px; flex: 0 0 34%; }
+            .selector-row select { min-height: 38px; padding: 7px 9px; font-size: 13px; flex: 1 1 auto; max-width: none; }
             .status-card { padding: 9px; }
             .status-title { font-size: 11px; }
             .status-value { font-size: 16px; }
             .captured-section { padding: 8px; }
             .captured-title { font-size: 10px; margin-bottom: 5px; }
             .captured-box { gap: 4px; min-height: 34px; }
-            .captured-box .piece {
-                width: 32px;
-                height: 32px;
-                font-size: 26px;
-            }
-            .log-section {
-                flex: 0 0 132px;
-                height: 132px;
-                min-height: 132px;
-                padding: 9px;
-            }
+            .captured-box .piece { width: 30px; height: 30px; font-size: 17px; }
+            .log-section { flex: 0 0 132px; height: 132px; min-height: 132px; padding: 9px; }
             .log-title { font-size: 10px; margin-bottom: 5px; }
             .log-list { font-size: 12px; padding: 3px 6px; }
             .log-item { height: 21px; line-height: 21px; }
             .button-group { gap: 7px; }
-            .btn-reset, .btn-undo {
-                min-height: 46px;
-                padding: 11px 8px;
-                font-size: 13px;
-                touch-action: manipulation;
-            }
+            .btn-reset, .btn-undo { min-height: 46px; padding: 11px 8px; font-size: 13px; touch-action: manipulation; }
         }
 
         /* Màn hình điện thoại hẹp: tăng diện tích bàn cờ, tránh co quá nhỏ */
         @media (max-width: 500px) {
-            .board-wrapper {
-                transform: scale(0.53);
-                margin-bottom: -343px;
-            }
             .game-container { padding-left: 2px; padding-right: 2px; }
         }
 
         @media (max-width: 380px) {
-            .board-wrapper {
-                transform: scale(0.49);
-                margin-bottom: -372px;
-            }
             .selector-row label { flex-basis: 32%; }
             .btn-reset, .btn-undo { font-size: 12px; }
         }
@@ -2397,6 +2713,7 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
                 <select id="game-mode" onchange="toggleAiSettings(); initGame();">
                     <option value="ai">Đánh với Máy (AI)</option>
                     <option value="pvp">Hai người (Chung máy)</option>
+                    <option value="online">Chơi Online (P2P)</option>
                 </select>
             </div>
             <div class="selector-row">
@@ -2413,6 +2730,22 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
                     <option value="medium" selected>Vừa</option>
                     <option value="hard">Khó</option>
                 </select>
+            </div>
+            <div class="online-panel" id="online-panel" hidden>
+                <div class="online-title">CHƠI ONLINE P2P</div>
+                <div class="online-role-row">
+                    <button type="button" class="online-action" id="online-create-btn">TẠO PHÒNG</button>
+                    <button type="button" class="online-action secondary" id="online-disconnect-btn">NGẮT KẾT NỐI</button>
+                </div>
+                <div class="online-code-row">
+                    <input id="online-peer-id" type="text" readonly placeholder="Mã phòng của bạn">
+                    <button type="button" class="online-copy" id="online-copy-btn">SAO CHÉP</button>
+                </div>
+                <div class="online-join-row">
+                    <input id="online-join-id" type="text" autocomplete="off" placeholder="Nhập mã phòng đối thủ">
+                    <button type="button" class="online-action" id="online-join-btn">THAM GIA</button>
+                </div>
+                <div class="online-status" id="online-status">Chưa kết nối</div>
             </div>
         </div>
 
@@ -3681,6 +4014,229 @@ window.addEventListener('orientationchange', () => setTimeout(fitPortraitBoard, 
 
 window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
 </script>
+
+<!-- ================= PEERJS ONLINE MODE ================= -->
+<script>
+(function(){
+    const ONLINE_MODE = 'online';
+    const ONLINE_GAME = 'chess';
+    const ONLINE_SELF_SIDE = 'w';
+    const ONLINE_REMOTE_SIDE = 'b';
+
+    let onlinePeer = null;
+    let onlineConn = null;
+    let onlineRole = 'host';
+    let onlineApplyingRemote = false;
+
+    function onlineEl(id){ return document.getElementById(id); }
+    function onlineSetStatus(text, color){
+        const el = onlineEl('online-status');
+        if(el){ el.textContent = text; if(color) el.style.color = color; }
+        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlineStatus) window.parent.setOuterOnlineStatus(text, color); } catch(e) {}
+    }
+    function onlineModeActive(){ return document.getElementById('game-mode')?.value === ONLINE_MODE; }
+
+    function onlineUpdatePanel(){
+        const panel = onlineEl('online-panel');
+        const side = onlineEl('player-side');
+        if(!panel) return;
+        panel.hidden = !onlineModeActive();
+        try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePanel) window.parent.setOuterOnlinePanel(onlineModeActive(), ONLINE_GAME); } catch(e) {}
+        if(side){
+            side.disabled = onlineModeActive();
+            if(onlineModeActive()) side.value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+        }
+    }
+
+    function onlineCloseConnection(){
+        try { if(onlineConn) onlineConn.close(); } catch(e){}
+        onlineConn = null;
+        try { if(onlinePeer && !onlinePeer.destroyed) onlinePeer.destroy(); } catch(e){}
+        onlinePeer = null;
+    }
+
+    function onlineBindConnection(conn){
+        onlineConn = conn;
+        conn.on('open', function(){
+            onlineSetStatus('Đã kết nối P2P • đang đồng bộ bàn...', '#2ecc71');
+            if(onlineRole === 'guest'){
+                conn.send({type:'hello', game:ONLINE_GAME});
+            } else {
+                initGame();
+                conn.send({type:'start', game:ONLINE_GAME, side:ONLINE_REMOTE_SIDE});
+                onlineSetStatus('Đối thủ đã vào phòng • Bạn đi trước', '#2ecc71');
+            }
+        });
+        conn.on('data', function(msg){
+            if(!msg || msg.game !== ONLINE_GAME) return;
+            if(msg.type === 'start' && onlineRole === 'guest'){
+                onlineRole = 'guest';
+                document.getElementById('player-side').value = ONLINE_REMOTE_SIDE;
+                initGame();
+                onlineSetStatus('Đã vào phòng • Bạn cầm Đen • chờ Đỏ', '#2ecc71');
+                return;
+            }
+            if(msg.type === 'hello' && onlineRole === 'host'){
+                document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+                initGame();
+                conn.send({type:'start', game:ONLINE_GAME, side:ONLINE_REMOTE_SIDE});
+                onlineSetStatus('Kết nối P2P thành công • Bạn cầm Đỏ', '#2ecc71');
+                return;
+            }
+            if(msg.type === 'move' && onlineModeActive()){
+                onlineApplyingRemote = true;
+                try { executeMove(msg.move); }
+                finally { onlineApplyingRemote = false; }
+                onlineSetStatus(turn === playerSide ? 'Đến lượt bạn' : 'Đối thủ đang đi...', '#2ecc71');
+            }
+            if(msg.type === 'reset' && onlineModeActive()){
+                onlineApplyingRemote = true;
+                try { initGame(); } finally { onlineApplyingRemote = false; }
+                onlineSetStatus('Đối thủ đã tạo ván mới', '#2ecc71');
+            }
+        });
+        conn.on('close', function(){
+            onlineConn = null;
+            onlineSetStatus('Đối thủ đã ngắt kết nối', '#e67e22');
+        });
+        conn.on('error', function(err){
+            onlineSetStatus('Lỗi kết nối: ' + (err?.type || 'P2P'), '#e74c3c');
+        });
+    }
+
+    function onlineEnsurePeer(){
+        if(onlinePeer && !onlinePeer.destroyed) return onlinePeer;
+        if(typeof Peer === 'undefined'){
+            onlineSetStatus('Không tải được PeerJS. Kiểm tra Internet rồi thử lại.', '#e74c3c');
+            return null;
+        }
+        const makeShortId = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let out = '';
+            for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+            return out;
+        };
+        onlinePeer = new Peer(makeShortId());
+        onlinePeer.on('open', id => {
+            onlineEl('online-peer-id').value = id;
+            try { if(window.parent && window.parent !== window && window.parent.setOuterOnlinePeerId) window.parent.setOuterOnlinePeerId(id); } catch(e) {}
+            onlineSetStatus('Phòng sẵn sàng • gửi mã này cho đối thủ', '#2ecc71');
+        });
+        onlinePeer.on('connection', conn => {
+            if(!onlineModeActive()) { conn.close(); return; }
+            onlineRole = 'host';
+            onlineBindConnection(conn);
+        });
+        onlinePeer.on('error', err => {
+            if(err?.type === 'unavailable-id') {
+                try { onlinePeer.destroy(); } catch(e) {}
+                onlinePeer = null;
+                onlineSetStatus('Mã phòng vừa trùng • đang tạo mã mới...', '#e67e22');
+                setTimeout(() => { if(onlineModeActive()) onlineEnsurePeer(); }, 120);
+                return;
+            }
+            onlineSetStatus('PeerJS: ' + (err?.type || 'lỗi'), '#e74c3c');
+        });
+        onlinePeer.on('disconnected', () => onlineSetStatus('PeerJS đã mất kết nối máy chủ', '#e67e22'));
+        return onlinePeer;
+    }
+
+    function onlineCreateRoom(){
+        onlineRole = 'host';
+        onlineCloseConnection();
+        document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+        onlineEnsurePeer();
+        initGame();
+        onlineSetStatus('Đang tạo phòng P2P...', '#aaa');
+    }
+
+    function onlineJoinRoom(){
+        const target = (onlineEl('online-join-id')?.value || '').trim();
+        if(!target){ onlineSetStatus('Hãy nhập mã phòng của đối thủ.', '#e67e22'); return; }
+        onlineRole = 'guest';
+        const peer = onlineEnsurePeer();
+        if(!peer) return;
+        document.getElementById('player-side').value = ONLINE_REMOTE_SIDE;
+        initGame();
+        onlineSetStatus('Đang kết nối tới phòng...', '#aaa');
+        try { onlineBindConnection(peer.connect(target, {reliable:true})); }
+        catch(e){ onlineSetStatus('Không thể kết nối tới mã phòng này.', '#e74c3c'); }
+    }
+
+    function onlineDisconnect(){
+        onlineCloseConnection();
+        onlineRole = 'host';
+        document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+        onlineSetStatus('Đã ngắt kết nối', '#aaa');
+        if(onlineModeActive()) initGame();
+    }
+
+    function onlineSetup(){
+        window.onlineCreateRoom = onlineCreateRoom;
+        window.onlineJoinRoom = onlineJoinRoom;
+        window.onlineDisconnect = onlineDisconnect;
+        onlineUpdatePanel();
+        onlineEl('online-create-btn')?.addEventListener('click', onlineCreateRoom);
+        onlineEl('online-join-btn')?.addEventListener('click', onlineJoinRoom);
+        onlineEl('online-disconnect-btn')?.addEventListener('click', onlineDisconnect);
+        onlineEl('online-copy-btn')?.addEventListener('click', async () => {
+            const value = onlineEl('online-peer-id')?.value;
+            if(!value) return;
+            try { await navigator.clipboard.writeText(value); onlineSetStatus('Đã sao chép mã phòng', '#2ecc71'); }
+            catch(e){ onlineEl('online-peer-id').select(); document.execCommand('copy'); onlineSetStatus('Đã sao chép mã phòng', '#2ecc71'); }
+        });
+        document.getElementById('game-mode')?.addEventListener('change', function(){
+            onlineUpdatePanel();
+            if(this.value === ONLINE_MODE) {
+                onlineRole = 'host';
+                document.getElementById('player-side').value = ONLINE_SELF_SIDE;
+                onlineEnsurePeer();
+            } else if(onlineConn || onlinePeer) {
+                onlineCloseConnection();
+            }
+        });
+        onlineUpdatePanel();
+    }
+
+    const baseInitGame = initGame;
+    initGame = function(){
+        const mode = document.getElementById('game-mode').value;
+        if(mode === ONLINE_MODE){
+            document.getElementById('player-side').value = (onlineRole === 'guest' ? ONLINE_REMOTE_SIDE : ONLINE_SELF_SIDE);
+        }
+        baseInitGame();
+        onlineUpdatePanel();
+        if(mode === ONLINE_MODE) updateStatus();
+    };
+
+    const baseExecuteMove = executeMove;
+    executeMove = function(move){
+        if(onlineModeActive() && !onlineApplyingRemote && turn !== playerSide) return false;
+        const result = baseExecuteMove(move);
+        if(result !== false && onlineModeActive() && !onlineApplyingRemote && onlineConn && onlineConn.open){
+            onlineConn.send({type:'move', game:ONLINE_GAME, move:move});
+        }
+        return result;
+    };
+
+    const baseHandleCellClick = handleCellClick;
+    handleCellClick = function(r,c){
+        if(onlineModeActive() && turn !== playerSide) return;
+        return baseHandleCellClick(r,c);
+    };
+
+    const originalStatus = updateStatus;
+    updateStatus = function(){
+        originalStatus();
+        if(onlineModeActive() && onlineEl('online-status') && onlineConn?.open){
+            onlineSetStatus(turn === playerSide ? 'Đến lượt bạn' : 'Đối thủ đang đi...', '#2ecc71');
+        }
+    };
+
+    window.addEventListener('load', onlineSetup);
+})();
+</script>
+
 </body>
 </html>
 </textarea>
@@ -3693,6 +4249,50 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         let activeFrameId = 'game-frame';
         let framesReady = false;
 
+        function activeFrame(){ return document.getElementById(activeFrameId); }
+        function activeGameWindow(){
+            const frame = activeFrame();
+            try { return frame && frame.contentWindow; } catch(e) { return null; }
+        }
+        function activeGameDocument(){
+            const frame = activeFrame();
+            try { return frame && frame.contentDocument; } catch(e) { return null; }
+        }
+        function setOuterOnlinePanel(visible, gameId){
+            const panel = document.getElementById('outer-online-panel');
+            if(!panel) return;
+            panel.classList.toggle('is-visible', !!visible);
+            panel.dataset.game = gameId || currentGame || '';
+            if(!visible){
+                document.getElementById('outer-online-status').textContent = 'Chưa kết nối';
+                document.getElementById('outer-peer-id').value = '';
+            }
+        }
+        function setOuterOnlineStatus(text, color){
+            const el = document.getElementById('outer-online-status');
+            if(el){ el.textContent = text || ''; if(color) el.style.color = color; }
+        }
+        function setOuterOnlinePeerId(id){
+            const el = document.getElementById('outer-peer-id');
+            if(el) el.value = id || '';
+        }
+        function callInnerOnline(action){
+            const win = activeGameWindow();
+            if(!win || typeof win[action] !== 'function') return false;
+            try { win[action](); return true; } catch(e) { return false; }
+        }
+        function setInnerValue(id, value){
+            const doc = activeGameDocument();
+            const el = doc && doc.getElementById(id);
+            if(el) el.value = value;
+            return !!el;
+        }
+        function clickInner(id){
+            const doc = activeGameDocument();
+            const el = doc && doc.getElementById(id);
+            if(el){ el.click(); return true; }
+            return false;
+        }
         function setActiveTab(gameId) {
             document.querySelectorAll('.btn-tab').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + gameId).classList.add('active');
@@ -3707,6 +4307,7 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             const rawHtml = document.getElementById('code-' + gameId).value;
 
             setActiveTab(gameId);
+            setOuterOnlinePanel(false, gameId);
 
             // Lần đầu: nạp trực tiếp bàn được chọn.
             if (!currentGame) {
@@ -3715,6 +4316,11 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
                 nextFrame.addEventListener('load', () => {
                     nextFrame.classList.add('is-active');
                     activeFrameId = nextFrameId;
+                    setTimeout(() => {
+                        const doc = activeGameDocument();
+                        const mode = doc && doc.getElementById('game-mode')?.value;
+                        setOuterOnlinePanel(mode === 'online', currentGame);
+                    }, 0);
                 }, { once: true });
                 return;
             }
@@ -3737,6 +4343,11 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
                         activeFrameId = nextFrameId;
                         currentGame = gameId;
                         framesReady = true;
+                        setTimeout(() => {
+                            const doc = activeGameDocument();
+                            const mode = doc && doc.getElementById('game-mode')?.value;
+                            setOuterOnlinePanel(mode === 'online', currentGame);
+                        }, 0);
 
                         setTimeout(() => nextFrame.classList.remove('is-fading-in'), 300);
                     });
@@ -3746,6 +4357,28 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             nextFrame.addEventListener('load', reveal, { once: true });
             setTimeout(reveal, 900);
         }
+
+        document.getElementById('outer-create-btn').addEventListener('click', () => {
+            callInnerOnline('onlineCreateRoom');
+        });
+        document.getElementById('outer-disconnect-btn').addEventListener('click', () => {
+            callInnerOnline('onlineDisconnect');
+        });
+        document.getElementById('outer-copy-btn').addEventListener('click', async () => {
+            const value = document.getElementById('outer-peer-id').value.trim();
+            if(!value) return;
+            try { await navigator.clipboard.writeText(value); setOuterOnlineStatus('Đã sao chép mã phòng', '#2ecc71'); }
+            catch(e){ const el=document.getElementById('outer-peer-id'); el.select(); document.execCommand('copy'); setOuterOnlineStatus('Đã sao chép mã phòng', '#2ecc71'); }
+        });
+        document.getElementById('outer-join-btn').addEventListener('click', () => {
+            const code = document.getElementById('outer-join-id').value.trim().toUpperCase();
+            if(!code){ setOuterOnlineStatus('Hãy nhập mã phòng.', '#e67e22'); return; }
+            setInnerValue('online-join-id', code);
+            callInnerOnline('onlineJoinRoom');
+        });
+        document.getElementById('outer-join-id').addEventListener('keydown', e => {
+            if(e.key === 'Enter') document.getElementById('outer-join-btn').click();
+        });
 
         window.onload = () => {
             switchGame('xiangqi');
