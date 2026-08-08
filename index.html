@@ -2058,21 +2058,18 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             z-index: 15;
             pointer-events: none;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            font-variant-emoji: text;
         }
 
-        /* CỜ VUA: khóa kiểu hiển thị quân cờ trên mọi thiết bị.
-           Không thay đổi font-size / hình dạng quân ở mobile.
-           Mobile chỉ zoom toàn bộ bàn cờ theo đúng tỷ lệ desktop. */
+        /* CỜ VUA: một bộ glyph duy nhất cho mọi màn hình.
+           PC và điện thoại chỉ thay đổi kích thước bàn; hình dáng quân không đổi. */
         .piece.white,
         .piece.black {
             font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
             font-weight: 400;
             font-style: normal;
-            font-variant: normal;
-            font-variant-emoji: text;
             line-height: 1;
             -webkit-text-stroke: 0;
-            text-rendering: geometricPrecision;
             transform: scale(1.02);
         }
         .piece.white {
@@ -2356,29 +2353,6 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         }
 
     
-        /* ĐỒNG BỘ QUÂN CỜ VUA MOBILE VỚI PC:
-           Giữ nguyên cùng bộ glyph, cùng kích thước 81px/63px và cùng transform.
-           Không tạo bộ style quân cờ riêng cho điện thoại. */
-        @media (max-width: 768px) {
-            .piece.white,
-            .piece.black {
-                font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif !important;
-                font-weight: 400 !important;
-                font-style: normal !important;
-                font-variant: normal !important;
-                font-variant-emoji: text !important;
-                line-height: 1 !important;
-                -webkit-text-stroke: 0 !important;
-                text-rendering: geometricPrecision !important;
-            }
-
-            .piece:not(.selected) {
-                width: 81px !important;
-                height: 81px !important;
-                font-size: 63px !important;
-            }
-        }
-
         /* PORTRAIT MOBILE FINAL: JS sets zoom from the real viewport width.
            No transform / translate / negative margins are used for the board. */
         @media (max-width: 768px) and (orientation: portrait) {
@@ -2961,8 +2935,8 @@ const WHITE = 'w', BLACK = 'b';
 const SYMBOLS = {
     // Cùng một bộ quân dạng đặc (filled) cho cả hai bên.
     // Bên Trắng chỉ khác màu bằng CSS.
-    'w': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' },
-    'b': { 'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟' }
+    'w': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' },
+    'b': { 'k': '♚\ufe0e', 'q': '♛\ufe0e', 'r': '♜\ufe0e', 'b': '♝\ufe0e', 'n': '♞\ufe0e', 'p': '♟\ufe0e' }
 };
 const VI_NAMES = { 'k': 'Vua', 'q': 'Hậu', 'r': 'Xe', 'b': 'Tượng', 'n': 'Mã', 'p': 'Tốt' };
 
