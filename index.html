@@ -2448,10 +2448,11 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             text-rendering: geometricPrecision;
         }
 
-        /* CỜ VUA: dùng đúng data quân cờ dạng cũ. */
+        /* CỜ VUA: giữ nguyên quân Unicode gốc, chỉ ép Safari/iOS
+           dùng bộ font hệ thống có sẵn thay vì font desktop không tồn tại trên iOS. */
         .piece.white,
         .piece.black {
-            font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
+            font-family: "Apple Symbols", "Times New Roman", Times, serif;
             font-weight: 400;
             font-style: normal;
             line-height: 1;
@@ -2465,21 +2466,6 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
         .piece.black {
             color: #111;
             text-shadow: 0 1px 0 #fff, 0 3px 5px rgba(0,0,0,.9);
-        }
-
-        /* iOS/iPadOS: Safari renders Unicode chess glyphs smaller than desktop.
-           Increase only the chess pieces so the board size/layout stays unchanged. */
-        @supports (-webkit-touch-callout: none) {
-            .piece.white,
-            .piece.black {
-                font-size: 79px;
-                transform: scale(1.08);
-                transform-origin: center center;
-            }
-
-            .piece.selected {
-                transform: scale(1.16);
-            }
         }
 
         .piece.selected { 
@@ -2539,10 +2525,8 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             font-size: 14px; 
             font-weight: bold; 
             color: #ccc; 
-            flex: 0 0 115px;
-            min-width: 115px;
-            white-space: nowrap;
-}
+            flex: 1;
+        }
         
         .selector-row select {
             background: #1a1a24; 
@@ -2554,10 +2538,8 @@ window.onload = function() { initGame(); setTimeout(fitPortraitBoard, 0); };
             cursor: pointer; 
             font-size: 14px; 
             font-weight: bold;
-            flex: 0 0 200px;
-            width: 200px;
+            flex: 0 0 60%;
             max-width: 200px;
-            min-width: 0;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
