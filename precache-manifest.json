@@ -1,0 +1,14 @@
+{
+  "build": "mw9kgo1a",
+  "files": [
+    "./",
+    "index.html",
+    "assets/index-Bc0vbJQn.js",
+    "assets/engineWorker-Bzj9V7Pf.js",
+    "assets/index-DAEK7AlZ.css",
+    "engine/stockfish.js",
+    "engine/stockfish.wasm",
+    "engine/stockfish.worker.js",
+    "favicon.svg"
+  ]
+}
