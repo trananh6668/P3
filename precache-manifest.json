@@ -1,11 +1,11 @@
 {
-  "build": "mw9kgo1a",
+  "build": "mwdtvj7t",
   "files": [
     "./",
     "index.html",
-    "assets/index-Bc0vbJQn.js",
+    "assets/index-coVprvPO.js",
     "assets/engineWorker-Bzj9V7Pf.js",
-    "assets/index-DAEK7AlZ.css",
+    "assets/index-t8ZLhjnf.css",
     "engine/stockfish.js",
     "engine/stockfish.wasm",
     "engine/stockfish.worker.js",
