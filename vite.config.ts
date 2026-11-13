@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -30,8 +30,8 @@ function listFilesRecursive(dir: string, base = dir): string[] {
 }
 
 /**
- * Sinh precache-manifest.json chứa TOÀN BỘ file đầu ra (JS/CSS/worker/WASM/public)
- * để Service Worker cache trước => ứng dụng chạy offline 100% sau lần tải đầu.
+ * Sinh precache-manifest.json và tự động bơm BUILD_ID vào sw.js lúc build
+ * để trình duyệt luôn nhận diện được Service Worker mới khi đẩy lên GitHub.
  */
 function precacheManifestPlugin(): Plugin {
   let publicDir = '';
@@ -49,10 +49,21 @@ function precacheManifestPlugin(): Plugin {
       if (publicDir) {
         try {
           for (const f of listFilesRecursive(publicDir)) {
-            if (!f.startsWith('.') && f !== 'sw.js' && !f.endsWith('.txt') && f !== 'engine/AUTHORS') files.add(f);
+            if (!f.startsWith('.') && f !== 'sw.js' && !f.endsWith('.txt') && f !== 'engine/AUTHORS') {
+              files.add(f);
+            }
           }
+          // Đọc public/sw.js và gắn BUILD_ID mới vào đầu file để đổi hash mỗi lần build
+          const swPath = path.join(publicDir, 'sw.js');
+          const swContent = readFileSync(swPath, 'utf-8');
+          const injectedSw = `// BUILD_ID: ${BUILD_ID}\n` + swContent.replace(/__SW_BUILD_ID__/g, BUILD_ID);
+          this.emitFile({
+            type: 'asset',
+            fileName: 'sw.js',
+            source: injectedSw,
+          });
         } catch {
-          // publicDir không tồn tại -> bỏ qua
+          // publicDir hoặc sw.js không tồn tại -> bỏ qua
         }
       }
       this.emitFile({
@@ -65,8 +76,7 @@ function precacheManifestPlugin(): Plugin {
 }
 
 export default defineConfig({
-  // Đường dẫn tương đối => bản build chạy được ở bất kỳ thư mục con nào của web server.
-  base: './', // <-- Thêm tên repository vào đây
+  base: './',
   plugins: [react(), tailwindcss(), precacheManifestPlugin()],
   define: {
     __BUILD_ID__: JSON.stringify(BUILD_ID),
@@ -78,12 +88,10 @@ export default defineConfig({
     headers: crossOriginIsolationHeaders,
   },
   worker: {
-    // Worker được bundle dạng ES module (khớp với new Worker(..., { type: 'module' })).
     format: 'es',
   },
   build: {
     target: 'es2022',
-    // Không inline asset thành base64 -> giữ file .wasm/.js tách riêng, dễ cache.
     assetsInlineLimit: 0,
     sourcemap: false,
   },

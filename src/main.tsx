@@ -3,20 +3,61 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-// Đăng ký Service Worker khi build production để:
-//  1) Gắn header COOP/COEP kích hoạt SharedArrayBuffer trên static host (như GitHub Pages).
-//  2) Cache toàn bộ tài nguyên (stockfish.wasm, stockfish.js, stockfish.worker.js) để chạy 100% offline.
+declare const __BUILD_ID__: string;
+
 const COI_RELOAD_KEY = 'xiangqi-coi-reloaded';
+const STORAGE_VERSION_KEY = 'xiangqi-build-version';
+
+function syncBuildVersionStorage(): void {
+  try {
+    const savedVersion = localStorage.getItem(STORAGE_VERSION_KEY);
+    if (savedVersion !== __BUILD_ID__) {
+      const coiFlag = sessionStorage.getItem(COI_RELOAD_KEY);
+      localStorage.clear();
+      sessionStorage.clear();
+      if (coiFlag) {
+        sessionStorage.setItem(COI_RELOAD_KEY, coiFlag);
+      }
+      localStorage.setItem(STORAGE_VERSION_KEY, __BUILD_ID__);
+    }
+  } catch {
+    // Bỏ qua nếu trình duyệt chặn Storage
+  }
+}
 
 async function bootstrap(): Promise<void> {
+  syncBuildVersionStorage();
+
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     const swUrl = `${import.meta.env.BASE_URL}sw.js`;
+
+    let isRefreshing = false;
+    const reloadOnUpdate = () => {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        window.location.reload();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'SW_UPDATED') {
+        reloadOnUpdate();
+      }
+    });
+
     if (window.crossOriginIsolated) {
       sessionStorage.removeItem(COI_RELOAD_KEY);
-      navigator.serviceWorker.register(swUrl).catch(() => {});
+      navigator.serviceWorker.addEventListener('controllerchange', reloadOnUpdate);
+
+      navigator.serviceWorker
+        .register(swUrl, { updateViaCache: 'none' })
+        .then((reg) => {
+          reg.update().catch(() => {});
+        })
+        .catch(() => {});
     } else if (!sessionStorage.getItem(COI_RELOAD_KEY)) {
       try {
-        const reg = await navigator.serviceWorker.register(swUrl);
+        const reg = await navigator.serviceWorker.register(swUrl, { updateViaCache: 'none' });
         await new Promise<void>((resolve) => {
           const timeout = window.setTimeout(resolve, 4000);
           const triggerReload = () => {
@@ -31,7 +72,7 @@ async function bootstrap(): Promise<void> {
           navigator.serviceWorker.addEventListener('controllerchange', triggerReload, { once: true });
         });
       } catch {
-        // Nếu trình duyệt chặn Service Worker (ví dụ chế độ ẩn danh đặc biệt) thì tiếp tục mở với engine dự phòng
+        // Tiếp tục mở với engine dự phòng nếu trình duyệt chặn Service Worker
       }
     }
   }

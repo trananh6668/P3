@@ -491,11 +491,11 @@ export const Board: React.FC<BoardProps> = ({
               viewBox="0 0 10 10"
               refX="7"
               refY="5"
-              markerWidth="5.5"
-              markerHeight="5.5"
+              markerWidth="4.0"
+              markerHeight="4.0"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#10b981" style={{ fill: '#10b981' }} />
+              <path d="M 0 2.2 L 9 5 L 0 7.8 z" fill="#10b981" style={{ fill: '#10b981' }} />
             </marker>
             <marker
               id="xq-arrow-pv"
@@ -843,8 +843,8 @@ export const Board: React.FC<BoardProps> = ({
               const dx = toPt.x - fromPt.x;
               const dy = toPt.y - fromPt.y;
               const dist = Math.hypot(dx, dy) || 1;
-              const trimStart = 12;
-              const trimEnd = 16;
+              const trimStart = 10;
+              const trimEnd = PIECE_R + 7;
               const x1 = fromPt.x + (dx / dist) * trimStart;
               const y1 = fromPt.y + (dy / dist) * trimStart;
               const x2 = toPt.x - (dx / dist) * trimEnd;
