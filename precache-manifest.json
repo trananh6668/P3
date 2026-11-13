@@ -1,11 +1,11 @@
 {
-  "build": "mwegbchv",
+  "build": "mwegpgxu",
   "files": [
     "./",
     "index.html",
-    "assets/index-U63iUP7u.js",
+    "assets/index-BS3R1pzf.js",
     "assets/engineWorker-Bzj9V7Pf.js",
-    "assets/index-4izJLz6j.css",
+    "assets/index-B7FGV1FM.css",
     "engine/stockfish.js",
     "engine/stockfish.wasm",
     "engine/stockfish.worker.js",
