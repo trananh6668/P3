@@ -149,18 +149,18 @@ export const App: React.FC = () => {
               </span>
               <div>
                 <div className="font-bold text-stone-900">
-                  Máy ({engine.backend === 'wasm' ? 'Fairy-Stockfish' : 'Bộ máy JS'}) — (Depth {difficulty.depth})
+                  Máy ({engine.backend === 'wasm' ? 'Fairy-Stockfish - WASM' : 'Bộ máy JS'})
                 </div>
                 <div className="text-[11px] text-stone-500">
-                  {topSide === 'w' ? 'Quân Đỏ · Đi tiên' : 'Quân Đen · Đi hậu'}
+                  {difficulty.label} (Depth {difficulty.depth}) {topSide === 'w' ? 'Quân Đỏ · Đi tiên' : 'Quân Đen · Đi hậu'}
                 </div>
               </div>
             </div>
             <div>
               {thinking === 'play' ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping" />
-                  Đang tính tầng {analysis?.depth ?? 0}/{difficulty.depth}…
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] leading-tight rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping" />
+                  Suy nghĩ...
                 </span>
               ) : (
                 <span className="text-stone-500 font-medium">Chờ lượt</span>
@@ -197,7 +197,7 @@ export const App: React.FC = () => {
                   Người chơi ({bottomSide === 'w' ? 'Quân Đỏ · Đi tiên' : 'Quân Đen · Đi hậu'})
                 </div>
                 <div className="text-[11px] text-stone-500">
-                  Kéo thả hoặc nhấp chọn quân cờ rồi nhấp ô đích có chấm xanh để đi · Ctrl+Z để Đi lại
+                  Kéo thả hoặc nhấp chọn để đi
                 </div>
               </div>
             </div>
