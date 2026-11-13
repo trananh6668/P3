@@ -1,6 +1,6 @@
-// BUILD_ID: mwegpgxu
+// BUILD_ID: mweh1iln
 const CACHE_PREFIX = 'xiangqi-wasm-cache-';
-const SW_BUILD_ID = 'mwegpgxu';
+const SW_BUILD_ID = 'mweh1iln';
 let currentCacheName = `${CACHE_PREFIX}${SW_BUILD_ID}`;
 
 function withIsolationHeaders(response, method = 'GET') {
