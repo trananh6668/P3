@@ -149,8 +149,7 @@ export const App: React.FC = () => {
               </span>
               <div>
                 <div className="font-bold text-stone-900">
-                  Máy ({engine.backend === 'wasm' ? 'Fairy-Stockfish WASM' : 'Bộ máy JS'}) — Cấp độ{' '}
-                  {difficulty.label} (Độ sâu {difficulty.depth})
+                  Máy ({engine.backend === 'wasm' ? 'Fairy-Stockfish' : 'Bộ máy JS'}) — (Depth {difficulty.depth})
                 </div>
                 <div className="text-[11px] text-stone-500">
                   {topSide === 'w' ? 'Quân Đỏ · Đi tiên' : 'Quân Đen · Đi hậu'}
