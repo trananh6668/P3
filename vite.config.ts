@@ -66,7 +66,7 @@ function precacheManifestPlugin(): Plugin {
 
 export default defineConfig({
   // Đường dẫn tương đối => bản build chạy được ở bất kỳ thư mục con nào của web server.
-  base: '/P3/', // <-- Thêm tên repository vào đây
+  base: './', // <-- Thêm tên repository vào đây
   plugins: [react(), tailwindcss(), precacheManifestPlugin()],
   define: {
     __BUILD_ID__: JSON.stringify(BUILD_ID),

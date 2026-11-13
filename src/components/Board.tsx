@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BLACK_NAMES,
   BOARD_SIZE,
@@ -38,6 +38,17 @@ const GRID_H = (ROWS - 1) * CELL; // 9 * 68 = 612
 const SVG_W = GRID_W + PAD_X * 2; // 672
 const SVG_H = GRID_H + PAD_Y * 2; // 740
 const PIECE_R = 29;
+const DRAG_THRESHOLD_SVG = 6;
+
+/** Ép buộc trình duyệt luôn render ở chế độ sáng, ngăn chặn Dark Reader / Auto Dark Mode */
+const FORCE_LIGHT_MODE_STYLE: React.CSSProperties = {
+  colorScheme: 'only light',
+  forcedColorAdjust: 'none',
+  WebkitPrintColorAdjust: 'exact',
+  printColorAdjust: 'exact',
+  outline: 'none',
+  WebkitTapHighlightColor: 'transparent',
+};
 
 /** Tọa độ điểm giao (r, c) theo góc nhìn hiện tại (đã xét lật bàn cờ). */
 function gridXY(row: number, col: number, flipped: boolean): { x: number; y: number } {
@@ -53,6 +64,21 @@ function squareXY(sq: Square, flipped: boolean): { x: number; y: number } {
   return gridXY(rowOf(sq), colOf(sq), flipped);
 }
 
+/** Tìm ô cờ gần nhất từ tọa độ (x, y) trong hệ tọa độ SVG */
+function svgXYToSquare(x: number, y: number, flipped: boolean): Square | null {
+  const vc = Math.round((x - PAD_X) / CELL);
+  const vr = Math.round((y - PAD_Y) / CELL);
+  if (vc < 0 || vc >= COLS || vr < 0 || vr >= ROWS) return null;
+
+  const gx = PAD_X + vc * CELL;
+  const gy = PAD_Y + vr * CELL;
+  if (Math.hypot(x - gx, y - gy) > CELL * 0.62) return null;
+
+  const row = flipped ? ROWS - 1 - vr : vr;
+  const col = flipped ? COLS - 1 - vc : vc;
+  return (row * COLS + col) as Square;
+}
+
 /**
  * Tạo đường dẫn SVG cho hoa văn chữ L tại các vị trí Pháo và Tốt.
  * Tự động lược bỏ nửa trái hoặc nửa phải khi nằm ở biên (cột 0 hoặc cột 8).
@@ -61,40 +87,32 @@ function buildFiducialPath(row: number, col: number, flipped: boolean): string {
   const { x, y } = gridXY(row, col, flipped);
   const gap = 5;
   const len = 13;
-  // Khi lật bàn cờ, cột 0 (biên trái gốc) chuyển sang biên phải trên màn hình
   const visualCol = flipped ? COLS - 1 - col : col;
   const showLeft = visualCol > 0;
   const showRight = visualCol < COLS - 1;
   const parts: string[] = [];
 
   if (showLeft) {
-    // Góc trên-trái
     parts.push(`M ${x - gap - len} ${y - gap} L ${x - gap} ${y - gap} L ${x - gap} ${y - gap - len}`);
-    // Góc dưới-trái
     parts.push(`M ${x - gap - len} ${y + gap} L ${x - gap} ${y + gap} L ${x - gap} ${y + gap + len}`);
   }
   if (showRight) {
-    // Góc trên-phải
     parts.push(`M ${x + gap + len} ${y - gap} L ${x + gap} ${y - gap} L ${x + gap} ${y - gap - len}`);
-    // Góc dưới-phải
     parts.push(`M ${x + gap + len} ${y + gap} L ${x + gap} ${y + gap} L ${x + gap} ${y + gap + len}`);
   }
   return parts.join(' ');
 }
 
 const FIDUCIAL_COORDS: readonly (readonly [number, number])[] = [
-  // Vị trí Pháo Đen & Đỏ
   [2, 1],
   [2, 7],
   [7, 1],
   [7, 7],
-  // Vị trí Tốt Đen
   [3, 0],
   [3, 2],
   [3, 4],
   [3, 6],
   [3, 8],
-  // Vị trí Tốt Đỏ
   [6, 0],
   [6, 2],
   [6, 4],
@@ -104,6 +122,115 @@ const FIDUCIAL_COORDS: readonly (readonly [number, number])[] = [
 
 const CN_FILE_LABELS = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
 const AR_FILE_LABELS = ['１', '２', '３', '４', '５', '６', '７', '８', '９'];
+
+interface DragState {
+  fromSq: Square;
+  piece: Piece;
+  startX: number;
+  startY: number;
+  currX: number;
+  currY: number;
+  hoverSq: Square | null;
+  hasMoved: boolean;
+  wasAlreadySelected: boolean;
+}
+
+/** Hàm dựng hình đồ họa 1 quân cờ */
+function renderPieceGraphics(piece: Piece) {
+  const isRed = piece.side === 'w';
+  const hanzi = isRed ? RED_NAMES[piece.kind] : BLACK_NAMES[piece.kind];
+  const discFillGradient = isRed
+    ? 'url(#xq-piece-red-fill)'
+    : 'url(#xq-piece-black-fill)';
+  const rimColor = '#693d18';
+  const ringColor = isRed ? '#b91c1c' : '#1e293b';
+  const fontColor = isRed ? '#b91c1c' : '#0f172a';
+
+  return (
+    <>
+      {/* Bóng đổ dưới mặt bàn cờ */}
+      <circle
+        cx="0"
+        cy="4"
+        r={PIECE_R + 0.5}
+        fill="#2a1405"
+        fillOpacity="0.38"
+        style={{ fill: '#2a1405', fillOpacity: 0.38 }}
+      />
+
+      {/* Đế gỗ 3D của quân cờ */}
+      <circle cx="0" cy="2.2" r={PIECE_R} fill="url(#xq-piece-base)" />
+
+      {/* Thân quân cờ - tô bằng radialGradient ngà gỗ sáng */}
+      <circle
+        cx="0"
+        cy="0"
+        r={PIECE_R}
+        fill={discFillGradient}
+        stroke={rimColor}
+        style={{ stroke: rimColor }}
+        strokeWidth="1.8"
+      />
+
+      {/* Vòng tròn viền trong */}
+      <circle
+        cx="0"
+        cy="0"
+        r={PIECE_R - 4.5}
+        fill="none"
+        stroke={ringColor}
+        style={{ stroke: ringColor }}
+        strokeWidth="1.9"
+        strokeOpacity="0.88"
+      />
+      <circle
+        cx="0"
+        cy="0"
+        r={PIECE_R - 7}
+        fill="none"
+        stroke={ringColor}
+        style={{ stroke: ringColor }}
+        strokeWidth="0.75"
+        strokeOpacity="0.45"
+      />
+
+      {/* Chữ Hán khắc chìm */}
+      <text
+        x="0"
+        y="2.3"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontFamily='"STKaiti", "KaiTi", "Kaiti SC", "Noto Serif TC", "PMingLiU", serif'
+        fontSize="30"
+        fontWeight="700"
+        fill="#fffaf0"
+        fillOpacity="0.65"
+        style={{ fill: '#fffaf0', fillOpacity: 0.65 }}
+        pointerEvents="none"
+      >
+        {hanzi}
+      </text>
+      <text
+        x="0"
+        y="1.2"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontFamily='"STKaiti", "KaiTi", "Kaiti SC", "Noto Serif TC", "PMingLiU", serif'
+        fontSize="30"
+        fontWeight="700"
+        fill={fontColor}
+        style={{
+          fill: fontColor,
+          stroke: 'none',
+          textShadow: 'none',
+        }}
+        pointerEvents="none"
+      >
+        {hanzi}
+      </text>
+    </>
+  );
+}
 
 export const Board: React.FC<BoardProps> = ({
   position,
@@ -116,33 +243,45 @@ export const Board: React.FC<BoardProps> = ({
   onMove,
 }) => {
   const flipped = playerSide === 'b';
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedSq, setSelectedSq] = useState<Square | null>(null);
+  const [dragState, setDragState] = useState<DragState | null>(null);
 
-  // Reset ô đang chọn khi thế cờ hoặc bên cầm quân thay đổi
   const fenKey = position.toFen();
   useEffect(() => {
     setSelectedSq(null);
+    setDragState(null);
   }, [fenKey, playerSide]);
 
-  // Các ô đích hợp lệ từ ô đang chọn
+  const clientToSvgCoords = (clientX: number, clientY: number): { x: number; y: number } => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return { x: 0, y: 0 };
+    return {
+      x: ((clientX - rect.left) / rect.width) * SVG_W,
+      y: ((clientY - rect.top) / rect.height) * SVG_H,
+    };
+  };
+
+  const activeOriginSq = dragState ? dragState.fromSq : selectedSq;
+
   const legalTargets = useMemo(() => {
     const map = new Map<Square, UciMove>();
-    if (selectedSq === null || !isPlayerTurn || disabled) return map;
-    const piece = position.pieceAt(selectedSq);
+    if (activeOriginSq === null || !isPlayerTurn || disabled) return map;
+    const piece = position.pieceAt(activeOriginSq);
     if (!piece || piece.side !== playerSide) return map;
-    for (const m of position.legalMovesFrom(selectedSq)) {
+    for (const m of position.legalMovesFrom(activeOriginSq)) {
       map.set(moveTo(m), moveToUci(m));
     }
     return map;
-  }, [position, selectedSq, isPlayerTurn, disabled, playerSide]);
+  }, [position, activeOriginSq, isPlayerTurn, disabled, playerSide]);
 
-  // Kiểm tra Tướng có đang bị chiếu không
   const checkedKingSq = useMemo<Square | null>(() => {
     if (!position.inCheck(position.turn)) return null;
     return position.kingSq[position.turn === 'w' ? 0 : 1];
   }, [position]);
 
-  // Phân tích mũi tên gợi ý (hintMove hoặc nước đầu của PV)
   const arrowMove = useMemo(() => {
     const uci = hintMove ?? pvPreviewMove;
     if (!uci) return null;
@@ -158,7 +297,6 @@ export const Board: React.FC<BoardProps> = ({
   const handleSquareClick = (sq: Square) => {
     if (disabled || !isPlayerTurn) return;
 
-    // Nếu người chơi bấm vào một ô đích hợp lệ từ quân đang chọn -> đi luôn
     if (selectedSq !== null && legalTargets.has(sq)) {
       const uci = legalTargets.get(sq)!;
       setSelectedSq(null);
@@ -166,16 +304,13 @@ export const Board: React.FC<BoardProps> = ({
       return;
     }
 
-    // Nếu bấm vào quân của mình -> chọn (hoặc bỏ chọn nếu bấm lại chính nó)
     const piece = position.pieceAt(sq);
     if (piece && piece.side === playerSide) {
       setSelectedSq((prev) => (prev === sq ? null : sq));
       return;
     }
 
-    // Bấm vào ô trống không hợp lệ hoặc quân đối phương ngoài tầm ăn -> bỏ chọn
     if (selectedSq !== null) {
-      // Thử kiểm tra xem có phải nước hợp lệ không (phòng trường hợp cache)
       const uci = moveToUci(encodeMove(selectedSq, sq));
       if (position.findLegalMove(uci) !== null) {
         setSelectedSq(null);
@@ -186,64 +321,171 @@ export const Board: React.FC<BoardProps> = ({
     }
   };
 
-  // Danh sách quân cờ hiện có trên bàn
+  // ───────────────────── Xử lý Kéo & Thả (Pointer Events) ─────────────────────
+
+  const handlePiecePointerDown = (
+    e: React.PointerEvent<SVGGElement>,
+    sq: Square,
+    piece: Piece
+  ) => {
+    if (disabled || !isPlayerTurn) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+    if (piece.side === playerSide) {
+      e.stopPropagation();
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+      const pt = clientToSvgCoords(e.clientX, e.clientY);
+      const wasAlreadySelected = selectedSq === sq;
+      setSelectedSq(sq);
+      setDragState({
+        fromSq: sq,
+        piece,
+        startX: pt.x,
+        startY: pt.y,
+        currX: pt.x,
+        currY: pt.y,
+        hoverSq: sq,
+        hasMoved: false,
+        wasAlreadySelected,
+      });
+      return;
+    }
+
+    if (selectedSq !== null && legalTargets.has(sq)) {
+      e.stopPropagation();
+      const uci = legalTargets.get(sq)!;
+      setSelectedSq(null);
+      setDragState(null);
+      onMove(uci);
+    }
+  };
+
+  const handleSvgPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!dragState) return;
+    const pt = clientToSvgCoords(e.clientX, e.clientY);
+    const dist = Math.hypot(pt.x - dragState.startX, pt.y - dragState.startY);
+    const hasMoved = dragState.hasMoved || dist > DRAG_THRESHOLD_SVG;
+    const hoverSq = svgXYToSquare(pt.x, pt.y, flipped);
+
+    setDragState((prev) =>
+      prev
+        ? {
+            ...prev,
+            currX: pt.x,
+            currY: pt.y,
+            hoverSq,
+            hasMoved,
+          }
+        : null
+    );
+  };
+
+  const finishDrag = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!dragState) return;
+    const pt = clientToSvgCoords(e.clientX, e.clientY);
+    const dropSq = svgXYToSquare(pt.x, pt.y, flipped);
+    const { fromSq, hasMoved, wasAlreadySelected } = dragState;
+
+    setDragState(null);
+
+    if (hasMoved) {
+      if (dropSq !== null && dropSq !== fromSq) {
+        const uci =
+          legalTargets.get(dropSq) ?? moveToUci(encodeMove(fromSq, dropSq));
+        if (position.findLegalMove(uci) !== null) {
+          setSelectedSq(null);
+          onMove(uci);
+          return;
+        }
+      }
+      setSelectedSq(fromSq);
+    } else {
+      if (wasAlreadySelected) {
+        setSelectedSq(null);
+      } else {
+        setSelectedSq(fromSq);
+      }
+    }
+  };
+
+  const cancelDrag = () => {
+    if (!dragState) return;
+    setDragState(null);
+  };
+
   const pieces: { sq: Square; piece: Piece }[] = [];
   for (let sq = 0; sq < BOARD_SIZE; sq++) {
     const p = position.pieceAt(sq);
     if (p) pieces.push({ sq, piece: p });
   }
 
+  const isDraggingActively = Boolean(dragState && dragState.hasMoved);
+
   return (
-    <div className="relative select-none w-full max-w-[640px] mx-auto">
-      <div className="rounded-2xl p-2 sm:p-3 bg-gradient-to-br from-[#8c5828] via-[#6e421c] to-[#522f12] shadow-[0_14px_34px_rgba(92,53,18,0.28)] ring-1 ring-amber-800/30">
+    <div
+      className="xq-board-light-lock relative select-none w-full max-w-[640px] mx-auto"
+      style={FORCE_LIGHT_MODE_STYLE}
+      data-darkreader-ignore=""
+    >
+      <div
+        className="rounded-2xl p-2 sm:p-3 shadow-[0_14px_34px_rgba(92,53,18,0.28)] ring-1 ring-amber-800/30"
+        style={{
+          ...FORCE_LIGHT_MODE_STYLE,
+          backgroundColor: '#6e421c',
+          backgroundImage: 'linear-gradient(135deg, #8c5828 0%, #6e421c 50%, #522f12 100%)',
+        }}
+        data-darkreader-ignore=""
+      >
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          className="w-full h-auto block rounded-xl shadow-inner"
-          role="grid"
+          className={`w-full h-auto block rounded-xl shadow-inner touch-none focus:outline-none ${
+            isDraggingActively ? 'cursor-grabbing' : ''
+          }`}
+          style={{ ...FORCE_LIGHT_MODE_STYLE, touchAction: 'none' }}
           aria-label="Bàn cờ Tướng 9 cột 10 hàng"
+          data-darkreader-ignore=""
+          onPointerMove={handleSvgPointerMove}
+          onPointerUp={finishDrag}
+          onPointerCancel={cancelDrag}
         >
           <defs>
-            {/* Vân gỗ mặt bàn cờ */}
+            {/* Gradient mặt bàn cờ gỗ */}
             <linearGradient id="xq-wood-surface" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f3d59b" />
-              <stop offset="35%" stopColor="#e7be78" />
-              <stop offset="70%" stopColor="#dead62" />
-              <stop offset="100%" stopColor="#cf984c" />
+              <stop offset="0%" stopColor="#f3d59b" style={{ stopColor: '#f3d59b' }} />
+              <stop offset="35%" stopColor="#e7be78" style={{ stopColor: '#e7be78' }} />
+              <stop offset="70%" stopColor="#dead62" style={{ stopColor: '#dead62' }} />
+              <stop offset="100%" stopColor="#cf984c" style={{ stopColor: '#cf984c' }} />
             </linearGradient>
 
+            {/* Gradient sông Sở Hà - Hán Giới */}
             <linearGradient id="xq-river-tint" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#c58c3e" stopOpacity="0.16" />
-              <stop offset="50%" stopColor="#f8e3b4" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#c58c3e" stopOpacity="0.16" />
+              <stop offset="0%" stopColor="#c58c3e" stopOpacity="0.16" style={{ stopColor: '#c58c3e', stopOpacity: 0.16 }} />
+              <stop offset="50%" stopColor="#f8e3b4" stopOpacity="0.28" style={{ stopColor: '#f8e3b4', stopOpacity: 0.28 }} />
+              <stop offset="100%" stopColor="#c58c3e" stopOpacity="0.16" style={{ stopColor: '#c58c3e', stopOpacity: 0.16 }} />
             </linearGradient>
 
-            {/* Quân cờ Đỏ — ngà voi chạm khắc son đỏ */}
-            <radialGradient id="xq-piece-red" cx="35%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#fffaf0" />
-              <stop offset="55%" stopColor="#f7dfc0" />
-              <stop offset="90%" stopColor="#dfb685" />
-              <stop offset="100%" stopColor="#b8844c" />
+            {/* Gradient mặt quân cờ chống lỗi Dark Mode */}
+            <radialGradient id="xq-piece-red-fill" cx="35%" cy="30%" r="70%" fx="30%" fy="25%">
+              <stop offset="0%" stopColor="#fffdf9" style={{ stopColor: '#fffdf9' }} />
+              <stop offset="45%" stopColor="#fcecd2" style={{ stopColor: '#fcecd2' }} />
+              <stop offset="82%" stopColor="#f0cfa0" style={{ stopColor: '#f0cfa0' }} />
+              <stop offset="100%" stopColor="#dcab6e" style={{ stopColor: '#dcab6e' }} />
             </radialGradient>
 
-            {/* Quân cờ Đen — gỗ mun / ngà cổ chạm khắc mực tàu */}
-            <radialGradient id="xq-piece-black" cx="35%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#fdf6e6" />
-              <stop offset="55%" stopColor="#efd4ad" />
-              <stop offset="90%" stopColor="#d1a673" />
-              <stop offset="100%" stopColor="#9f6e3b" />
+            <radialGradient id="xq-piece-black-fill" cx="35%" cy="30%" r="70%" fx="30%" fy="25%">
+              <stop offset="0%" stopColor="#fffef9" style={{ stopColor: '#fffef9' }} />
+              <stop offset="45%" stopColor="#faebd4" style={{ stopColor: '#faebd4' }} />
+              <stop offset="82%" stopColor="#ebd0a4" style={{ stopColor: '#ebd0a4' }} />
+              <stop offset="100%" stopColor="#d5a66a" style={{ stopColor: '#d5a66a' }} />
             </radialGradient>
 
-            {/* Bóng đổ cho quân cờ */}
-            <filter id="xq-piece-shadow" x="-25%" y="-20%" width="150%" height="155%">
-              <feDropShadow dx="0" dy="3.5" stdDeviation="2.6" floodColor="#1f1005" floodOpacity="0.52" />
-            </filter>
+            {/* Gradient đế gỗ 3D của quân cờ */}
+            <linearGradient id="xq-piece-base" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#6e3f19" style={{ stopColor: '#6e3f19' }} />
+              <stop offset="100%" stopColor="#3d200a" style={{ stopColor: '#3d200a' }} />
+            </linearGradient>
 
-            {/* Hiệu ứng phát sáng khi chọn hoặc bị chiếu */}
-            <filter id="xq-glow-red" x="-40%" y="-40%" width="180%" height="180%">
-              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#ef4444" floodOpacity="0.9" />
-            </filter>
-
-            {/* Đầu mũi tên cho nước gợi ý / PV */}
             <marker
               id="xq-arrow-hint"
               viewBox="0 0 10 10"
@@ -253,7 +495,7 @@ export const Board: React.FC<BoardProps> = ({
               markerHeight="5.5"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#10b981" />
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#10b981" style={{ fill: '#10b981' }} />
             </marker>
             <marker
               id="xq-arrow-pv"
@@ -264,22 +506,22 @@ export const Board: React.FC<BoardProps> = ({
               markerHeight="5.5"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#f59e0b" />
+              <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#f59e0b" style={{ fill: '#f59e0b' }} />
             </marker>
           </defs>
 
-          {/* Nền mặt bàn cờ */}
+          {/* Nền bàn cờ */}
           <rect x="0" y="0" width={SVG_W} height={SVG_H} rx="14" fill="url(#xq-wood-surface)" />
 
-          {/* Các đường vân gỗ trang trí tinh tế */}
-          <g stroke="#8c5422" strokeOpacity="0.08" strokeWidth="1.4" fill="none" pointerEvents="none">
+          {/* Vân gỗ trang trí */}
+          <g stroke="#8c5422" style={{ stroke: '#8c5422' }} strokeOpacity="0.08" strokeWidth="1.4" fill="none" pointerEvents="none">
             <path d={`M 0 120 Q ${SVG_W * 0.45} 102 ${SVG_W} 128`} />
             <path d={`M 0 265 Q ${SVG_W * 0.55} 288 ${SVG_W} 258`} />
             <path d={`M 0 430 Q ${SVG_W * 0.35} 410 ${SVG_W} 442`} />
             <path d={`M 0 590 Q ${SVG_W * 0.65} 612 ${SVG_W} 584`} />
           </g>
 
-          {/* Khung viền kép truyền thống bên ngoài lưới cờ */}
+          {/* Khung viền bàn cờ */}
           <rect
             x={PAD_X - 12}
             y={PAD_Y - 12}
@@ -287,6 +529,7 @@ export const Board: React.FC<BoardProps> = ({
             height={GRID_H + 24}
             fill="none"
             stroke="#3f210b"
+            style={{ stroke: '#3f210b' }}
             strokeWidth="3.2"
             rx="3"
           />
@@ -297,37 +540,34 @@ export const Board: React.FC<BoardProps> = ({
             height={GRID_H + 12}
             fill="none"
             stroke="#593012"
+            style={{ stroke: '#593012' }}
             strokeWidth="1.2"
           />
 
-          {/* Nhãn số cột phía trên và phía dưới bàn cờ */}
+          {/* Nhãn số cột */}
           <g
             fontFamily='"Noto Serif TC", "KaiTi", "STKaiti", serif'
             fontSize="15"
             fontWeight="700"
             fill="#4b280e"
+            style={{ fill: '#4b280e' }}
             textAnchor="middle"
             pointerEvents="none"
           >
             {Array.from({ length: COLS }, (_, c) => {
               const x = PAD_X + c * CELL;
-              // Phía trên: nếu không lật là Đen (1..9 từ trái qua phải), nếu lật là Đỏ (一..九 từ phải qua trái -> khi lật là trái qua phải)
               const topLabel = flipped ? CN_FILE_LABELS[c] : AR_FILE_LABELS[c];
               const bottomLabel = flipped ? AR_FILE_LABELS[COLS - 1 - c] : CN_FILE_LABELS[COLS - 1 - c];
               return (
                 <React.Fragment key={c}>
-                  <text x={x} y={PAD_Y - 24} opacity="0.82">
-                    {topLabel}
-                  </text>
-                  <text x={x} y={PAD_Y + GRID_H + 34} opacity="0.82">
-                    {bottomLabel}
-                  </text>
+                  <text x={x} y={PAD_Y - 24} opacity="0.82">{topLabel}</text>
+                  <text x={x} y={PAD_Y + GRID_H + 34} opacity="0.82">{bottomLabel}</text>
                 </React.Fragment>
               );
             })}
           </g>
 
-          {/* Vùng sông Sở Hà – Hán Giới */}
+          {/* Sông Sở Hà – Hán Giới */}
           <rect
             x={PAD_X}
             y={PAD_Y + 4 * CELL}
@@ -337,8 +577,8 @@ export const Board: React.FC<BoardProps> = ({
             pointerEvents="none"
           />
 
-          {/* 10 đường kẻ ngang */}
-          <g stroke="#3b1f0b" strokeWidth="1.85" strokeLinecap="square" pointerEvents="none">
+          {/* Đường kẻ bàn cờ */}
+          <g stroke="#3b1f0b" style={{ stroke: '#3b1f0b' }} strokeWidth="1.85" strokeLinecap="square" pointerEvents="none">
             {Array.from({ length: ROWS }, (_, r) => {
               const y = PAD_Y + r * CELL;
               return (
@@ -353,7 +593,6 @@ export const Board: React.FC<BoardProps> = ({
               );
             })}
 
-            {/* 9 đường kẻ dọc (7 đường giữa ngắt qua sông, 2 đường biên thông suốt) */}
             {Array.from({ length: COLS }, (_, c) => {
               const x = PAD_X + c * CELL;
               if (c === 0 || c === COLS - 1) {
@@ -367,38 +606,26 @@ export const Board: React.FC<BoardProps> = ({
               );
             })}
 
-            {/* Đường chéo Cửu Cung phía trên và phía dưới */}
             <line x1={PAD_X + 3 * CELL} y1={PAD_Y} x2={PAD_X + 5 * CELL} y2={PAD_Y + 2 * CELL} strokeWidth="1.65" />
             <line x1={PAD_X + 5 * CELL} y1={PAD_Y} x2={PAD_X + 3 * CELL} y2={PAD_Y + 2 * CELL} strokeWidth="1.65" />
-            <line
-              x1={PAD_X + 3 * CELL}
-              y1={PAD_Y + 7 * CELL}
-              x2={PAD_X + 5 * CELL}
-              y2={PAD_Y + 9 * CELL}
-              strokeWidth="1.65"
-            />
-            <line
-              x1={PAD_X + 5 * CELL}
-              y1={PAD_Y + 7 * CELL}
-              x2={PAD_X + 3 * CELL}
-              y2={PAD_Y + 9 * CELL}
-              strokeWidth="1.65"
-            />
+            <line x1={PAD_X + 3 * CELL} y1={PAD_Y + 7 * CELL} x2={PAD_X + 5 * CELL} y2={PAD_Y + 9 * CELL} strokeWidth="1.65" />
+            <line x1={PAD_X + 5 * CELL} y1={PAD_Y + 7 * CELL} x2={PAD_X + 3 * CELL} y2={PAD_Y + 9 * CELL} strokeWidth="1.65" />
           </g>
 
-          {/* Hoa văn tâm Pháo / Tốt */}
-          <g stroke="#3b1f0b" strokeWidth="1.6" fill="none" strokeLinecap="round" pointerEvents="none">
+          {/* Hoa văn phụ */}
+          <g stroke="#3b1f0b" style={{ stroke: '#3b1f0b' }} strokeWidth="1.6" fill="none" strokeLinecap="round" pointerEvents="none">
             {FIDUCIAL_COORDS.map(([r, c]) => (
               <path key={`fid-${r}-${c}`} d={buildFiducialPath(r, c, flipped)} />
             ))}
           </g>
 
-          {/* Chữ 楚河 (Sở Hà) — 漢界 (Hán Giới) */}
+          {/* Chữ Sở Hà Hán Giới */}
           <g
             fontFamily='"STKaiti", "KaiTi", "Noto Serif TC", "PMingLiU", serif'
             fontSize="30"
             fontWeight="700"
             fill="#4b280e"
+            style={{ fill: '#4b280e' }}
             fillOpacity="0.78"
             textAnchor="middle"
             dominantBaseline="central"
@@ -410,14 +637,13 @@ export const Board: React.FC<BoardProps> = ({
             <text x={PAD_X + 6 * CELL} y={PAD_Y + 4.5 * CELL} letterSpacing="10">
               {flipped ? '楚河' : '漢界'}
             </text>
-            {/* Hoa văn trang trí giữa sông */}
             <g transform={`translate(${PAD_X + 4 * CELL}, ${PAD_Y + 4.5 * CELL})`} opacity="0.55">
-              <polygon points="0,-10 10,0 0,10 -10,0" fill="none" stroke="#4b280e" strokeWidth="1.6" />
-              <circle cx="0" cy="0" r="3" fill="#4b280e" />
+              <polygon points="0,-10 10,0 0,10 -10,0" fill="none" stroke="#4b280e" style={{ stroke: '#4b280e' }} strokeWidth="1.6" />
+              <circle cx="0" cy="0" r="3" fill="#4b280e" style={{ fill: '#4b280e' }} />
             </g>
           </g>
 
-          {/* Đánh dấu nước đi vừa thực hiện (ô xuất phát & ô đích) */}
+          {/* Nước đi gần nhất */}
           {lastMove &&
             (() => {
               const fromPt = squareXY(lastMove.from, flipped);
@@ -430,6 +656,7 @@ export const Board: React.FC<BoardProps> = ({
                     x2={toPt.x}
                     y2={toPt.y}
                     stroke="#2563eb"
+                    style={{ stroke: '#2563eb' }}
                     strokeWidth="3.5"
                     strokeDasharray="6 4"
                     strokeOpacity="0.65"
@@ -441,6 +668,7 @@ export const Board: React.FC<BoardProps> = ({
                     fill="#2563eb"
                     fillOpacity="0.22"
                     stroke="#1d4ed8"
+                    style={{ fill: '#2563eb', stroke: '#1d4ed8' }}
                     strokeWidth="2"
                   />
                   <circle
@@ -449,6 +677,7 @@ export const Board: React.FC<BoardProps> = ({
                     r={PIECE_R + 4}
                     fill="none"
                     stroke="#2563eb"
+                    style={{ stroke: '#2563eb' }}
                     strokeWidth="2.8"
                     strokeDasharray="7 4"
                   />
@@ -456,128 +685,119 @@ export const Board: React.FC<BoardProps> = ({
               );
             })()}
 
-          {/* Vòng cảnh báo đỏ khi Tướng đang bị chiếu */}
+          {/* Chiếu tướng */}
           {checkedKingSq !== null &&
             (() => {
               const pt = squareXY(checkedKingSq, flipped);
               return (
-                <g pointerEvents="none" filter="url(#xq-glow-red)">
+                <g pointerEvents="none">
                   <circle
                     cx={pt.x}
                     cy={pt.y}
-                    r={PIECE_R + 5}
+                    r={PIECE_R + 6}
+                    fill="none"
+                    stroke="#ef4444"
+                    strokeOpacity="0.35"
+                    style={{ stroke: '#ef4444' }}
+                    strokeWidth="6"
+                  />
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={PIECE_R + 4}
                     fill="none"
                     stroke="#dc2626"
-                    strokeWidth="3.8"
+                    style={{ stroke: '#dc2626' }}
+                    strokeWidth="3.2"
                   />
                 </g>
               );
             })()}
 
-          {/* Vòng sáng cho quân đang được chọn */}
-          {selectedSq !== null &&
+          {/* ────────────────── HỆ THỐNG QUÂN CỜ CỐ ĐỊNH MÀU ────────────────── */}
+          {pieces.map(({ sq, piece }) => {
+            const { x, y } = squareXY(sq, flipped);
+            const isRed = piece.side === 'w';
+            const isSelected = selectedSq === sq && !isDraggingActively;
+            const isBeingDragged = isDraggingActively && dragState?.fromSq === sq;
+            const isTarget = legalTargets.has(sq);
+            const vnName = `${VIETNAMESE_NAMES[piece.kind]} ${isRed ? 'Đỏ' : 'Đen'}`;
+            const canInteract =
+              isPlayerTurn && !disabled && (piece.side === playerSide || isTarget);
+
+            return (
+              <g
+                key={`piece-${sq}`}
+                transform={`translate(${x}, ${y}) scale(${isSelected ? 1.08 : 1})`}
+                opacity={isBeingDragged ? 0.35 : 1}
+                style={{ outline: 'none', WebkitTapHighlightColor: 'transparent' }}
+                className={
+                  canInteract
+                    ? `${
+                        piece.side === playerSide ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+                      } transition-transform duration-150 focus:outline-none`
+                    : 'transition-transform duration-150 focus:outline-none'
+                }
+                onPointerDown={(e) => handlePiecePointerDown(e, sq, piece)}
+                aria-label={`${vnName} tại ${squareToUci(sq)}`}
+              >
+                {renderPieceGraphics(piece)}
+              </g>
+            );
+          })}
+
+          {/* Vòng tròn viền xanh lá bao quanh quân cờ đang chọn (vẽ trên lớp quân cờ để sắc nét, không có khung vuông đen) */}
+          {activeOriginSq !== null &&
             (() => {
-              const pt = squareXY(selectedSq, flipped);
+              const pt = squareXY(activeOriginSq, flipped);
+              const isScaled = selectedSq === activeOriginSq && !isDraggingActively;
               return (
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={PIECE_R + 4}
+                  r={isScaled ? PIECE_R * 1.08 + 3 : PIECE_R + 3.5}
                   fill="none"
                   stroke="#059669"
+                  style={{ stroke: '#059669' }}
                   strokeWidth="3.4"
                   pointerEvents="none"
                 />
               );
             })()}
 
-          {/* Quân cờ */}
-          {pieces.map(({ sq, piece }) => {
-            const { x, y } = squareXY(sq, flipped);
-            const isRed = piece.side === 'w';
-            const isSelected = selectedSq === sq;
-            const isTarget = legalTargets.has(sq);
-            const hanzi = isRed ? RED_NAMES[piece.kind] : BLACK_NAMES[piece.kind];
-            const vnName = `${VIETNAMESE_NAMES[piece.kind]} ${isRed ? 'Đỏ' : 'Đen'}`;
-            const strokeColor = isRed ? '#b41f18' : '#1b242c';
-            const textColor = isRed ? '#b81d13' : '#151c23';
+          {/* Vòng sáng báo hiệu ô đích hợp lệ khi đang rê quân cờ qua */}
+          {isDraggingActively &&
+            dragState?.hoverSq !== null &&
+            dragState?.hoverSq !== undefined &&
+            legalTargets.has(dragState.hoverSq) &&
+            (() => {
+              const pt = squareXY(dragState.hoverSq, flipped);
+              return (
+                <circle
+                  cx={pt.x}
+                  cy={pt.y}
+                  r={PIECE_R + 6}
+                  fill="#10b981"
+                  fillOpacity="0.24"
+                  stroke="#059669"
+                  style={{ fill: '#10b981', stroke: '#059669' }}
+                  strokeWidth="3"
+                  pointerEvents="none"
+                />
+              );
+            })()}
 
-            return (
-              <g
-                key={`piece-${sq}`}
-                transform={`translate(${x}, ${y}) scale(${isSelected ? 1.08 : 1})`}
-                className={
-                  isPlayerTurn && !disabled && (piece.side === playerSide || isTarget)
-                    ? 'cursor-pointer transition-transform duration-150'
-                    : 'transition-transform duration-150'
-                }
-                onClick={() => handleSquareClick(sq)}
-                role="button"
-                tabIndex={-1}
-                aria-label={`${vnName} tại ${squareToUci(sq)}`}
-              >
-                {/* Đế gỗ 3D */}
-                <circle
-                  cx="0"
-                  cy="2"
-                  r={PIECE_R}
-                  fill="#5a3312"
-                  filter="url(#xq-piece-shadow)"
-                />
-                {/* Mặt quân cờ */}
-                <circle
-                  cx="0"
-                  cy="0"
-                  r={PIECE_R}
-                  fill={isRed ? 'url(#xq-piece-red)' : 'url(#xq-piece-black)'}
-                  stroke="#693d18"
-                  strokeWidth="1.8"
-                />
-                {/* Vòng khắc chỉ đôi trên mặt quân */}
-                <circle
-                  cx="0"
-                  cy="0"
-                  r={PIECE_R - 4.5}
-                  fill="none"
-                  stroke={strokeColor}
-                  strokeWidth="1.9"
-                  strokeOpacity="0.88"
-                />
-                <circle
-                  cx="0"
-                  cy="0"
-                  r={PIECE_R - 7}
-                  fill="none"
-                  stroke={strokeColor}
-                  strokeWidth="0.7"
-                  strokeOpacity="0.45"
-                />
-                {/* Chữ Hán truyền thống */}
-                <text
-                  x="0"
-                  y="1.5"
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontFamily='"STKaiti", "KaiTi", "Kaiti SC", "Noto Serif TC", "PMingLiU", serif'
-                  fontSize="30"
-                  fontWeight="700"
-                  fill={textColor}
-                  style={{ textShadow: '0 1px 0 rgba(255,255,255,0.65)' }}
-                >
-                  {hanzi}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Chấm gợi ý các nước đi hợp lệ của quân đang chọn */}
+          {/* Các điểm/vòng tròn gợi ý nước đi hợp lệ */}
           {Array.from(legalTargets.keys()).map((targetSq) => {
             const { x, y } = squareXY(targetSq, flipped);
             const isCapture = position.pieceAt(targetSq) !== null;
+            const isHoveredTarget =
+              isDraggingActively && dragState?.hoverSq === targetSq;
             return (
               <g
                 key={`target-${targetSq}`}
-                className="cursor-pointer"
+                className="cursor-pointer focus:outline-none"
+                style={{ outline: 'none' }}
                 onClick={() => handleSquareClick(targetSq)}
               >
                 {isCapture ? (
@@ -587,20 +807,35 @@ export const Board: React.FC<BoardProps> = ({
                     r={PIECE_R + 3}
                     fill="none"
                     stroke="#10b981"
-                    strokeWidth="3.6"
+                    style={{ stroke: '#10b981' }}
+                    strokeWidth={isHoveredTarget ? '4.5' : '3.6'}
                     strokeDasharray="8 4"
                   />
                 ) : (
                   <>
-                    <circle cx={x} cy={y} r="9" fill="#10b981" fillOpacity="0.88" />
-                    <circle cx={x} cy={y} r="14" fill="#10b981" fillOpacity="0.22" />
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={isHoveredTarget ? '11' : '9'}
+                      fill="#10b981"
+                      style={{ fill: '#10b981' }}
+                      fillOpacity="0.88"
+                    />
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={isHoveredTarget ? '18' : '14'}
+                      fill="#10b981"
+                      style={{ fill: '#10b981' }}
+                      fillOpacity="0.22"
+                    />
                   </>
                 )}
               </g>
             );
           })}
 
-          {/* Mũi tên gợi ý nước đi (Hint) hoặc nước đầu tiên của PV */}
+          {/* Mũi tên gợi ý */}
           {arrowMove &&
             (() => {
               const fromPt = squareXY(arrowMove.from, flipped);
@@ -618,13 +853,14 @@ export const Board: React.FC<BoardProps> = ({
               const marker = arrowMove.isHint ? 'url(#xq-arrow-hint)' : 'url(#xq-arrow-pv)';
               return (
                 <g pointerEvents="none" opacity="0.9">
-                  <circle cx={fromPt.x} cy={fromPt.y} r="7" fill={color} />
+                  <circle cx={fromPt.x} cy={fromPt.y} r="7" fill={color} style={{ fill: color }} />
                   <line
                     x1={x1}
                     y1={y1}
                     x2={x2}
                     y2={y2}
                     stroke={color}
+                    style={{ stroke: color }}
                     strokeWidth="5"
                     strokeLinecap="round"
                     markerEnd={marker}
@@ -633,7 +869,7 @@ export const Board: React.FC<BoardProps> = ({
               );
             })()}
 
-          {/* Vùng bấm vô hình trên 90 giao điểm để dễ chọn các ô trống */}
+          {/* Vùng click trên các giao điểm trống */}
           {Array.from({ length: BOARD_SIZE }, (_, sq) => {
             if (position.pieceAt(sq) !== null) return null;
             const { x, y } = squareXY(sq, flipped);
@@ -645,11 +881,23 @@ export const Board: React.FC<BoardProps> = ({
                 width={CELL}
                 height={CELL}
                 fill="transparent"
-                className={legalTargets.has(sq) ? 'cursor-pointer' : undefined}
+                style={{ outline: 'none' }}
+                className={legalTargets.has(sq) ? 'cursor-pointer focus:outline-none' : 'focus:outline-none'}
                 onClick={() => handleSquareClick(sq)}
               />
             );
           })}
+
+          {/* Quân cờ nổi di chuyển theo con trỏ khi đang kéo */}
+          {isDraggingActively && dragState && (
+            <g
+              transform={`translate(${dragState.currX}, ${dragState.currY}) scale(1.14)`}
+              pointerEvents="none"
+              style={{ pointerEvents: 'none', outline: 'none' }}
+            >
+              {renderPieceGraphics(dragState.piece)}
+            </g>
+          )}
         </svg>
       </div>
     </div>

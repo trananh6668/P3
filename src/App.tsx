@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Board } from './components/Board';
 import { Controls } from './components/Controls';
 import { useXiangqiEngine } from './hooks/useXiangqiEngine';
@@ -40,6 +40,28 @@ export const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true,
   );
+
+  // Tự động xóa trạng thái bàn cờ cũ và làm mới bàn cờ mỗi khi tải lại trang (F5)
+  const didResetOnMount = useRef(false);
+  useEffect(() => {
+    if (didResetOnMount.current) return;
+    didResetOnMount.current = true;
+
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && /xiangqi|cotuong|game|board|fen|state/i.test(key)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch {
+      // Bỏ qua nếu trình duyệt chặn localStorage
+    }
+
+    newGame();
+  }, [newGame]);
 
   useEffect(() => {
     const onOnline = () => setIsOnline(true);
@@ -176,7 +198,7 @@ export const App: React.FC = () => {
                   Người chơi ({bottomSide === 'w' ? 'Quân Đỏ · Đi tiên' : 'Quân Đen · Đi hậu'})
                 </div>
                 <div className="text-[11px] text-stone-500">
-                  Nhấp chọn quân cờ rồi nhấp ô đích có chấm xanh để đi · Phím tắt Ctrl+Z để Đi lại
+                  Kéo thả hoặc nhấp chọn quân cờ rồi nhấp ô đích có chấm xanh để đi · Ctrl+Z để Đi lại
                 </div>
               </div>
             </div>
