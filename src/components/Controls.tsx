@@ -428,12 +428,6 @@ export const Controls: React.FC<ControlsProps> = ({
             <h2 className="text-xs font-bold uppercase tracking-wider text-amber-800">
               Phân tích thế trận thời gian thực
             </h2>
-            {thinking && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping" />
-                Đang tính…
-              </span>
-            )}
           </div>
           <label className="inline-flex items-center gap-1.5 text-[11px] text-stone-700 cursor-pointer select-none">
             <input
