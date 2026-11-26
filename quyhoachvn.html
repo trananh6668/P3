@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link id="leafletCss" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';" />
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js';"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -42,11 +42,63 @@
       background: #0f172a !important;
     }
     .leaflet-popup-content-wrapper {
-      border-radius: 14px !important;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.28) !important;
+      padding: 0 !important;
+      overflow: hidden;
     }
     .leaflet-popup-content {
-      margin: 12px 14px !important;
+      margin: 13px 14px !important;
+      width: auto !important;
+      min-width: 244px;
+      max-width: min(304px, calc(100vw - 40px));
+      line-height: 1.45 !important;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      cursor: auto;
+    }
+    .qh-popup-card {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .qh-coord-box {
+      -webkit-user-select: all;
+      user-select: all;
+      cursor: pointer;
+      word-break: break-all;
+    }
+    .leaflet-container a.leaflet-popup-close-button {
+      top: 6px !important;
+      right: 6px !important;
+      width: 28px !important;
+      height: 28px !important;
+      line-height: 26px !important;
+      font-size: 18px !important;
+      border-radius: 9999px;
+      color: #64748b !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      background: #f1f5f9;
+      color: #0f172a !important;
+    }
+    .leaflet-container .leaflet-popup-content a.qh-btn-primary {
+      color: #ffffff !important;
+      text-decoration: none !important;
+    }
+    .leaflet-container .leaflet-popup-content a.qh-btn-secondary {
+      color: #1e293b !important;
+      text-decoration: none !important;
+    }
+    button, a, label, select, summary, [role="button"] {
+      touch-action: manipulation;
+    }
+    #drawerDragHandle, #drawerHeader {
+      touch-action: none;
     }
     .measure-cursor {
       cursor: crosshair !important;
@@ -88,8 +140,8 @@
       pointer-events: none;
     }
     .gm-vertex-hit {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -138,8 +190,32 @@
       pointer-events: none;
     }
 
-    /* Pulsing GPS dot */
-    .gps-dot-wrap { position: relative; width: 22px; height: 22px; }
+    /* Pulsing GPS dot & compass viewing cone */
+    .gps-marker-hit {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: visible;
+    }
+    .gps-heading-beam {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 132px;
+      height: 132px;
+      margin-left: -66px;
+      margin-top: -66px;
+      pointer-events: none;
+      transform-origin: 50% 50%;
+      will-change: transform;
+      transition: opacity 0.2s ease;
+      z-index: 0;
+    }
+    .gps-dot-wrap { position: relative; width: 22px; height: 22px; z-index: 1; pointer-events: none; }
     .gps-dot-pulse {
       position: absolute; inset: 0; border-radius: 9999px;
       background: rgba(37, 99, 235, 0.35);
@@ -149,6 +225,12 @@
       position: absolute; top: 4px; left: 4px; width: 14px; height: 14px;
       border-radius: 9999px; background: #2563eb; border: 2.5px solid #ffffff;
       box-shadow: 0 2px 6px rgba(37, 99, 235, 0.6);
+    }
+    .leaflet-container .leaflet-tile canvas {
+      max-width: none !important;
+      max-height: none !important;
+      display: block;
+      pointer-events: none;
     }
     @keyframes gpsPulse {
       0% { transform: scale(0.8); opacity: 0.9; }
@@ -163,6 +245,7 @@
       border-radius: 9999px;
       background: linear-gradient(90deg, #e2e8f0 0%, #2563eb 100%);
       outline: none;
+      touch-action: none;
     }
     input[type="range"].opacity-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -179,21 +262,9 @@
       cursor: pointer;
     }
 
-    @media (max-width: 767px) {
+    @media (max-width: 1024px), (pointer: coarse) {
       input[type="text"], textarea, select {
         font-size: 16px !important;
-      }
-      .leaflet-bottom.leaflet-right {
-        bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
-        right: 6px !important;
-      }
-      .leaflet-control-attribution {
-        font-size: 9px !important;
-        padding: 0 4px !important;
-        max-width: 58vw;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
       .gm-vertex {
         width: 16px;
@@ -206,6 +277,20 @@
       input[type="range"].opacity-slider::-moz-range-thumb {
         width: 24px;
         height: 24px;
+      }
+    }
+    @media (max-width: 767px) {
+      .leaflet-bottom.leaflet-right {
+        bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+        right: 6px !important;
+      }
+      .leaflet-control-attribution {
+        font-size: 9px !important;
+        padding: 0 4px !important;
+        max-width: 58vw;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
     @media (min-width: 768px) {
@@ -262,7 +347,7 @@
   </div>
 
   <!-- TOP FLOATING SEARCH & QUICK BAR -->
-  <div class="fixed top-[calc(8px+env(safe-area-inset-top,0px))] left-2.5 right-2.5 md:top-3 md:left-3 md:right-auto z-20 flex flex-col gap-1.5 md:gap-2 pointer-events-none md:w-[420px]">
+  <div class="fixed top-[calc(8px+env(safe-area-inset-top,0px))] left-2.5 right-2.5 md:top-3 md:left-3 md:right-auto z-20 flex flex-col gap-1.5 md:gap-2 pointer-events-none md:w-[360px] lg:w-[420px]">
     <div class="pointer-events-auto relative">
       <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2">
         <button id="btnToggleDrawer" type="button" title="Mở / Đóng bảng điều khiển" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shrink-0 transition shadow-sm">
@@ -283,42 +368,15 @@
       <div id="searchResultsBox" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-64 overflow-y-auto thin-scroll z-30"></div>
     </div>
 
-    <!-- QUICK PROVINCE & LIVE GIS PILLS -->
-    <div class="pointer-events-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-      <button data-quick-qh="hn_qhpk" data-vn2000="hanoi" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm text-[11px] font-bold transition">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-950 animate-pulse"></span>
-        <span>QH Hà Nội</span>
-      </button>
-      <button data-quick-qh="hn_qhct" data-vn2000="hanoi" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-sm text-[11px] font-bold transition">
-        <span>QH 1/500 HN</span>
-      </button>
-      <button data-quick-qh="hy_khsdd" data-vn2000="hungyen" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-sm text-[11px] font-bold transition">
-        <span>QH Hưng Yên</span>
-      </button>
-      <button data-quick-qh="pt_qhv" data-extra-qh="pt_khsdd" data-vn2000="phutho" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-sm text-[11px] font-bold transition">
-        <span>QH Phú Thọ</span>
-      </button>
-      <button data-quick-qh="hcm_khsdd" data-extra-qh="hcm_ranhthua" data-vn2000="hcm" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-sm text-[11px] font-bold transition">
-        <span>QH TP.HCM</span>
-      </button>
-      <button data-quick-qh="dongnai_qhsdd" data-vn2000="binhphuoc" type="button" class="quick-qh-pill shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 shadow-sm text-[11px] font-bold transition">
-        <span>QH Đồng Nai</span>
-      </button>
-      <button id="btnQuickPortal" type="button" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm text-[11px] font-semibold transition">
-        <i data-lucide="landmark" class="w-3 h-3"></i>
-        <span>Cổng .gov.vn</span>
-      </button>
-      <button data-city="danang" type="button" class="city-pill shrink-0 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-white/95 hover:bg-blue-50 text-slate-800 border border-slate-200/90 shadow-sm text-[11px] font-semibold transition">Đà Nẵng</button>
-      <button data-city="haiphong" type="button" class="city-pill shrink-0 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-white/95 hover:bg-blue-50 text-slate-800 border border-slate-200/90 shadow-sm text-[11px] font-semibold transition">Hải Phòng</button>
-      <button data-city="bacninh" type="button" class="city-pill shrink-0 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-white/95 hover:bg-blue-50 text-slate-800 border border-slate-200/90 shadow-sm text-[11px] font-semibold transition">Bắc Ninh</button>
-    </div>
+    <!-- CONTEXTUAL PLANNING LAYER SUGGESTIONS AT CURRENT MAP POSITION -->
+    <div id="contextLayerBar" class="pointer-events-auto flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
   </div>
 
   <!-- MOBILE BACKDROP FOR BOTTOM SHEET -->
   <div id="mobileDrawerBackdrop" class="hidden fixed inset-0 z-[25] bg-slate-950/45 backdrop-blur-[1px] md:hidden transition-opacity"></div>
 
-  <!-- RESPONSIVE PANEL: BOTTOM SHEET ON MOBILE, LEFT SIDEBAR ON DESKTOP -->
-  <aside id="sideDrawer" style="padding-bottom: env(safe-area-inset-bottom, 0px);" class="fixed inset-x-0 bottom-0 z-30 max-h-[82dvh] rounded-t-3xl bg-white shadow-2xl border-t border-slate-200 md:inset-x-auto md:top-[102px] md:bottom-24 md:left-3 md:z-20 md:w-[420px] md:max-h-none md:rounded-2xl md:border md:bg-white/95 backdrop-blur-md flex flex-col overflow-hidden transition-transform duration-200">
+  <!-- RESPONSIVE PANEL: BOTTOM SHEET ON MOBILE, LEFT SIDEBAR ON DESKTOP/TABLET -->
+  <aside id="sideDrawer" style="padding-bottom: env(safe-area-inset-bottom, 0px);" class="fixed inset-x-0 bottom-0 z-30 max-h-[82dvh] rounded-t-3xl bg-white shadow-2xl border-t border-slate-200 md:inset-x-auto md:top-[102px] md:bottom-24 md:left-3 md:z-20 md:w-[360px] lg:w-[415px] md:max-h-none md:rounded-2xl md:border md:bg-white/95 backdrop-blur-md flex flex-col overflow-hidden transition-transform duration-200">
     <!-- Mobile Drag Handle -->
     <div id="drawerDragHandle" class="md:hidden pt-2.5 pb-1.5 bg-blue-700 flex justify-center cursor-grab active:cursor-grabbing shrink-0">
       <div class="w-11 h-1.5 rounded-full bg-white/50"></div>
@@ -408,7 +466,7 @@
             <div>
               <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>Lớp Quy hoạch GIS trực tiếp (17 lớp Live)</span>
+                <span id="liveLayersHeadingCount">Lớp Quy hoạch GIS trực tiếp (18 lớp Live)</span>
               </h3>
               <p class="text-[10px] text-slate-500 mt-0.5">Hà Nội (gồm 1/500), Hưng Yên, Phú Thọ, TP.HCM, Đồng Nai &amp; Toàn quốc</p>
             </div>
@@ -417,9 +475,10 @@
               <span>Làm mới</span>
             </button>
           </div>
-          <div id="liveSyncStatusText" class="text-[10px] text-emerald-800 bg-emerald-50/70 border border-emerald-200/70 rounded-lg px-2 py-1">Tự động làm mới dữ liệu mới nhất mỗi lần mở trang • Đang đồng bộ...</div>
+          <div id="liveSyncStatusText" class="text-[10px] text-emerald-800 bg-emerald-50/70 border border-emerald-200/70 rounded-lg px-2 py-1">Bộ nhớ đệm tối ưu tốc độ • Đang kiểm tra máy chủ GIS...</div>
+          <div id="drawerSuggestedBox" class="hidden p-2 rounded-xl bg-amber-50/90 border border-amber-200 space-y-1.5"></div>
           <div id="liveLayerRegionFilters" class="flex flex-wrap gap-1">
-            <button data-region="ALL" type="button" class="region-filter px-2 py-1 rounded-full text-[10px] font-bold bg-blue-600 text-white transition">Tất cả (17)</button>
+            <button id="regionAllBtn" data-region="ALL" type="button" class="region-filter px-2 py-1 rounded-full text-[10px] font-bold bg-blue-600 text-white transition">Tất cả (18)</button>
             <button data-region="hanoi" type="button" class="region-filter px-2 py-1 rounded-full text-[10px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Hà Nội</button>
             <button data-region="hungyen" type="button" class="region-filter px-2 py-1 rounded-full text-[10px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Hưng Yên</button>
             <button data-region="phutho" type="button" class="region-filter px-2 py-1 rounded-full text-[10px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Phú Thọ</button>
@@ -568,8 +627,8 @@
 
       <!-- TAB 3: VERIFIED OFFICIAL PORTALS -->
       <section id="tab-portals" class="tab-panel hidden space-y-3">
-        <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900">
-          Danh sách <strong>17 cổng quy hoạch .gov.vn đã kiểm chứng đang hoạt động</strong>. Các cổng cho phép nhúng có nút <strong>Nhúng xem</strong>; các cổng chặn iframe (như Hà Nội, DPA TP.HCM) mở trực tiếp bằng nút <strong>Mở cổng ↗</strong> để không bị báo lỗi khung nhúng.
+        <div id="portalsCountBanner" class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900">
+          Danh sách <strong>20 cổng quy hoạch .gov.vn đã kiểm chứng đang hoạt động</strong>. Các cổng cho phép nhúng có nút <strong>Nhúng xem</strong>; các cổng chặn iframe (như Hà Nội, DPA TP.HCM) mở trực tiếp bằng nút <strong>Mở cổng ↗</strong> để không bị báo lỗi khung nhúng.
         </div>
         <input id="portalSearchInput" type="text" placeholder="Lọc tỉnh / thành phố (VD: TP.HCM, Hà Nội, Đồng Nai, Đà Nẵng...)" class="w-full text-xs border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <div id="portalCardsList" class="space-y-2"></div>
@@ -779,6 +838,10 @@
     <button id="btnLocateMe" type="button" title="Định vị vị trí hiện tại (GPS)" class="w-11 h-11 rounded-2xl bg-white/95 hover:bg-blue-50 text-blue-600 shadow-lg border border-slate-200/90 flex items-center justify-center transition">
       <i data-lucide="locate-fixed" class="w-5 h-5"></i>
     </button>
+    <button id="btnHeadingMode" type="button" title="Chế độ hiển thị hướng nhìn định vị (La bàn)" aria-pressed="false" class="w-11 h-11 rounded-2xl bg-white/95 hover:bg-blue-50 text-slate-700 hover:text-blue-600 shadow-lg border border-slate-200/90 flex flex-col items-center justify-center transition">
+      <i data-lucide="compass" class="w-5 h-5"></i>
+      <span id="headingDegBadge" class="hidden text-[8px] font-extrabold leading-none mt-0.5 tracking-tighter">B 0°</span>
+    </button>
 
     <div class="hidden md:flex bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-slate-200/90 flex-col overflow-hidden">
       <button id="railDistance" type="button" title="Đo khoảng cách chuẩn Google Maps" class="w-11 h-11 hover:bg-blue-50 text-slate-700 flex items-center justify-center border-b border-slate-100 transition">
@@ -816,8 +879,9 @@
     <!-- Active planning layer status chip -->
     <div id="activePlanningChip" class="pointer-events-auto inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 backdrop-blur-md text-white text-[11px] font-medium shadow-lg border border-white/10 max-w-full">
       <span id="tileHealthDot" class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-      <span id="activePlanningText" class="truncate">Đang bật: Lớp minh họa (Ba Đình &amp; Thủ Thiêm)</span>
-      <button id="btnFlyToActiveLayer" type="button" class="hidden shrink-0 px-2 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[10px] transition">Bay tới vùng phủ</button>
+      <span id="activePlanningText" class="truncate">Đang bật: QHPK Hà Nội</span>
+      <button id="btnChipSuggestToggle" type="button" class="hidden shrink-0 px-2.5 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[10px] transition"></button>
+      <button id="btnChipZoomToLayer" type="button" class="hidden shrink-0 px-2 py-0.5 rounded-full bg-sky-400 hover:bg-sky-300 text-slate-950 font-bold text-[10px] transition"></button>
       <button id="btnChipRefresh" type="button" title="Làm mới dữ liệu bản đồ mới nhất từ máy chủ" class="shrink-0 w-5 h-5 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition">
         <i data-lucide="refresh-cw" class="w-3 h-3"></i>
       </button>
@@ -939,7 +1003,7 @@
           url: 'https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
           subdomains: ['0', '1', '2', '3'],
           attribution: 'Map data © Google',
-          maxZoom: 20,
+          maxZoom: 21,
           maxNativeZoom: 16
         },
         carto_light: {
@@ -947,7 +1011,7 @@
           url: 'https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
           subdomains: ['a', 'b', 'c', 'd'],
           attribution: '© OpenStreetMap contributors © CARTO',
-          maxZoom: 20,
+          maxZoom: 21,
           maxNativeZoom: 19
         }
       };
@@ -986,141 +1050,184 @@
         nationwide: 'Toàn quốc'
       };
 
-      // 17 live verified GIS planning layers (HTTP 200 strict SSL)
+      // 18 live verified GIS planning layers (HTTP 200 strict SSL)
       const LIVE_PLANNING_LAYERS = [
         {
           id: 'hn_qhpk',
           region: 'hanoi',
           name: 'Hà Nội — Quy hoạch Phân khu đô thị (1/2000 – 1/5000)',
-          desc: 'Nội đô, Đông Anh, Gia Lâm, Hoài Đức, Thanh Trì... (Z11–Z17)',
+          shortLabel: 'QHPK Hà Nội',
+          areaName: 'Hà Nội',
+          priority: 95,
+          desc: 'Nội đô, Đông Anh, Gia Lâm, Hoài Đức, Thanh Trì... (Z10–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/qhpk/{z}/{x}/{y}.png',
           bounds: [[20.55, 105.28], [21.39, 106.05]],
-          center: [21.0278, 105.8342],
-          zoom: 15,
-          minZoom: 11,
+          minZoom: 7,
+          minNativeZoom: 10,
           maxNativeZoom: 17,
+          minFallbackZoom: 10,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'hn_qhct',
           region: 'hanoi',
           name: 'Hà Nội — Quy hoạch Chi tiết 1/500 (KĐT & Dự án)',
-          desc: 'Tây Hồ Tây (Starlake/Ngoại Giao Đoàn), Đông Anh (Vĩnh Ngọc), Ocean Park, Smart City... (Z12–Z20)',
+          shortLabel: 'QH 1/500 HN',
+          areaName: 'Hà Nội',
+          priority: 92,
+          desc: 'Tây Hồ Tây (Starlake/Ngoại Giao Đoàn), Đông Anh, Ocean Park, Smart City... (Z10–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/qhct/{z}/{x}/{y}.png',
-          bounds: [[20.85, 105.60], [21.25, 106.05]],
-          center: [21.0570, 105.7920],
-          zoom: 16,
-          minZoom: 12,
+          bounds: [[20.55, 105.28], [21.39, 106.08]],
+          minZoom: 7,
+          minNativeZoom: 10,
           maxNativeZoom: 20,
-          zIndex: 13,
-          identify: false,
-          quickSpots: [
-            { label: 'Starlake / Tây Hồ Tây', lat: 21.0570, lng: 105.7920, zoom: 16 },
-            { label: 'Ocean Park', lat: 20.9940, lng: 105.9440, zoom: 16 },
-            { label: 'Smart City', lat: 21.0055, lng: 105.7410, zoom: 16 },
-            { label: 'Đông Anh (Vĩnh Ngọc)', lat: 21.1160, lng: 105.8340, zoom: 16 }
-          ]
+          minFallbackZoom: 10,
+          pane: 'planningPane',
+          zIndex: 14,
+          identify: false
         },
         {
           id: 'hn_dtvt',
           region: 'hanoi',
           name: 'Hà Nội — Quy hoạch Đô thị vệ tinh',
-          desc: 'Hòa Lạc, Xuân Mai, Sơn Tây, Sóc Sơn, Phú Xuyên (Z11–Z17)',
+          shortLabel: 'Đô thị vệ tinh HN',
+          areaName: 'Hà Nội (Vệ tinh)',
+          priority: 96,
+          desc: 'Hòa Lạc, Xuân Mai, Sơn Tây, Sóc Sơn, Phú Xuyên (Z10–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/dtvt/{z}/{x}/{y}.png',
           bounds: [[20.55, 105.25], [21.40, 106.05]],
-          center: [21.0070, 105.5350],
-          zoom: 14,
-          minZoom: 11,
+          suggestZones: [
+            [[20.92, 105.45], [21.08, 105.60]],
+            [[21.08, 105.44], [21.19, 105.56]],
+            [[20.83, 105.51], [20.93, 105.63]],
+            [[21.20, 105.74], [21.39, 105.93]],
+            [[20.66, 105.85], [20.81, 105.98]]
+          ],
+          minZoom: 7,
+          minNativeZoom: 10,
           maxNativeZoom: 17,
+          minFallbackZoom: 10,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'hy_khsdd',
           region: 'hungyen',
           name: 'Hưng Yên — Quy hoạch Sử dụng đất (Toàn tỉnh)',
-          desc: 'Văn Giang (Ecopark), Mỹ Hào, Khoái Châu, TP. Hưng Yên... (Z11–Z16)',
+          shortLabel: 'QHSDĐ Hưng Yên',
+          areaName: 'Hưng Yên',
+          priority: 94,
+          desc: 'Văn Giang (Ecopark), Mỹ Hào, Khoái Châu, TP. Hưng Yên... (Z11–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/khsdd/{z}/{x}/{y}.png',
           bounds: [[20.55, 105.88], [21.03, 106.25]],
-          center: [20.9460, 105.9320],
-          zoom: 14,
-          minZoom: 11,
-          maxNativeZoom: 16,
+          minZoom: 8,
+          minNativeZoom: 11,
+          maxNativeZoom: 17,
+          minFallbackZoom: 11,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'hy_qhct',
           region: 'hungyen',
           name: 'Hưng Yên (Văn Giang) — Quy hoạch Chi tiết 1/500',
-          desc: 'Khu vực Văn Giang, Ecopark & trục kết nối Hà Nội (Z12–Z15)',
+          shortLabel: 'QH 1/500 Văn Giang',
+          areaName: 'Văn Giang — Hưng Yên',
+          priority: 95,
+          desc: 'Khu vực Văn Giang, Ecopark & trục kết nối Hà Nội (Z10–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/qhct/{z}/{x}/{y}.png',
           bounds: [[20.88, 105.88], [21.02, 106.02]],
-          center: [20.9460, 105.9320],
-          zoom: 15,
-          minZoom: 12,
+          minZoom: 7,
+          minNativeZoom: 10,
           maxNativeZoom: 15,
-          zIndex: 12,
+          minFallbackZoom: 10,
+          pane: 'planningPane',
+          zIndex: 14,
           identify: false
         },
         {
           id: 'pt_qhv',
           region: 'phutho',
           name: 'Phú Thọ & Vùng Thủ đô — Quy hoạch Vùng',
-          desc: 'Phú Thọ (Việt Trì), Hà Nội, Hưng Yên, Vĩnh Phúc, Bắc Ninh (Z10–Z13)',
+          shortLabel: 'QH Vùng Phú Thọ',
+          areaName: 'Phú Thọ / Vùng Thủ đô',
+          priority: 75,
+          desc: 'Phú Thọ (Việt Trì), Hà Nội, Hưng Yên, Vĩnh Phúc, Bắc Ninh (Z7–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/qhv/{z}/{x}/{y}.png',
           bounds: [[20.10, 104.80], [21.85, 106.70]],
-          center: [21.3227, 105.4020],
-          zoom: 12,
-          minZoom: 9,
+          suggestZones: [[[21.00, 104.80], [21.75, 105.65]]],
+          minZoom: 6,
+          minNativeZoom: 7,
           maxNativeZoom: 13,
+          minFallbackZoom: 7,
+          pane: 'planningPane',
+          zIndex: 8,
           identify: false
         },
         {
           id: 'pt_khsdd',
           region: 'phutho',
           name: 'Phú Thọ (Việt Trì) — Quy hoạch Sử dụng đất',
-          desc: 'Khu vực TP. Việt Trì & hành lang kết nối Thủ đô (Z11–Z13)',
+          shortLabel: 'QHSDĐ Phú Thọ',
+          areaName: 'Phú Thọ',
+          priority: 94,
+          desc: 'Khu vực TP. Việt Trì & hành lang kết nối Thủ đô (Z11–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/khsdd/{z}/{x}/{y}.png',
           bounds: [[21.00, 105.00], [21.65, 105.55]],
-          center: [21.3227, 105.4020],
-          zoom: 13,
-          minZoom: 11,
+          minZoom: 8,
+          minNativeZoom: 11,
           maxNativeZoom: 13,
-          zIndex: 12,
+          minFallbackZoom: 11,
+          pane: 'planningPane',
+          zIndex: 11,
           identify: false
         },
         {
           id: 'hcm_khsdd',
           region: 'hcm',
           name: 'TP.HCM — Quy hoạch Sử dụng đất (Toàn TP.HCM)',
-          desc: 'Q1, Q7, TP. Thủ Đức, Bình Chánh, Củ Chi, Hóc Môn, Nhà Bè (Z11–Z16)',
+          shortLabel: 'QHSDĐ TP.HCM',
+          areaName: 'TP.HCM',
+          priority: 94,
+          desc: 'Q1, Q7, TP. Thủ Đức, Bình Chánh, Củ Chi, Hóc Môn, Nhà Bè (Z11–Z21)',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/khsdd/{z}/{x}/{y}.png',
           bounds: [[10.34, 106.35], [11.16, 107.03]],
-          center: [10.7769, 106.7008],
-          zoom: 15,
-          minZoom: 11,
+          minZoom: 8,
+          minNativeZoom: 11,
           maxNativeZoom: 16,
+          minFallbackZoom: 11,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'hcm_ranhthua',
           region: 'hcm',
           name: 'TP.HCM — Ranh Thửa đất Địa chính (Sở TN&MT)',
-          desc: 'geodata-stnmt.tphcm.gov.vn • Hiện rõ khi phóng to từ Z17',
+          shortLabel: 'Ranh thửa TP.HCM',
+          areaName: 'TP.HCM',
+          priority: 88,
+          desc: 'geodata-stnmt.tphcm.gov.vn • Hiện rõ khi phóng to từ Z16–Z21',
           type: 'xyz',
           url: 'https://geodata-stnmt.tphcm.gov.vn/geoserver/gwc/service/wmts?service=wmts&request=GetTile&version=1.0.0&layer=tnmt:v_ranhthua_TPHCM&tilematrixset=EPSG:900913&tilematrix=EPSG:900913:{z}&tilerow={y}&tilecol={x}&format=image%2Fpng',
           bounds: [[10.34, 106.35], [11.16, 107.03]],
-          center: [10.7769, 106.7008],
-          zoom: 17,
-          minZoom: 17,
+          minZoom: 16,
+          minNativeZoom: 17,
           maxNativeZoom: 20,
+          minFallbackZoom: 17,
+          pane: 'cadastrePane',
           zIndex: 15,
           identify: false
         },
@@ -1128,106 +1235,157 @@
           id: 'hcm_cangio_qhsdd',
           region: 'hcm',
           name: 'TP.HCM (Cần Giờ) — QH Sử dụng đất',
-          desc: 'ArcGIS Online Tile • Toàn huyện Cần Giờ (Z10–Z16)',
+          shortLabel: 'QHSDĐ Cần Giờ',
+          areaName: 'Cần Giờ — TP.HCM',
+          priority: 98,
+          desc: 'ArcGIS Online Tile • Toàn huyện Cần Giờ (Z9–Z21)',
           type: 'xyz',
           url: 'https://tiles-ap1.arcgis.com/16bJC7RxuVlaaJep/arcgis/rest/services/QHSDD_CanGio_png/MapServer/tile/{z}/{y}/{x}',
           bounds: [[10.297, 106.709], [10.723, 107.042]],
-          center: [10.420, 106.945],
-          zoom: 13,
-          minZoom: 10,
+          minZoom: 7,
+          minNativeZoom: 9,
           maxNativeZoom: 16,
+          minFallbackZoom: 9,
+          pane: 'planningPane',
+          zIndex: 11,
+          identify: false
+        },
+        {
+          id: 'dongnai_nam_khsdd',
+          region: 'dongnai',
+          name: 'Đồng Nai (Biên Hòa, Long Thành, Nhơn Trạch) — QH Sử dụng đất',
+          shortLabel: 'QHSDĐ Đồng Nai',
+          areaName: 'Đồng Nai',
+          priority: 95,
+          desc: 'Biên Hòa, Long Thành, Nhơn Trạch, Trảng Bom, Long Khánh (Z11–Z21)',
+          type: 'xyz',
+          url: 'https://land.vietpalm.group/data/khsdd/{z}/{x}/{y}.png',
+          bounds: [[10.58, 106.72], [11.35, 107.58]],
+          minZoom: 8,
+          minNativeZoom: 11,
+          maxNativeZoom: 16,
+          minFallbackZoom: 11,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'vn_khsdd',
           region: 'nationwide',
           name: 'Toàn quốc — QH & KH Sử dụng đất đa tỉnh',
-          desc: 'Phủ rộng HN, Hưng Yên, Hải Phòng, Bắc Ninh, HCM, Bình Dương, Long An, Phú Quốc...',
+          shortLabel: 'QHSDĐ Đa tỉnh',
+          areaName: 'Khu vực hiện tại',
+          priority: 60,
+          isNationwideLandUse: true,
+          desc: 'Phủ rộng HN, Hưng Yên, Hải Phòng, Bắc Ninh, HCM, Bình Dương, Long An, Đà Nẵng...',
           type: 'xyz',
           url: 'https://land.vietpalm.group/data/khsdd/{z}/{x}/{y}.png',
           bounds: [[8.40, 102.10], [23.40, 109.50]],
-          center: [21.0278, 105.8342],
-          zoom: 14,
-          minZoom: 11,
+          minZoom: 9,
+          minNativeZoom: 11,
           maxNativeZoom: 16,
+          minFallbackZoom: 11,
+          pane: 'planningPane',
+          zIndex: 9,
           identify: false
         },
         {
           id: 'vn_ranhthua',
           region: 'nationwide',
-          name: 'Ranh Thửa đất Địa chính (Hà Nội, TP.HCM, Việt Trì...)',
-          desc: 'Đường ranh thửa đất chi tiết khi phóng to từ Z16–Z19',
+          name: 'Ranh Thửa đất Địa chính (Hà Nội, TP.HCM, Hải Phòng...)',
+          shortLabel: 'Ranh thửa Địa chính',
+          areaName: 'Khu vực hiện tại',
+          priority: 55,
+          isNationwideCadastre: true,
+          desc: 'Đường ranh thửa đất chi tiết khi phóng to từ Z16–Z21',
           type: 'xyz',
           url: 'https://mapv3.meeymap.com/styles/ranh-thua/{z}/{x}/{y}.png',
           bounds: [[8.40, 102.10], [23.40, 109.50]],
-          center: [21.0278, 105.8342],
-          zoom: 18,
           minZoom: 16,
-          maxNativeZoom: 19,
+          minNativeZoom: 17,
+          maxNativeZoom: 20,
+          minFallbackZoom: 17,
+          pane: 'cadastrePane',
           zIndex: 15,
           identify: false
         },
         {
           id: 'dongnai_qhsdd',
           region: 'dongnai',
-          name: 'Đồng Nai / Bình Phước — QH Sử dụng đất',
+          name: 'Đồng Nai (Đồng Xoài / Bình Phước) — QH Sử dụng đất',
+          shortLabel: 'QHSDĐ Đồng Xoài / BP',
+          areaName: 'Đồng Nai (Bình Phước)',
+          priority: 95,
           desc: 'gis.dongnai.gov.vn • Toàn vùng Đồng Xoài, Chơn Thành, Phước Long',
           type: 'arcgis_export',
           url: 'https://gis.dongnai.gov.vn/arcgis/rest/services/SuDungDat/ThongTinQuyHoachSDD_Cache/MapServer',
           bounds: [[11.30, 106.40], [12.30, 107.45]],
-          center: [11.535, 106.890],
-          zoom: 14,
+          minZoom: 8,
+          pane: 'planningPane',
+          zIndex: 10,
           identify: false
         },
         {
           id: 'dongnai_diachinh',
           region: 'dongnai',
-          name: 'Đồng Nai / Bình Phước — Nền Địa chính & Thửa đất',
+          name: 'Đồng Nai (Đồng Xoài / BP) — Nền Địa chính & Thửa đất',
+          shortLabel: 'Địa chính & Thửa đất BP',
+          areaName: 'Đồng Nai (Bình Phước)',
+          priority: 88,
           desc: 'gis.dongnai.gov.vn • Ranh thửa đất, tim đường, sông suối',
           type: 'arcgis_export',
           url: 'https://gis.dongnai.gov.vn/arcgis/rest/services/NenDiaChinh_Cached/MapServer',
           bounds: [[11.30, 106.40], [12.30, 107.45]],
-          center: [11.535, 106.890],
-          zoom: 16,
+          minZoom: 10,
+          pane: 'cadastrePane',
           zIndex: 15,
           identify: false
         },
         {
           id: 'dongnai_qhct',
           region: 'dongnai',
-          name: 'Đồng Nai — Quy hoạch Chi tiết 1/500 (SDĐ)',
+          name: 'Đồng Nai (Bình Phước) — Quy hoạch Chi tiết 1/500 (SDĐ)',
+          shortLabel: 'QH 1/500 BP',
+          areaName: 'Đồng Nai (Bình Phước)',
+          priority: 85,
           desc: 'gis.dongnai.gov.vn • Đất ở, KCN, TMD, giao thông chi tiết',
           type: 'arcgis_export',
           url: 'https://gis.dongnai.gov.vn/arcgis/rest/services/QHCT/QHCT_SDD/MapServer',
-          bounds: [[10.80, 106.40], [12.30, 107.60]],
-          center: [11.535, 106.890],
-          zoom: 15,
-          zIndex: 12,
+          bounds: [[11.20, 106.40], [12.30, 107.60]],
+          minZoom: 9,
+          pane: 'planningPane',
+          zIndex: 14,
           identify: false
         },
         {
           id: 'dongnai_giaothong',
           region: 'dongnai',
-          name: 'Đồng Nai — Quy hoạch Giao thông (Bấm xem thuộc tính)',
+          name: 'Đồng Nai (Bình Phước) — QH Giao thông (Bấm xem thuộc tính)',
+          shortLabel: 'QH Giao thông BP',
+          areaName: 'Đồng Nai (Bình Phước)',
+          priority: 83,
           desc: 'gis.dongnai.gov.vn • Hỗ trợ bấm bản đồ tra cứu tên đường',
           type: 'arcgis_export',
           url: 'https://gis.dongnai.gov.vn/arcgis/rest/services/QH_CD/QH_ChuyenDe_GiaoThong/MapServer',
-          bounds: [[10.80, 106.40], [12.30, 107.60]],
-          center: [11.535, 106.890],
-          zoom: 14,
+          bounds: [[11.15, 106.40], [12.30, 107.60]],
+          minZoom: 9,
+          pane: 'cadastrePane',
           zIndex: 15,
           identify: true
         },
         {
           id: 'dongnai_doan',
           region: 'dongnai',
-          name: 'Đồng Nai — Ranh giới Đồ án QH (Bấm xem mã dự án)',
+          name: 'Đồng Nai (Bình Phước) — Ranh giới Đồ án QH (Bấm xem mã dự án)',
+          shortLabel: 'Ranh Đồ án BP',
+          areaName: 'Đồng Nai (Bình Phước)',
+          priority: 82,
           desc: 'gis.dongnai.gov.vn • Hỗ trợ bấm bản đồ xem mã đồ án',
           type: 'arcgis_export',
           url: 'https://gis.dongnai.gov.vn/arcgis/rest/services/ThongTinDoAn/MapServer',
-          bounds: [[10.80, 106.40], [12.30, 107.60]],
-          center: [11.535, 106.890],
-          zoom: 14,
+          bounds: [[11.20, 106.40], [12.30, 107.60]],
+          minZoom: 9,
+          pane: 'cadastrePane',
           zIndex: 15,
           identify: true
         }
@@ -1278,9 +1436,9 @@
           agency: 'Sở TN&MT & Sở Xây dựng Đồng Nai',
           url: 'https://gis.dongnai.gov.vn/',
           tech: 'ArcGIS Server công khai (có lớp Live ở tab Bản đồ)',
-          cityKey: 'dongxoai',
+          cityKey: 'dongnai',
           embeddable: true,
-          liveLayerId: 'dongnai_qhsdd'
+          liveLayerId: 'dongnai_nam_khsdd'
         },
         {
           id: 'lamdong',
@@ -2287,26 +2445,44 @@
         }, 3400);
       }
 
-      function copyText(text, okMsg = 'Đã sao chép!') {
+      function copyText(text, okMsg = 'Đã sao chép!', triggerEl = null) {
+        const markCopied = () => {
+          showToast(okMsg);
+          if (triggerEl && triggerEl.isConnected && triggerEl.tagName === 'BUTTON') {
+            if (!triggerEl.dataset.origHtml) triggerEl.dataset.origHtml = triggerEl.innerHTML;
+            if (!triggerEl.dataset.origClass) triggerEl.dataset.origClass = triggerEl.className;
+            clearTimeout(triggerEl._copyTimer);
+            triggerEl.textContent = 'Đã chép ✓';
+            triggerEl.className = 'shrink-0 px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold transition';
+            triggerEl._copyTimer = setTimeout(() => {
+              if (!triggerEl.isConnected) return;
+              triggerEl.innerHTML = triggerEl.dataset.origHtml;
+              triggerEl.className = triggerEl.dataset.origClass;
+            }, 1600);
+          }
+        };
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(() => showToast(okMsg)).catch(() => fallbackCopy(text, okMsg));
+          navigator.clipboard.writeText(text).then(markCopied).catch(() => fallbackCopy(text, markCopied));
         } else {
-          fallbackCopy(text, okMsg);
+          fallbackCopy(text, markCopied);
         }
       }
 
-      function fallbackCopy(text, okMsg) {
+      function fallbackCopy(text, onOk) {
         const ta = document.createElement('textarea');
         ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;';
         document.body.appendChild(ta);
+        ta.focus();
         ta.select();
+        ta.setSelectionRange(0, text.length);
         try {
-          document.execCommand('copy');
-          showToast(okMsg);
+          const ok = document.execCommand('copy');
+          if (ok && typeof onOk === 'function') onOk();
+          else showToast('Hãy chạm giữ vào dòng tọa độ để sao chép.');
         } catch (e) {
-          showToast('Không thể sao chép tự động.');
+          showToast('Hãy chạm giữ vào dòng tọa độ để sao chép.');
         }
         document.body.removeChild(ta);
       }
@@ -2346,19 +2522,459 @@
           return qs.length ? `${path}?${qs.join('&')}` : path;
         }
 
-        // Custom Leaflet GridLayer for ArcGIS Dynamic /export tiles (works from file:// with 0 CORS errors)
+        // Smart resilient GridLayer for XYZ/WMTS planning overlays:
+        // - Keeps native minNativeZoom / maxNativeZoom on GridLayer to prevent zoom-out hiding & overzoom unload storms
+        // - Per-layer LRU decoded Image cache + reference-counted in-flight deduplication (instant zoom back & forth)
+        // - Zero-4x4-block poisoning (sparse 1/500 project tiles next to 404 empty tiles never poison each other)
+        // - 256x256 <canvas> crop for regional overzoom fallback (prevents mobile WebKit GPU texture memory eviction)
+        // - Async done() guard + zoomend/moveend self-healing reconciliation
+        const SmartTileLayer = L.GridLayer.extend({
+          initialize: function (urlTemplate, options) {
+            this._urlTemplate = String(urlTemplate || '');
+            this._bounds = options && options.bounds ? L.latLngBounds(options.bounds) : null;
+            this._cacheBust = options && options.cacheBust ? String(options.cacheBust) : '';
+            this._sourceMaxZoom = (options && options.sourceMaxZoom) || (options && options.maxNativeZoom) || 18;
+            this._sourceMinZoom = (options && typeof options.sourceMinZoom === 'number') ? options.sourceMinZoom : undefined;
+            this._minFallbackZoom = (options && options.minFallbackZoom) || this._sourceMinZoom || 10;
+            this._tms = Boolean(options && options.tms);
+            this._subdomains = (options && options.subdomains) || [];
+            this._missing404 = new Map();     // exact "z/x/y" -> expireTimestamp
+            this._zoomMissCount = new Map();  // z -> count of misses (for fast sparse fallback)
+            this._imgCache = new Map();       // url -> HTMLImageElement (LRU max 180)
+            this._inflight = new Map();       // url -> { img, waiters, timeoutId }
+            this._reconcileFollowTimer = null;
+
+            const gridOpts = Object.assign({
+              tileSize: 256,
+              updateWhenIdle: L.Browser.mobile,
+              updateWhenZooming: false,
+              keepBuffer: 3,
+              maxZoom: 21
+            }, options || {}, {
+              maxNativeZoom: this._sourceMaxZoom
+            });
+            if (typeof this._sourceMinZoom === 'number') {
+              gridOpts.minNativeZoom = this._sourceMinZoom;
+            }
+            L.GridLayer.prototype.initialize.call(this, gridOpts);
+
+            this.on('tileunload', e => {
+              const t = e.tile;
+              if (!t) return;
+              t._cancelled = true;
+              if (t._retryTimer) {
+                clearTimeout(t._retryTimer);
+                t._retryTimer = null;
+              }
+              if (typeof t._cancelWait === 'function') {
+                const fn = t._cancelWait;
+                t._cancelWait = null;
+                fn();
+              }
+            });
+          },
+          onAdd: function (mapInst) {
+            L.GridLayer.prototype.onAdd.call(this, mapInst);
+            this._boundReconcile = () => {
+              this._reconcileZoomState();
+              clearTimeout(this._reconcileFollowTimer);
+              this._reconcileFollowTimer = setTimeout(() => this._reconcileZoomState(), 260);
+            };
+            mapInst.on('zoomend moveend viewreset', this._boundReconcile);
+          },
+          onRemove: function (mapInst) {
+            if (this._boundReconcile && mapInst) {
+              mapInst.off('zoomend moveend viewreset', this._boundReconcile);
+            }
+            clearTimeout(this._reconcileFollowTimer);
+            this._inflight.forEach(req => {
+              clearTimeout(req.timeoutId);
+              req.img.onload = null;
+              req.img.onerror = null;
+              req.img.src = TRANSPARENT_TILE;
+            });
+            this._inflight.clear();
+            L.GridLayer.prototype.onRemove.call(this, mapInst);
+          },
+          _reconcileZoomState: function () {
+            if (!this._map || this._map._animatingZoom) return;
+            this._noPrune = false;
+            const mapZoom = this._map.getZoom();
+            const roundZ = Math.round(mapZoom);
+            let expectedTileZoom;
+            if ((this.options.maxZoom !== undefined && roundZ > this.options.maxZoom) ||
+                (this.options.minZoom !== undefined && roundZ < this.options.minZoom)) {
+              expectedTileZoom = undefined;
+            } else {
+              expectedTileZoom = this._clampZoom(roundZ);
+            }
+            if (this._tileZoom !== expectedTileZoom) {
+              this._setView(this._map.getCenter(), mapZoom, false, false);
+            } else {
+              this._setZoomTransforms(this._map.getCenter(), mapZoom);
+              this._update(this._map.getCenter());
+            }
+            for (const k in this._tiles) {
+              const entry = this._tiles[k];
+              if (entry && entry.el && entry.el._renderedOk && entry.loaded) {
+                entry.el.classList.add('leaflet-tile-loaded');
+              }
+            }
+            this._updateOpacity();
+          },
+          setCacheBust: function (token) {
+            this._cacheBust = token ? String(token) : '';
+            this._missing404.clear();
+            this._zoomMissCount.clear();
+            this._imgCache.clear();
+            if (this._map) {
+              this._removeAllTiles();
+              this._resetView();
+            }
+          },
+          setUrl: function (urlTemplate) {
+            this._urlTemplate = String(urlTemplate || '');
+            this._missing404.clear();
+            this._zoomMissCount.clear();
+            this._imgCache.clear();
+            if (this._map) {
+              this._removeAllTiles();
+              this._resetView();
+            }
+          },
+          _buildUrl: function (z, x, y) {
+            const yVal = this._tms ? ((1 << z) - 1 - y) : y;
+            let url = this._urlTemplate
+              .replace(/\{z\}/g, String(z))
+              .replace(/\{x\}/g, String(x))
+              .replace(/\{y\}/g, String(yVal));
+            if (this._subdomains.length) {
+              const sub = this._subdomains[Math.abs(x + y) % this._subdomains.length];
+              url = url.replace(/\{s\}/g, sub);
+            }
+            return this._cacheBust ? appendCacheBust(url, this._cacheBust) : url;
+          },
+          _getCachedImage: function (url) {
+            if (!this._imgCache.has(url)) return null;
+            const img = this._imgCache.get(url);
+            this._imgCache.delete(url);
+            this._imgCache.set(url, img);
+            return img;
+          },
+          _putCachedImage: function (url, img) {
+            if (this._imgCache.has(url)) {
+              this._imgCache.delete(url);
+            } else if (this._imgCache.size >= 180) {
+              const oldest = this._imgCache.keys().next().value;
+              if (oldest !== undefined) this._imgCache.delete(oldest);
+            }
+            this._imgCache.set(url, img);
+          },
+          _isKnownMissing: function (key) {
+            const exp = this._missing404.get(key);
+            if (!exp) return false;
+            if (Date.now() > exp) {
+              this._missing404.delete(key);
+              return false;
+            }
+            return true;
+          },
+          _markMissing: function (key, z) {
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+            if (this._missing404.size >= 1400) {
+              const first = this._missing404.keys().next().value;
+              if (first !== undefined) this._missing404.delete(first);
+            }
+            this._missing404.set(key, Date.now() + 25000);
+            this._zoomMissCount.set(z, (this._zoomMissCount.get(z) || 0) + 1);
+          },
+          _acquireImage: function (url, onOk, onErr) {
+            const cached = this._getCachedImage(url);
+            if (cached) {
+              onOk(cached);
+              return null;
+            }
+            let req = this._inflight.get(url);
+            if (!req) {
+              const img = new Image();
+              img.decoding = 'async';
+              img.referrerPolicy = 'no-referrer';
+              const waiters = new Set();
+              const settleErr = () => {
+                clearTimeout(req.timeoutId);
+                if (this._inflight.get(url) === req) this._inflight.delete(url);
+                req.img.onload = null;
+                req.img.onerror = null;
+                const list = Array.from(waiters);
+                waiters.clear();
+                list.forEach(w => w.err());
+              };
+              const timeoutId = setTimeout(settleErr, 12000);
+              req = { img, waiters, timeoutId };
+              this._inflight.set(url, req);
+
+              img.onload = () => {
+                clearTimeout(req.timeoutId);
+                if (this._inflight.get(url) === req) this._inflight.delete(url);
+                img.onload = null;
+                img.onerror = null;
+                const list = Array.from(waiters);
+                waiters.clear();
+                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  this._putCachedImage(url, img);
+                  list.forEach(w => w.ok(img));
+                } else {
+                  list.forEach(w => w.err());
+                }
+              };
+              img.onerror = settleErr;
+              img.src = url;
+            }
+            const waiter = { ok: onOk, err: onErr };
+            req.waiters.add(waiter);
+            return () => {
+              req.waiters.delete(waiter);
+              if (req.waiters.size === 0 && this._inflight.get(url) === req) {
+                clearTimeout(req.timeoutId);
+                this._inflight.delete(url);
+                req.img.onload = null;
+                req.img.onerror = null;
+                req.img.src = TRANSPARENT_TILE;
+              }
+            };
+          },
+          createTile: function (coords, done) {
+            let isSync = true;
+            if (this._bounds) {
+              const tileBounds = this._tileCoordsToBounds(coords);
+              if (!this._bounds.intersects(tileBounds)) {
+                const empty = document.createElement('div');
+                setTimeout(() => done(null, empty), 0);
+                return empty;
+              }
+            }
+
+            const tile = document.createElement('div');
+            tile.style.cssText = 'width:256px;height:256px;overflow:hidden;pointer-events:none;';
+            tile._cancelled = false;
+            tile._renderedOk = false;
+            tile._retryTimer = null;
+            tile._cancelWait = null;
+
+            let finished = false;
+            const finish = err => {
+              if (finished || tile._cancelled) return;
+              finished = true;
+              if (isSync) {
+                setTimeout(() => {
+                  if (!tile._cancelled) done(err, tile);
+                }, 0);
+              } else {
+                done(err, tile);
+              }
+            };
+
+            const paintTile = (img, scale, ox, oy) => {
+              const cw = scale === 1 ? Math.min(512, img.naturalWidth || 256) : 256;
+              const ch = scale === 1 ? Math.min(512, img.naturalHeight || 256) : 256;
+              const canvas = document.createElement('canvas');
+              canvas.width = cw;
+              canvas.height = ch;
+              canvas.style.cssText = 'width:256px;height:256px;max-width:none !important;display:block;pointer-events:none;';
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                if (scale === 1) {
+                  ctx.drawImage(img, 0, 0, cw, ch);
+                } else {
+                  const nw = img.naturalWidth || 256;
+                  const nh = img.naturalHeight || 256;
+                  const sw = nw / scale;
+                  const sh = nh / scale;
+                  ctx.imageSmoothingEnabled = true;
+                  ctx.imageSmoothingQuality = 'high';
+                  ctx.drawImage(img, ox * sw, oy * sh, sw, sh, 0, 0, 256, 256);
+                }
+                tile._renderedOk = true;
+                tile.innerHTML = '';
+                tile.appendChild(canvas);
+              } else {
+                const fallbackImg = document.createElement('img');
+                fallbackImg.alt = '';
+                fallbackImg.src = img.src;
+                fallbackImg.style.cssText = 'width:256px;height:256px;max-width:none !important;display:block;pointer-events:none;';
+                tile._renderedOk = true;
+                tile.innerHTML = '';
+                tile.appendChild(fallbackImg);
+              }
+              finish(null);
+            };
+
+            const startZ = Math.min(coords.z, this._sourceMaxZoom);
+            const floorZ = Math.min(startZ, this._minFallbackZoom);
+            let retriedChain = false;
+
+            const tryZoom = (zTry, retriedAtLevel) => {
+              if (tile._cancelled || finished) return;
+              if (zTry < floorZ) {
+                if (!retriedChain && (typeof navigator === 'undefined' || navigator.onLine !== false)) {
+                  retriedChain = true;
+                  tile._retryTimer = setTimeout(() => tryZoom(startZ, true), 420);
+                  return;
+                }
+                finish(new Error('Tile unavailable'));
+                return;
+              }
+
+              const scale = Math.pow(2, coords.z - zTry);
+              const xTry = Math.floor(coords.x / scale);
+              const yTry = Math.floor(coords.y / scale);
+              const key = `${zTry}/${xTry}/${yTry}`;
+              const url = this._buildUrl(zTry, xTry, yTry);
+
+              // Instant RAM cache hit always wins even if key was previously marked missing
+              const ramImg = this._getCachedImage(url);
+              if (ramImg) {
+                this._missing404.delete(key);
+                paintTile(ramImg, scale, coords.x - xTry * scale, coords.y - yTry * scale);
+                return;
+              }
+
+              if (zTry > floorZ && this._isKnownMissing(key)) {
+                tryZoom(zTry - 1, false);
+                return;
+              }
+
+              tile._cancelWait = this._acquireImage(
+                url,
+                loadedImg => {
+                  tile._cancelWait = null;
+                  if (tile._cancelled || finished) return;
+                  this._missing404.delete(key);
+                  paintTile(loadedImg, scale, coords.x - xTry * scale, coords.y - yTry * scale);
+                },
+                () => {
+                  tile._cancelWait = null;
+                  if (tile._cancelled || finished) return;
+                  if (!retriedAtLevel && zTry === startZ && (this._zoomMissCount.get(zTry) || 0) < 4) {
+                    tile._retryTimer = setTimeout(() => tryZoom(zTry, true), 180);
+                    return;
+                  }
+                  if (zTry > floorZ) {
+                    this._markMissing(key, zTry);
+                    tryZoom(zTry - 1, false);
+                  } else {
+                    tryZoom(zTry - 1, false);
+                  }
+                }
+              );
+            };
+
+            tryZoom(startZ, false);
+            isSync = false;
+            return tile;
+          }
+        });
+
+        // Custom Leaflet GridLayer for ArcGIS Dynamic /export tiles (throttled + timeout + retry + zoomend self-healing)
         const ArcGISExportLayer = L.GridLayer.extend({
           initialize: function (baseUrl, options) {
             this._baseUrl = String(baseUrl || '').replace(/\/export\/?$/i, '').replace(/\/+$/, '');
             this._bounds = options && options.bounds ? L.latLngBounds(options.bounds) : null;
             this._cacheBust = options && options.cacheBust ? String(options.cacheBust) : '';
-            L.GridLayer.prototype.initialize.call(this, Object.assign({ tileSize: 256, maxZoom: 21, maxNativeZoom: 18 }, options));
+            this._activeReqs = 0;
+            this._maxConcurrent = 6;
+            this._pendingQueue = [];
+            this._reconcileFollowTimer = null;
+            L.GridLayer.prototype.initialize.call(this, Object.assign({
+              tileSize: 256,
+              updateWhenIdle: L.Browser.mobile,
+              updateWhenZooming: false,
+              keepBuffer: 2,
+              maxZoom: 21,
+              maxNativeZoom: 20
+            }, options));
+            this.on('tileunload', e => {
+              const img = e.tile;
+              if (!img) return;
+              img._cancelled = true;
+              if (img._retryTimer) {
+                clearTimeout(img._retryTimer);
+                img._retryTimer = null;
+              }
+              if (img._reqTimeout) {
+                clearTimeout(img._reqTimeout);
+                img._reqTimeout = null;
+              }
+              if (img._inFlight) {
+                img._inFlight = false;
+                this._activeReqs = Math.max(0, this._activeReqs - 1);
+                img.onload = null;
+                img.onerror = null;
+                img.src = TRANSPARENT_TILE;
+                this._pumpQueue();
+              }
+            });
+          },
+          onAdd: function (mapInst) {
+            L.GridLayer.prototype.onAdd.call(this, mapInst);
+            this._boundReconcile = () => {
+              this._reconcileZoomState();
+              clearTimeout(this._reconcileFollowTimer);
+              this._reconcileFollowTimer = setTimeout(() => this._reconcileZoomState(), 260);
+            };
+            mapInst.on('zoomend moveend viewreset', this._boundReconcile);
+          },
+          onRemove: function (mapInst) {
+            if (this._boundReconcile && mapInst) {
+              mapInst.off('zoomend moveend viewreset', this._boundReconcile);
+            }
+            clearTimeout(this._reconcileFollowTimer);
+            this._pendingQueue.length = 0;
+            this._activeReqs = 0;
+            L.GridLayer.prototype.onRemove.call(this, mapInst);
+          },
+          _reconcileZoomState: function () {
+            if (!this._map || this._map._animatingZoom) return;
+            this._noPrune = false;
+            const mapZoom = this._map.getZoom();
+            const roundZ = Math.round(mapZoom);
+            let expectedTileZoom;
+            if ((this.options.maxZoom !== undefined && roundZ > this.options.maxZoom) ||
+                (this.options.minZoom !== undefined && roundZ < this.options.minZoom)) {
+              expectedTileZoom = undefined;
+            } else {
+              expectedTileZoom = this._clampZoom(roundZ);
+            }
+            if (this._tileZoom !== expectedTileZoom) {
+              this._setView(this._map.getCenter(), mapZoom, false, false);
+            } else {
+              this._setZoomTransforms(this._map.getCenter(), mapZoom);
+              this._update(this._map.getCenter());
+            }
+            for (const k in this._tiles) {
+              const entry = this._tiles[k];
+              if (entry && entry.el && entry.el._renderedOk && entry.loaded) {
+                entry.el.classList.add('leaflet-tile-loaded');
+              }
+            }
+            this._updateOpacity();
           },
           setCacheBust: function (token) {
             this._cacheBust = token ? String(token) : '';
-            this.redraw();
+            if (this._map) {
+              this._removeAllTiles();
+              this._resetView();
+            }
+          },
+          _pumpQueue: function () {
+            while (this._activeReqs < this._maxConcurrent && this._pendingQueue.length > 0) {
+              const job = this._pendingQueue.shift();
+              if (!job || job.img._cancelled) continue;
+              job.start();
+            }
           },
           createTile: function (coords, done) {
+            let isSync = true;
             if (this._bounds) {
               const tileBounds = this._tileCoordsToBounds(coords);
               if (!this._bounds.intersects(tileBounds)) {
@@ -2377,14 +2993,81 @@
             const img = document.createElement('img');
             img.alt = '';
             img.setAttribute('role', 'presentation');
-            img.style.width = '256px';
-            img.style.height = '256px';
+            img.decoding = 'async';
+            img.referrerPolicy = 'no-referrer';
+            img.style.cssText = 'width:256px;height:256px;max-width:none !important;display:block;pointer-events:none;';
+            img._cancelled = false;
+            img._renderedOk = false;
+            img._inFlight = false;
+            img._retryTimer = null;
+            img._reqTimeout = null;
+
+            let finished = false;
+            const finish = err => {
+              if (finished || img._cancelled) return;
+              finished = true;
+              if (isSync) {
+                setTimeout(() => {
+                  if (!img._cancelled) done(err, img);
+                }, 0);
+              } else {
+                done(err, img);
+              }
+            };
+
             const layerParam = this.options.layers ? `&layers=show:${encodeURIComponent(this.options.layers)}` : '';
             const tsParam = this._cacheBust ? `&_ts=${encodeURIComponent(this._cacheBust)}` : '';
             const url = `${this._baseUrl}/export?bbox=${xmin.toFixed(3)},${ymin.toFixed(3)},${xmax.toFixed(3)},${ymax.toFixed(3)}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true${layerParam}${tsParam}&f=image`;
-            img.onload = () => done(null, img);
-            img.onerror = err => done(err, img);
-            img.src = url;
+
+            let retried = false;
+            const releaseSlot = () => {
+              clearTimeout(img._reqTimeout);
+              img._reqTimeout = null;
+              if (img._inFlight) {
+                img._inFlight = false;
+                this._activeReqs = Math.max(0, this._activeReqs - 1);
+                this._pumpQueue();
+              }
+            };
+            const handleFail = err => {
+              releaseSlot();
+              if (img._cancelled || finished) return;
+              if (!retried) {
+                retried = true;
+                img._retryTimer = setTimeout(() => {
+                  if (!img._cancelled && !finished) {
+                    this._pendingQueue.push({ img, start: startFetch });
+                    this._pumpQueue();
+                  }
+                }, 450);
+                return;
+              }
+              finish(err || new Error('ArcGIS export failed'));
+            };
+            const startFetch = () => {
+              if (img._cancelled || finished) return;
+              this._activeReqs++;
+              img._inFlight = true;
+              img._reqTimeout = setTimeout(() => {
+                img.onload = null;
+                img.onerror = null;
+                img.src = TRANSPARENT_TILE;
+                handleFail(new Error('ArcGIS export timeout'));
+              }, 14000);
+              img.onload = () => {
+                releaseSlot();
+                if (!img._cancelled && !finished) {
+                  img._renderedOk = true;
+                  finish(null);
+                }
+              };
+              img.onerror = err => handleFail(err);
+              img.src = url;
+            };
+
+            this._pendingQueue.push({ img, start: startFetch });
+            this._pumpQueue();
+            isSync = false;
             return img;
           }
         });
@@ -2434,12 +3117,25 @@
         // =========================================================================
         // 5. STATE & MAP INITIALIZATION
         // =========================================================================
+        const STORAGE_STATE_KEY = 'qhvn_daily_state_v3';
+        function loadSavedDailyState() {
+          try {
+            const raw = localStorage.getItem(STORAGE_STATE_KEY);
+            return raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            return {};
+          }
+        }
+        const savedDaily = loadSavedDailyState();
+
         const state = {
-          basemapKey: 'google_hybrid',
-          planningOpacity: 0.65,
+          basemapKey: (savedDaily.basemapKey && BASEMAPS[savedDaily.basemapKey]) ? savedDaily.basemapKey : 'google_hybrid',
+          planningOpacity: (typeof savedDaily.planningOpacity === 'number' && savedDaily.planningOpacity >= 0.1)
+            ? Math.min(1, savedDaily.planningOpacity)
+            : 0.65,
           planningVisible: true,
           showDemoOverlay: false,
-          drawerOpen: window.innerWidth >= 768,
+          drawerOpen: window.innerWidth >= 1024,
           activeTab: 'layers',
           liveLayerRegion: 'ALL',
           measureMode: 'none', // 'none' | 'distance' | 'area'
@@ -2449,24 +3145,62 @@
           customLayers: [],
           legendGroup: 'ALL',
           symbolCat: 'ALL',
-          vn2000ProvinceCode: 'hanoi',
+          vn2000ProvinceCode: savedDaily.vn2000ProvinceCode || 'hanoi',
           vn2000Scale: 0.9999,
           lastSodoWgs: [],
           gpsMarker: null,
           gpsCircle: null,
+          lastGpsCoords: null,
+          gpsWatchId: null,
+          headingMode: false,
+          headingDeg: null,
+          headingRenderDeg: null,
+          headingSource: null,
           inspectMarker: null,
           searchReqId: 0,
           dataVersion: Date.now(),
-          lastSyncTime: null
+          cacheBustToken: '',
+          lastSyncTime: null,
+          hasOpenPopup: false,
+          lastPopupClosedAt: 0,
+          lastEyeIconVisible: null
         };
 
+        function saveDailyState() {
+          try {
+            const c = map.getCenter();
+            const payload = {
+              basemapKey: state.basemapKey,
+              planningOpacity: state.planningOpacity,
+              vn2000ProvinceCode: state.vn2000ProvinceCode,
+              activeLiveLayerIds: Object.keys(state.activeLiveLayers),
+              mapView: { lat: Number(c.lat.toFixed(6)), lng: Number(c.lng.toFixed(6)), zoom: map.getZoom() }
+            };
+            localStorage.setItem(STORAGE_STATE_KEY, JSON.stringify(payload));
+          } catch (e) { /* storage disabled */ }
+        }
+
+        const initialView = savedDaily.mapView && Number.isFinite(savedDaily.mapView.lat) && Number.isFinite(savedDaily.mapView.lng)
+          ? [savedDaily.mapView.lat, savedDaily.mapView.lng]
+          : [CITIES.hanoi.lat, CITIES.hanoi.lng];
+        const initialZoom = savedDaily.mapView && Number.isFinite(savedDaily.mapView.zoom)
+          ? savedDaily.mapView.zoom
+          : CITIES.hanoi.zoom;
+
         const map = L.map('map', {
-          center: [CITIES.hanoi.lat, CITIES.hanoi.lng],
-          zoom: CITIES.hanoi.zoom,
+          center: initialView,
+          zoom: initialZoom,
           maxZoom: 21,
           zoomControl: false,
-          attributionControl: true
+          attributionControl: true,
+          tapTolerance: 18
         });
+        map.createPane('planningPane');
+        map.getPane('planningPane').style.zIndex = 250;
+        map.getPane('planningPane').style.pointerEvents = 'none';
+        map.createPane('cadastrePane');
+        map.getPane('cadastrePane').style.zIndex = 260;
+        map.getPane('cadastrePane').style.pointerEvents = 'none';
         L.control.scale({ metric: true, imperial: false, position: 'bottomright' }).addTo(map);
 
         let activeBasemapLayer = null;
@@ -2492,6 +3226,7 @@
             }
           });
           state.basemapKey = key;
+          saveDailyState();
 
           document.querySelectorAll('.basemap-btn').forEach(btn => {
             const isSelected = btn.dataset.basemap === key;
@@ -2504,7 +3239,7 @@
             if (subEl) subEl.className = isSelected ? 'text-[10px] text-blue-700' : 'text-[10px] text-slate-500';
           });
         }
-        setBasemap('google_hybrid');
+        setBasemap(state.basemapKey);
 
         // Demo zoning layer group
         const demoLayerGroup = L.layerGroup().addTo(map);
@@ -2558,27 +3293,109 @@
         }
         renderDemoZones();
 
+        // Contextual layer matching at current map center (suggests relevant overlays when panning/searching)
+        function isPointInLayerBounds(cfg, lat, lng) {
+          if (Array.isArray(cfg.suggestZones) && cfg.suggestZones.length) {
+            return cfg.suggestZones.some(zb => L.latLngBounds(zb).contains([lat, lng]));
+          }
+          if (cfg.bounds) {
+            return L.latLngBounds(cfg.bounds).contains([lat, lng]);
+          }
+          return true;
+        }
+
+        function getSuggestedLayersAt(lat, lng) {
+          const matched = LIVE_PLANNING_LAYERS
+            .filter(cfg => isPointInLayerBounds(cfg, lat, lng))
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+          const hasRegionalLandUse = matched.some(c =>
+            !c.isNationwideLandUse && !c.isNationwideCadastre &&
+            /khsdd|qhpk|qhsdd/i.test(c.id)
+          );
+          const hasRegionalCadastre = matched.some(c =>
+            !c.isNationwideCadastre && /ranhthua|diachinh/i.test(c.id)
+          );
+
+          const filtered = matched.filter(c => {
+            if (c.isNationwideLandUse && hasRegionalLandUse) return false;
+            if (c.isNationwideCadastre && hasRegionalCadastre) return false;
+            return true;
+          });
+
+          const primaryArea = filtered.find(c => !c.isNationwideLandUse && !c.isNationwideCadastre)?.areaName
+            || (lat >= 8.1 && lat <= 23.5 && lng >= 102.0 && lng <= 109.6 ? 'Khu vực đang xem' : 'Ngoài phạm vi VN');
+          return { suggestions: filtered, areaName: primaryArea };
+        }
+
+        function updateLocationSuggestions() {
+          const center = map.getCenter();
+          const { suggestions, areaName } = getSuggestedLayersAt(center.lat, center.lng);
+
+          // 1. Top floating contextual suggestion bar (below search box)
+          const bar = document.getElementById('contextLayerBar');
+          if (bar) {
+            const topPills = suggestions.slice(0, 4);
+            const firstInactiveLand = topPills.find(c => !state.activeLiveLayers[c.id]);
+            const areaBadge = `<span class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 md:py-1 rounded-full bg-slate-900/90 text-white shadow-sm text-[11px] font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span><span>${escapeHtml(areaName)}</span></span>`;
+            const pillsHtml = topPills.map(cfg => {
+              const active = Boolean(state.activeLiveLayers[cfg.id]);
+              const isPrimarySuggest = !active && firstInactiveLand && firstInactiveLand.id === cfg.id;
+              const cls = active
+                ? 'bg-blue-600 hover:bg-blue-700 text-white ring-1 ring-white/70 font-bold'
+                : isPrimarySuggest
+                  ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold'
+                  : 'bg-white/95 hover:bg-blue-50 text-slate-800 border border-slate-200/90 font-semibold';
+              const prefix = active ? '✓ ' : '+ ';
+              return `<button data-suggest-toggle="${cfg.id}" type="button" title="${escapeHtml(cfg.name)}" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full shadow-sm text-[11px] transition ${cls}"><span>${escapeHtml(prefix + (cfg.shortLabel || cfg.name))}</span></button>`;
+            }).join('');
+            const portalBtn = `<button id="btnQuickPortal" type="button" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 md:px-2.5 md:py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm text-[11px] font-semibold transition"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg><span>Cổng .gov.vn</span></button>`;
+            bar.innerHTML = areaBadge + pillsHtml + portalBtn;
+          }
+
+          // 2. Drawer suggestion banner inside Tab 1
+          const drawerBox = document.getElementById('drawerSuggestedBox');
+          if (drawerBox) {
+            const topDrawer = suggestions.slice(0, 3);
+            if (topDrawer.length > 0) {
+              drawerBox.classList.remove('hidden');
+              drawerBox.innerHTML = `
+                <div class="text-[10px] font-bold text-amber-950 flex items-center justify-between gap-2">
+                  <span>Gợi ý lớp quy hoạch tại vị trí đang xem (${escapeHtml(areaName)}):</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${topDrawer.map(cfg => {
+                    const active = Boolean(state.activeLiveLayers[cfg.id]);
+                    return `<button data-suggest-toggle="${cfg.id}" type="button" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${active ? 'bg-blue-600 text-white' : 'bg-white hover:bg-amber-100 text-slate-900 border border-amber-300'}">${active ? '✓ ' : '+ '}${escapeHtml(cfg.shortLabel || cfg.name)}</button>`;
+                  }).join('')}
+                </div>
+              `;
+            } else {
+              drawerBox.classList.add('hidden');
+              drawerBox.innerHTML = '';
+            }
+          }
+
+          renderLiveLayersList();
+          updatePlanningStatusChip();
+        }
+
         // Active status bar & opacity synchronization
         function updatePlanningStatusChip() {
           const activeNames = [];
-          let firstOutOfView = null;
-          let anyInView = false;
+          const inViewEntries = [];
           let anyErrors = 0;
           let anyLoads = 0;
           const mapBounds = map.getBounds();
+          const currentZoom = map.getZoom();
 
           Object.values(state.activeLiveLayers).forEach(entry => {
-            const shortName = entry.cfg.name.split('—')[0].trim();
+            const shortName = entry.cfg.shortLabel || entry.cfg.name.split('—')[0].trim();
             if (!activeNames.includes(shortName)) activeNames.push(shortName);
             anyErrors += entry.errors;
             anyLoads += entry.loads;
-            if (entry.cfg.bounds) {
-              const lb = L.latLngBounds(entry.cfg.bounds);
-              if (mapBounds.intersects(lb)) anyInView = true;
-              else if (!firstOutOfView) firstOutOfView = entry.cfg;
-            } else {
-              anyInView = true;
-            }
+            const intersects = !entry.cfg.bounds || mapBounds.intersects(L.latLngBounds(entry.cfg.bounds));
+            if (intersects) inViewEntries.push(entry);
           });
           state.customLayers.forEach(item => {
             if (item.visible) activeNames.push(item.name);
@@ -2587,38 +3404,66 @@
 
           const textEl = document.getElementById('activePlanningText');
           const dotEl = document.getElementById('tileHealthDot');
-          const flyBtn = document.getElementById('btnFlyToActiveLayer');
+          const suggestBtn = document.getElementById('btnChipSuggestToggle');
+          const zoomBtn = document.getElementById('btnChipZoomToLayer');
+          suggestBtn.classList.add('hidden');
+          zoomBtn.classList.add('hidden');
+
+          const center = map.getCenter();
+          const { suggestions } = getSuggestedLayersAt(center.lat, center.lng);
+          const topSuggest = suggestions.find(c => !state.activeLiveLayers[c.id]) || null;
 
           if (!state.planningVisible) {
             textEl.textContent = 'Lớp quy hoạch đang ẩn (Bấm icon Mắt để hiện)';
             dotEl.className = 'w-2 h-2 rounded-full bg-slate-400 shrink-0';
-            flyBtn.classList.add('hidden');
             return;
           }
 
           if (activeNames.length === 0) {
             textEl.textContent = 'Chưa bật lớp quy hoạch nào';
             dotEl.className = 'w-2 h-2 rounded-full bg-slate-400 shrink-0';
-            flyBtn.classList.add('hidden');
-          } else {
-            textEl.textContent = `Đang bật: ${activeNames.join(' + ')}`;
-            if (anyErrors >= 6 && anyLoads === 0) {
-              dotEl.className = 'w-2 h-2 rounded-full bg-rose-500 shrink-0';
-            } else if (anyErrors >= 20 && anyLoads > 0) {
-              dotEl.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0';
-            } else {
-              dotEl.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+            if (topSuggest) {
+              suggestBtn.textContent = `Bật ${topSuggest.shortLabel || topSuggest.name}`;
+              suggestBtn.dataset.suggestId = topSuggest.id;
+              suggestBtn.classList.remove('hidden');
             }
-            if (firstOutOfView && !anyInView) {
-              flyBtn.classList.remove('hidden');
-              flyBtn.dataset.targetCenter = JSON.stringify(firstOutOfView.center);
-              flyBtn.dataset.targetZoom = String(firstOutOfView.zoom);
-              flyBtn.dataset.targetName = firstOutOfView.name;
-            } else {
-              flyBtn.classList.add('hidden');
+            return;
+          }
+
+          textEl.textContent = `Đang bật: ${activeNames.join(' + ')}`;
+          if (anyErrors >= 12 && anyLoads === 0) {
+            dotEl.className = 'w-2 h-2 rounded-full bg-rose-500 shrink-0';
+          } else if (anyErrors >= 24 && anyLoads > 0) {
+            dotEl.className = 'w-2 h-2 rounded-full bg-amber-400 shrink-0';
+          } else {
+            dotEl.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+          }
+
+          const anyCustomOrDemo = state.showDemoOverlay || state.customLayers.some(i => i.visible);
+          if (inViewEntries.length === 0 && !anyCustomOrDemo) {
+            textEl.textContent = 'Chưa có lớp QH bật tại vùng này';
+            if (topSuggest) {
+              suggestBtn.textContent = `Bật ${topSuggest.shortLabel || topSuggest.name}`;
+              suggestBtn.dataset.suggestId = topSuggest.id;
+              suggestBtn.classList.remove('hidden');
+            }
+          } else if (inViewEntries.length > 0) {
+            const visibleAtZoom = inViewEntries.some(e => currentZoom >= (e.cfg.minZoom || 1));
+            if (!visibleAtZoom) {
+              const need = inViewEntries.reduce((minE, e) => (!minE || (e.cfg.minZoom || 1) < (minE.cfg.minZoom || 1)) ? e : minE, null);
+              if (need && need.cfg.minZoom) {
+                const targetZ = need.cfg.minNativeZoom || need.cfg.minZoom;
+                textEl.textContent = `Phóng Z${targetZ}+ để xem ${need.cfg.shortLabel || need.cfg.name}`;
+                zoomBtn.textContent = `Phóng Z${targetZ}`;
+                zoomBtn.dataset.targetZoom = String(targetZ);
+                zoomBtn.classList.remove('hidden');
+              }
             }
           }
         }
+
+        const EYE_OPEN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>';
+        const EYE_OFF_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>';
 
         function applyPlanningOpacity() {
           const effective = state.planningVisible ? state.planningOpacity : 0;
@@ -2639,21 +3484,25 @@
           document.getElementById('opacityValueLabel').textContent = pctText;
           const mobPctEl = document.getElementById('opacityValueLabelMobile');
           if (mobPctEl) mobPctEl.textContent = pctText;
+          const sliderEl = document.getElementById('opacitySlider');
+          if (sliderEl && Number(sliderEl.value) !== Math.round(state.planningOpacity * 100)) {
+            sliderEl.value = String(Math.round(state.planningOpacity * 100));
+          }
           const eyeBtn = document.getElementById('btnQuickEye');
-          eyeBtn.innerHTML = state.planningVisible
-            ? '<i data-lucide="eye" class="w-4 h-4"></i>'
-            : '<i data-lucide="eye-off" class="w-4 h-4"></i>';
-          eyeBtn.className = state.planningVisible
-            ? 'w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 transition'
-            : 'w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center shrink-0 transition';
-          if (window.lucide) window.lucide.createIcons({ root: eyeBtn });
+          if (state.lastEyeIconVisible !== state.planningVisible) {
+            state.lastEyeIconVisible = state.planningVisible;
+            eyeBtn.innerHTML = state.planningVisible ? EYE_OPEN_SVG : EYE_OFF_SVG;
+            eyeBtn.className = state.planningVisible
+              ? 'w-8 h-8 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 transition'
+              : 'w-8 h-8 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center shrink-0 transition';
+          }
           updatePlanningStatusChip();
         }
 
         // =========================================================================
-        // 6. BUILT-IN LIVE PLANNING LAYERS CONTROLLER
+        // 6. BUILT-IN LIVE PLANNING LAYERS CONTROLLER (TOGGLE-ONLY, NO FLY BUTTONS)
         // =========================================================================
-        function toggleLiveLayer(layerId, forceOn = null, flyToBounds = true, silent = false) {
+        function toggleLiveLayer(layerId, forceOn = null, silent = false) {
           const cfg = LIVE_PLANNING_LAYERS.find(l => l.id === layerId);
           if (!cfg) return;
 
@@ -2666,23 +3515,28 @@
               renderDemoZones();
             }
             const effective = state.planningOpacity;
+            const targetPane = cfg.pane || 'planningPane';
             let layer;
             if (cfg.type === 'arcgis_export') {
               layer = createArcGISExportLayer(cfg.url, {
                 bounds: cfg.bounds,
                 opacity: effective,
+                minZoom: cfg.minZoom || 1,
+                pane: targetPane,
                 zIndex: cfg.zIndex || 10,
-                cacheBust: state.dataVersion
+                cacheBust: state.cacheBustToken
               }).addTo(map);
             } else {
-              layer = L.tileLayer(appendCacheBust(cfg.url, state.dataVersion), {
+              layer = new SmartTileLayer(cfg.url, {
                 bounds: cfg.bounds,
                 minZoom: cfg.minZoom || 1,
-                maxNativeZoom: cfg.maxNativeZoom || 18,
-                maxZoom: 21,
+                sourceMinZoom: cfg.minNativeZoom,
+                sourceMaxZoom: cfg.maxNativeZoom || 18,
+                minFallbackZoom: cfg.minFallbackZoom || cfg.minNativeZoom || cfg.minZoom || 10,
+                pane: targetPane,
+                zIndex: cfg.zIndex || 10,
                 opacity: effective,
-                errorTileUrl: TRANSPARENT_TILE,
-                zIndex: cfg.zIndex || 10
+                cacheBust: state.cacheBustToken
               }).addTo(map);
             }
             const entry = { cfg, layer, errors: 0, loads: 0 };
@@ -2690,56 +3544,52 @@
             layer.on('tileerror', () => { entry.errors++; updatePlanningStatusChip(); });
             state.activeLiveLayers[layerId] = entry;
 
-            if (flyToBounds && cfg.bounds && !map.getBounds().intersects(L.latLngBounds(cfg.bounds))) {
-              map.flyTo(cfg.center, cfg.zoom, { duration: 1.0 });
-              if (!silent) showToast(`Đã bật "${cfg.name}" và bay tới vùng phủ.`);
-              closeDrawerOnMobile();
-            } else {
-              if (!silent) showToast(`Đã bật lớp "${cfg.name}".`);
+            if (!silent) {
+              const curZ = map.getZoom();
+              const hintZ = cfg.minNativeZoom || cfg.minZoom;
+              if (hintZ && curZ < cfg.minZoom) {
+                showToast(`Đã bật "${cfg.shortLabel || cfg.name}". Phóng to tới Z${hintZ}+ để xem rõ lớp này.`);
+              } else {
+                showToast(`Đã bật lớp "${cfg.shortLabel || cfg.name}".`);
+              }
             }
           } else if (!nextOn && currentlyOn) {
             map.removeLayer(state.activeLiveLayers[layerId].layer);
             delete state.activeLiveLayers[layerId];
-            if (!silent) showToast(`Đã tắt "${cfg.name}".`);
-          } else if (nextOn && currentlyOn && flyToBounds) {
-            map.flyTo(cfg.center, cfg.zoom, { duration: 1.0 });
-            closeDrawerOnMobile();
+            if (!silent) showToast(`Đã tắt "${cfg.shortLabel || cfg.name}".`);
           }
 
-          renderLiveLayersList();
+          saveDailyState();
+          updateLocationSuggestions();
           applyPlanningOpacity();
         }
 
         function renderLiveLayersList() {
           const box = document.getElementById('liveLayersList');
+          if (!box) return;
+          const center = map.getCenter();
           const list = LIVE_PLANNING_LAYERS.filter(cfg =>
             state.liveLayerRegion === 'ALL' || cfg.region === state.liveLayerRegion
           );
           box.innerHTML = list.map(cfg => {
             const active = Boolean(state.activeLiveLayers[cfg.id]);
             const regName = REGION_LABELS[cfg.region] || cfg.region;
-            const spotsHtml = cfg.quickSpots && cfg.quickSpots.length
-              ? `<div class="mt-2 pt-1.5 border-t border-slate-200/70 flex flex-wrap items-center gap-1">
-                  <span class="text-[9px] font-bold text-slate-500 mr-0.5">Khu 1/500:</span>
-                  ${cfg.quickSpots.map(s => `<button data-spot-layer="${cfg.id}" data-spot-lat="${s.lat}" data-spot-lng="${s.lng}" data-spot-zoom="${s.zoom}" type="button" class="px-1.5 py-0.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[9px] font-semibold transition">${escapeHtml(s.label)}</button>`).join('')}
-                </div>`
-              : '';
+            const inCurrentView = isPointInLayerBounds(cfg, center.lat, center.lng) && !cfg.isNationwideLandUse && !cfg.isNationwideCadastre;
             return `
-              <div class="p-2 rounded-xl border ${active ? 'border-blue-500 bg-blue-50/70' : 'border-slate-200 bg-white'} transition space-y-0">
-                <div class="flex items-center justify-between gap-2">
+              <div class="p-2.5 rounded-xl border ${active ? 'border-blue-500 bg-blue-50/70' : 'border-slate-200 bg-white'} transition">
+                <div class="flex items-center justify-between gap-2.5">
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-bold">${escapeHtml(regName)}</span>
+                      ${inCurrentView ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Vùng đang xem</span>' : ''}
                       <span class="text-[11px] font-bold ${active ? 'text-blue-950' : 'text-slate-800'} leading-snug">${escapeHtml(cfg.name)}</span>
                     </div>
                     <div class="text-[10px] text-slate-500 truncate mt-0.5">${escapeHtml(cfg.desc)}</div>
                   </div>
-                  <div class="flex items-center gap-1 shrink-0">
-                    <button data-fly-live="${cfg.id}" type="button" title="Bay tới vùng phủ" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold transition">Bay tới</button>
-                    <button data-toggle-live="${cfg.id}" type="button" class="px-2.5 py-1 rounded-lg ${active ? 'bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-900 text-white'} text-[10px] font-bold transition">${active ? 'Đang bật' : 'Bật'}</button>
+                  <div class="shrink-0">
+                    <button data-toggle-live="${cfg.id}" type="button" class="min-h-[34px] px-3 py-1.5 rounded-xl ${active ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-slate-800 hover:bg-slate-900 text-white'} text-[11px] font-bold transition">${active ? 'Đang bật' : 'Bật'}</button>
                   </div>
                 </div>
-                ${spotsHtml}
               </div>
             `;
           }).join('');
@@ -2786,7 +3636,7 @@
           const el = document.getElementById('liveSyncStatusText');
           const clock = formatSyncClock(token);
           if (el) {
-            el.textContent = `Đồng bộ lúc ${clock} • Tự động làm mới khi mở trang • Đang kiểm tra máy chủ GIS...`;
+            el.textContent = `Đồng bộ lúc ${clock} • Bộ nhớ đệm tối ưu • Đang kiểm tra máy chủ GIS...`;
           }
           try {
             localStorage.setItem('qhvn_last_sync_at', String(token));
@@ -2799,12 +3649,13 @@
           const okCount = results.filter(Boolean).length;
           if (el && state.dataVersion === token) {
             const govNote = okCount > 0 ? ` • Máy chủ GIS Chính phủ (${okCount}/2) OK` : ' • Đang chạy nguồn tile dự phòng';
-            el.textContent = `Đồng bộ lúc ${clock} • Tự động làm mới khi mở trang${govNote}`;
+            el.textContent = `Đồng bộ lúc ${clock} • Bộ nhớ đệm tối ưu${govNote}`;
           }
         }
 
         function refreshAllLiveMapData(isManual = false) {
           state.dataVersion = Date.now();
+          state.cacheBustToken = String(state.dataVersion);
           state.lastSyncTime = new Date(state.dataVersion);
 
           const spinIcons = [
@@ -2818,20 +3669,20 @@
             entry.errors = 0;
             entry.loads = 0;
             if (typeof entry.layer.setCacheBust === 'function') {
-              entry.layer.setCacheBust(state.dataVersion);
+              entry.layer.setCacheBust(state.cacheBustToken);
             } else if (typeof entry.layer.setUrl === 'function') {
-              entry.layer.setUrl(appendCacheBust(entry.cfg.url, state.dataVersion));
+              entry.layer.setUrl(appendCacheBust(entry.cfg.url, state.cacheBustToken));
             }
           });
 
           state.customLayers.forEach(item => {
             if (!item.url) return;
             if (item.type === 'arcgis_export' && typeof item.layer.setCacheBust === 'function') {
-              item.layer.setCacheBust(state.dataVersion);
+              item.layer.setCacheBust(state.cacheBustToken);
             } else if (item.type === 'wms' && typeof item.layer.setParams === 'function') {
-              item.layer.setParams({ _ts: state.dataVersion });
+              item.layer.setParams({ _ts: state.cacheBustToken });
             } else if (typeof item.layer.setUrl === 'function') {
-              item.layer.setUrl(appendCacheBust(item.url, state.dataVersion));
+              item.layer.setUrl(appendCacheBust(item.url, state.cacheBustToken));
             }
           });
 
@@ -2886,25 +3737,32 @@
 
           let layer;
           if (resolvedType === 'arcgis_export') {
-            layer = createArcGISExportLayer(url, { opacity: effectiveOpacity, zIndex: 12, cacheBust: state.dataVersion });
+            layer = createArcGISExportLayer(url, { opacity: effectiveOpacity, pane: 'planningPane', zIndex: 12, cacheBust: state.cacheBustToken });
           } else if (resolvedType === 'wms') {
-            layer = L.tileLayer.wms(url, {
+            const wmsParams = {
               layers: wmsLayers || '0',
               format: 'image/png',
               transparent: true,
-              _ts: state.dataVersion,
               opacity: effectiveOpacity,
+              maxZoom: 21,
+              pane: 'planningPane',
               zIndex: 12
-            });
+            };
+            if (state.cacheBustToken) wmsParams._ts = state.cacheBustToken;
+            layer = L.tileLayer.wms(url, wmsParams);
           } else {
             const isTms = /\{-y\}/.test(url);
             const cleanUrl = url.replace(/\{-y\}/g, '{y}');
-            layer = L.tileLayer(appendCacheBust(cleanUrl, state.dataVersion), {
+            layer = new SmartTileLayer(cleanUrl, {
               tms: isTms,
               opacity: effectiveOpacity,
+              minZoom: 0,
               maxZoom: 21,
-              maxNativeZoom: 19,
-              zIndex: 12
+              sourceMaxZoom: 20,
+              minFallbackZoom: 8,
+              pane: 'planningPane',
+              zIndex: 12,
+              cacheBust: state.cacheBustToken
             });
           }
           return { resolvedType, layer };
@@ -2924,6 +3782,10 @@
             showToast('Lưu ý: Trang đang chạy HTTPS nên trình duyệt có thể chặn URL HTTP không mã hóa.');
           }
 
+          if (!opts && !state.planningVisible) {
+            state.planningVisible = true;
+            renderDemoZones();
+          }
           const effective = state.planningVisible ? state.planningOpacity : 0;
           const { resolvedType, layer } = createCustomLayerInstance(type, url, wmsLayers, effective);
           const visible = opts && typeof opts.visible === 'boolean' ? opts.visible : true;
@@ -3114,6 +3976,7 @@
           }
         }
 
+        let measureDragRaf = 0;
         function rebuildMeasureVertices() {
           measureVertexGroup.clearLayers();
           state.measurePoints.forEach((pt, idx) => {
@@ -3122,15 +3985,28 @@
               icon: L.divIcon({
                 className: '',
                 html: `<div class="gm-vertex-hit"><div class="gm-vertex ${idx === 0 ? 'gm-vertex-first' : ''}"></div></div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14]
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
               })
             }).addTo(measureVertexGroup);
 
-            // Smooth drag: ONLY update geometry & metrics, DO NOT rebuild vertices mid-drag!
+            marker.on('click', ev => L.DomEvent.stopPropagation(ev));
+            // Smooth drag: coalesce geometry updates into animation frames, DO NOT rebuild vertices mid-drag!
             marker.on('drag', e => {
               const pos = e.target.getLatLng();
               state.measurePoints[idx] = { lat: pos.lat, lng: pos.lng };
+              if (!measureDragRaf) {
+                measureDragRaf = requestAnimationFrame(() => {
+                  measureDragRaf = 0;
+                  redrawMeasurementGeometry();
+                });
+              }
+            });
+            marker.on('dragend', () => {
+              if (measureDragRaf) {
+                cancelAnimationFrame(measureDragRaf);
+                measureDragRaf = 0;
+              }
               redrawMeasurementGeometry();
             });
           });
@@ -3259,7 +4135,7 @@
               { lat: 11.53515, lng: 106.89010 },
               { lat: 11.53515, lng: 106.88950 }
             ];
-            toggleLiveLayer('dongnai_qhsdd', true, false);
+            toggleLiveLayer('dongnai_qhsdd', true, true);
           } else {
             provCode = 'hanoi';
             ptsWgs = [
@@ -3283,104 +4159,198 @@
         // =========================================================================
         // 10. CLICK-TO-INSPECT, LIVE REVERSE GEOCODE & ARCGIS IDENTIFY
         // =========================================================================
-        function showInspectPopup(lat, lng, extraTitle = '') {
-          if (state.inspectMarker) map.removeLayer(state.inspectMarker);
+        let inspectAbortCtrl = null;
+        let inspectOpenTimer = null;
+
+        function getPopupOptions(minW = 250) {
+          return {
+            minWidth: minW,
+            maxWidth: Math.min(304, Math.max(250, window.innerWidth - 40)),
+            autoPanPaddingTopLeft: L.point(16, 112),
+            autoPanPaddingBottomRight: L.point(16, 148)
+          };
+        }
+
+        function openMarkerPopupSafely(marker, waitForMove = false) {
+          if (!marker) return;
+          clearTimeout(inspectOpenTimer);
+          const doOpen = () => {
+            clearTimeout(inspectOpenTimer);
+            if (marker && map.hasLayer(marker)) marker.openPopup();
+          };
+          if (!waitForMove) {
+            doOpen();
+            return;
+          }
+          map.once('moveend', doOpen);
+          inspectOpenTimer = setTimeout(doOpen, 980);
+        }
+
+        function showInspectPopup(lat, lng, extraTitle = '', opts = false) {
+          const options = typeof opts === 'boolean'
+            ? { autoOpen: true, waitForMove: opts, persistentPin: false }
+            : Object.assign({ autoOpen: true, waitForMove: false, persistentPin: false }, opts || {});
+
+          if (!options.autoOpen) {
+            map.closePopup();
+          }
+          if (state.inspectMarker) {
+            map.removeLayer(state.inspectMarker);
+            state.inspectMarker = null;
+          }
+          if (inspectAbortCtrl) inspectAbortCtrl.abort();
+          inspectAbortCtrl = new AbortController();
+
           const latStr = lat.toFixed(6);
           const lngStr = lng.toFixed(6);
+          const coordStr = `${latStr}, ${lngStr}`;
           const { prov, lon0, k0 } = getActiveVn2000Params();
           const vn = wgs84ToVn2000(lat, lng, lon0, k0);
+          const vnCoordStr = `${vn.x.toFixed(2)}, ${vn.y.toFixed(2)}`;
           const gmUrl = `https://www.google.com/maps?q=${latStr},${lngStr}`;
           const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${latStr},${lngStr}`;
           const svUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latStr},${lngStr}`;
 
           const uid = 'insp_' + Date.now();
-          state.inspectMarker = L.marker([lat, lng]).addTo(map);
-          state.inspectMarker.bindPopup(`
-            <div class="text-xs space-y-2 min-w-[215px] max-w-[285px]">
-              <div class="flex items-center justify-between gap-2">
-                <span class="font-bold text-slate-900">${extraTitle ? escapeHtml(extraTitle) : 'Thông tin vị trí'}</span>
-                <button data-copy-coord="${latStr}, ${lngStr}" type="button" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold">Copy</button>
-              </div>
+          const marker = L.marker([lat, lng], {
+            title: extraTitle || 'Chạm để xem thông tin vị trí'
+          }).addTo(map);
+          marker._persistentPin = Boolean(options.persistentPin);
+          state.inspectMarker = marker;
+
+          marker.bindPopup(`
+            <div class="qh-popup-card text-xs space-y-2">
+              <div class="font-bold text-slate-900 pr-6 leading-snug">${extraTitle ? escapeHtml(extraTitle) : 'Thông tin vị trí'}</div>
               <div id="${uid}_addr" class="text-[11px] text-slate-600 leading-snug">Đang tra cứu địa chỉ...</div>
-              <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 space-y-1 font-mono text-[10px]">
-                <div><span class="text-slate-500 font-sans font-semibold">WGS-84:</span> <span class="text-slate-900 select-all">${latStr}, ${lngStr}</span></div>
-                <div><span class="text-slate-500 font-sans font-semibold">VN-2000 (${escapeHtml(prov.name)}):</span> <span class="text-amber-800 select-all">X=${vn.x.toFixed(2)}, Y=${vn.y.toFixed(2)}</span></div>
+              <div class="bg-slate-100 border border-slate-200/80 rounded-xl p-2 space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="text-[9px] font-bold uppercase tracking-wide text-slate-500">WGS-84</div>
+                    <div data-copy-coord="${coordStr}" title="Chạm để sao chép" class="qh-coord-box font-mono text-[11px] font-semibold text-slate-900">${coordStr}</div>
+                  </div>
+                  <button data-copy-coord="${coordStr}" type="button" class="shrink-0 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition">Sao chép</button>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-200/80">
+                  <div class="min-w-0">
+                    <div class="text-[9px] font-bold uppercase tracking-wide text-amber-800">VN-2000 (${escapeHtml(prov.name)})</div>
+                    <div data-copy-coord="${vnCoordStr}" title="Chạm để sao chép" class="qh-coord-box font-mono text-[10px] font-semibold text-amber-900">X=${vn.x.toFixed(2)}, Y=${vn.y.toFixed(2)}</div>
+                  </div>
+                  <button data-copy-coord="${vnCoordStr}" type="button" class="shrink-0 px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[10px] font-semibold transition">Copy XY</button>
+                </div>
               </div>
-              <div id="${uid}_gis" class="hidden text-[11px] bg-blue-50 border border-blue-200 rounded-lg p-2 space-y-1"></div>
-              <div class="grid grid-cols-3 gap-1">
-                <a href="${gmUrl}" target="_blank" rel="noopener noreferrer" class="text-center py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold">Google Maps</a>
-                <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="text-center py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-semibold">Chỉ đường</a>
-                <a href="${svUrl}" target="_blank" rel="noopener noreferrer" class="text-center py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-semibold">Street View</a>
+              <div id="${uid}_gis" class="hidden text-[11px] bg-blue-50 border border-blue-200 rounded-xl p-2 space-y-1"></div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <a href="${gmUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-primary text-center py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-semibold transition">Google Maps</a>
+                <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-secondary text-center py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold transition">Chỉ đường</a>
+                <a href="${svUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-secondary text-center py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold transition">Street View</a>
               </div>
             </div>
-          `, { maxWidth: Math.min(295, window.innerWidth - 44) }).openPopup();
+          `, getPopupOptions(252));
 
-          // Live reverse geocode (BigDataCloud CORS * -> ArcGIS fallback)
-          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`)
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(d => {
-              const parts = [d.locality, d.city, d.principalSubdivision, d.countryName].filter(Boolean);
-              const el = document.getElementById(`${uid}_addr`);
-              if (el) el.textContent = parts.length ? parts.join(', ') : 'Khu vực ngoài địa bàn hành chính';
-            })
-            .catch(() => {
-              fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lng},${lat}&f=json`)
+          const sig = inspectAbortCtrl.signal;
+          let resolvedAddr = '';
+          let addrStarted = false;
+
+          const populatePopupDom = () => {
+            const addrEl = document.getElementById(`${uid}_addr`);
+            if (addrEl && resolvedAddr) {
+              addrEl.textContent = resolvedAddr;
+            }
+            if (!addrStarted) {
+              addrStarted = true;
+              fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`, { signal: sig })
                 .then(r => r.ok ? r.json() : Promise.reject())
                 .then(d => {
+                  const parts = [d.locality, d.city, d.principalSubdivision, d.countryName].filter(Boolean);
+                  resolvedAddr = parts.length ? parts.join(', ') : 'Khu vực ngoài địa bàn hành chính';
                   const el = document.getElementById(`${uid}_addr`);
-                  if (el) el.textContent = d?.address?.LongLabel || 'Không rõ địa chỉ cụ thể';
+                  if (el) el.textContent = resolvedAddr;
                 })
-                .catch(() => {
-                  const el = document.getElementById(`${uid}_addr`);
-                  if (el) el.textContent = 'Không lấy được tên địa chỉ (tọa độ vẫn chính xác).';
+                .catch(err => {
+                  if (err && err.name === 'AbortError') return;
+                  fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lng},${lat}&f=json`, { signal: sig })
+                    .then(r => r.ok ? r.json() : Promise.reject())
+                    .then(d => {
+                      resolvedAddr = d?.address?.LongLabel || 'Không rõ địa chỉ cụ thể';
+                      const el = document.getElementById(`${uid}_addr`);
+                      if (el) el.textContent = resolvedAddr;
+                    })
+                    .catch(err2 => {
+                      if (err2 && err2.name === 'AbortError') return;
+                      resolvedAddr = 'Không lấy được tên địa chỉ (tọa độ vẫn chính xác).';
+                      const el = document.getElementById(`${uid}_addr`);
+                      if (el) el.textContent = resolvedAddr;
+                    });
                 });
+            }
+
+            // Live Identify on active ArcGIS Identify-capable layers
+            const identifyTargets = [];
+            Object.values(state.activeLiveLayers).forEach(entry => {
+              if (entry.cfg.identify && (!entry.cfg.bounds || L.latLngBounds(entry.cfg.bounds).contains([lat, lng]))) {
+                identifyTargets.push({ name: entry.cfg.name, url: entry.cfg.url });
+              }
+            });
+            state.customLayers.forEach(item => {
+              if (item.visible && item.identify && item.url) {
+                identifyTargets.push({ name: item.name, url: item.url });
+              }
             });
 
-          // Live Identify on active ArcGIS Identify-capable layers
-          const identifyTargets = [];
-          Object.values(state.activeLiveLayers).forEach(entry => {
-            if (entry.cfg.identify && (!entry.cfg.bounds || L.latLngBounds(entry.cfg.bounds).contains([lat, lng]))) {
-              identifyTargets.push({ name: entry.cfg.name, url: entry.cfg.url });
-            }
-          });
-          state.customLayers.forEach(item => {
-            if (item.visible && item.identify && item.url) {
-              identifyTargets.push({ name: item.name, url: item.url });
-            }
-          });
-
-          if (identifyTargets.length > 0) {
             const gisBox = document.getElementById(`${uid}_gis`);
-            if (gisBox) {
+            if (identifyTargets.length > 0 && gisBox) {
               gisBox.classList.remove('hidden');
               gisBox.innerHTML = '<div class="text-blue-700 font-medium">Đang truy vấn thuộc tính lớp quy hoạch...</div>';
-            }
-            Promise.all(identifyTargets.map(t => arcgisIdentifyJSONP(t.url, L.latLng(lat, lng), map).then(res => ({ target: t, res }))))
-              .then(outcomes => {
-                const box = document.getElementById(`${uid}_gis`);
-                if (!box) return;
-                const rows = [];
-                outcomes.forEach(({ target, res }) => {
-                  if (!res || !res.length) return;
-                  res.slice(0, 2).forEach(feat => {
-                    const attrs = feat.attributes || {};
-                    const pairs = Object.entries(attrs)
-                      .filter(([k, v]) => v !== null && v !== '' && v !== 'Null' && !/^OBJECTID|SHAPE/i.test(k))
-                      .slice(0, 5);
-                    if (pairs.length) {
-                      rows.push(`<div class="font-bold text-blue-900">${escapeHtml(feat.layerName || target.name)}</div>` +
-                        pairs.map(([k, v]) => `<div><span class="text-slate-500">${escapeHtml(k)}:</span> <strong>${escapeHtml(v)}</strong></div>`).join(''));
-                    }
+              Promise.all(identifyTargets.map(t => arcgisIdentifyJSONP(t.url, L.latLng(lat, lng), map).then(res => ({ target: t, res }))))
+                .then(outcomes => {
+                  const box = document.getElementById(`${uid}_gis`);
+                  if (!box) return;
+                  const rows = [];
+                  outcomes.forEach(({ target, res }) => {
+                    if (!res || !res.length) return;
+                    res.slice(0, 2).forEach(feat => {
+                      const attrs = feat.attributes || {};
+                      const pairs = Object.entries(attrs)
+                        .filter(([k, v]) => v !== null && v !== '' && v !== 'Null' && !/^OBJECTID|SHAPE/i.test(k))
+                        .slice(0, 5);
+                      if (pairs.length) {
+                        rows.push(`<div class="font-bold text-blue-900">${escapeHtml(feat.layerName || target.name)}</div>` +
+                          pairs.map(([k, v]) => `<div><span class="text-slate-500">${escapeHtml(k)}:</span> <strong>${escapeHtml(v)}</strong></div>`).join(''));
+                      }
+                    });
                   });
+                  if (rows.length) {
+                    box.innerHTML = rows.join('<hr class="my-1 border-blue-200" />');
+                  } else {
+                    box.innerHTML = '<div class="text-slate-600">Không có đối tượng quy hoạch vector tại đúng điểm chạm.</div>';
+                  }
                 });
-                if (rows.length) {
-                  box.innerHTML = rows.join('<hr class="my-1 border-blue-200" />');
-                } else {
-                  box.innerHTML = '<div class="text-slate-600">Không có đối tượng quy hoạch vector tại đúng điểm chạm.</div>';
-                }
-              });
+            }
+          };
+
+          marker.on('popupopen', populatePopupDom);
+          if (options.autoOpen) {
+            openMarkerPopupSafely(marker, options.waitForMove);
           }
         }
+
+        map.on('popupopen', e => {
+          state.hasOpenPopup = true;
+          const el = e.popup.getElement();
+          if (el) {
+            L.DomEvent.disableClickPropagation(el);
+            L.DomEvent.disableScrollPropagation(el);
+          }
+        });
+        map.on('popupclose', e => {
+          state.lastPopupClosedAt = Date.now();
+          state.hasOpenPopup = false;
+          if (state.inspectMarker && e.popup === state.inspectMarker.getPopup() && !state.inspectMarker._persistentPin) {
+            const m = state.inspectMarker;
+            state.inspectMarker = null;
+            if (map.hasLayer(m)) map.removeLayer(m);
+          }
+        });
 
         map.on('click', e => {
           document.getElementById('searchResultsBox').classList.add('hidden');
@@ -3389,28 +4359,435 @@
             redrawMeasurementAll();
             return;
           }
-          showInspectPopup(e.latlng.lat, e.latlng.lng);
+          // If tap just closed an existing popup, don't immediately open another one
+          if (Date.now() - state.lastPopupClosedAt < 280) return;
+          showInspectPopup(e.latlng.lat, e.latlng.lng, '', { autoOpen: true, persistentPin: false });
         });
 
         document.addEventListener('click', e => {
           const copyBtn = e.target.closest('[data-copy-coord]');
-          if (copyBtn) copyText(copyBtn.dataset.copyCoord, 'Đã sao chép tọa độ!');
+          if (copyBtn) {
+            e.stopPropagation();
+            copyText(copyBtn.dataset.copyCoord, 'Đã sao chép tọa độ!', copyBtn.tagName === 'BUTTON' ? copyBtn : null);
+          }
         });
 
+        function computeBearingDeg(lat1, lng1, lat2, lng2) {
+          const toRad = d => (d * Math.PI) / 180;
+          const p1 = toRad(lat1), p2 = toRad(lat2);
+          const dLon = toRad(lng2 - lng1);
+          const y = Math.sin(dLon) * Math.cos(p2);
+          const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dLon);
+          return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+        }
+
+        function formatCardinalVi(deg) {
+          const dirs = [
+            { short: 'B', full: 'Bắc' },
+            { short: 'ĐB', full: 'Đông Bắc' },
+            { short: 'Đ', full: 'Đông' },
+            { short: 'ĐN', full: 'Đông Nam' },
+            { short: 'N', full: 'Nam' },
+            { short: 'TN', full: 'Tây Nam' },
+            { short: 'T', full: 'Tây' },
+            { short: 'TB', full: 'Tây Bắc' }
+          ];
+          const norm = ((deg % 360) + 360) % 360;
+          const idx = Math.round(norm / 45) % 8;
+          return { deg: Math.round(norm), short: dirs[idx].short, full: dirs[idx].full };
+        }
+
+        let mouseMoveRaf = 0;
+        let lastMouseLatLng = null;
         map.on('mousemove', e => {
-          document.getElementById('liveCoords').textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-          const { lon0, k0 } = getActiveVn2000Params();
-          const vn = wgs84ToVn2000(e.latlng.lat, e.latlng.lng, lon0, k0);
-          document.getElementById('liveVn2000Coords').textContent = `VN2000: ${Math.round(vn.x)}, ${Math.round(vn.y)}`;
+          if (state.headingMode && e.originalEvent && e.originalEvent.altKey && state.lastGpsCoords) {
+            const bDeg = computeBearingDeg(state.lastGpsCoords.latitude, state.lastGpsCoords.longitude, e.latlng.lat, e.latlng.lng);
+            updateHeadingAngle(bDeg, 'manual');
+          }
+          if (window.innerWidth < 1024) return;
+          lastMouseLatLng = e.latlng;
+          if (!mouseMoveRaf) {
+            mouseMoveRaf = requestAnimationFrame(() => {
+              mouseMoveRaf = 0;
+              if (!lastMouseLatLng) return;
+              document.getElementById('liveCoords').textContent = `${lastMouseLatLng.lat.toFixed(5)}, ${lastMouseLatLng.lng.toFixed(5)}`;
+              const { lon0, k0 } = getActiveVn2000Params();
+              const vn = wgs84ToVn2000(lastMouseLatLng.lat, lastMouseLatLng.lng, lon0, k0);
+              document.getElementById('liveVn2000Coords').textContent = `VN2000: ${Math.round(vn.x)}, ${Math.round(vn.y)}`;
+            });
+          }
         });
+
+        let moveSuggestTimer = null;
+        let saveViewTimer = null;
         map.on('zoomend moveend', () => {
           document.getElementById('liveZoom').textContent = `Z${map.getZoom()}`;
-          updatePlanningStatusChip();
+          clearTimeout(moveSuggestTimer);
+          moveSuggestTimer = setTimeout(() => updateLocationSuggestions(), 120);
+          clearTimeout(saveViewTimer);
+          saveViewTimer = setTimeout(() => saveDailyState(), 400);
         });
 
         // =========================================================================
-        // 11. GPS CURRENT LOCATION BUTTON
+        // 11. GPS CURRENT LOCATION & COMPASS VIEWING HEADING MODE
         // =========================================================================
+        let headingRaf = 0;
+        let hasAbsoluteCompass = false;
+        let gpsAddrCache = { key: '', text: '' };
+
+        function getScreenOrientationOffset() {
+          if (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number') {
+            return window.screen.orientation.angle;
+          }
+          if (typeof window.orientation === 'number') {
+            return window.orientation;
+          }
+          return 0;
+        }
+
+        // W3C tilt-compensated 3D rotation matrix compass formula (accurate when holding phone tilted)
+        function computeTiltCompensatedHeading(alpha, beta, gamma) {
+          const degToRad = Math.PI / 180;
+          const a = (alpha || 0) * degToRad;
+          const b = (beta || 0) * degToRad;
+          const g = (gamma || 0) * degToRad;
+
+          const cA = Math.cos(a), sA = Math.sin(a);
+          const cB = Math.cos(b), sB = Math.sin(b);
+          const cG = Math.cos(g), sG = Math.sin(g);
+
+          const rA = -cA * sG - sA * sB * cG;
+          const rB = -sA * sG + cA * sB * cG;
+
+          let compassHeading = Math.atan2(rA, rB) * (180 / Math.PI);
+          if (compassHeading < 0) compassHeading += 360;
+          compassHeading = (compassHeading + getScreenOrientationOffset() + 360) % 360;
+          return compassHeading;
+        }
+
+        function buildGpsMarkerHtml() {
+          const rot = Number.isFinite(state.headingRenderDeg) ? state.headingRenderDeg : (state.headingDeg ?? 0);
+          const beamHiddenCls = state.headingMode ? '' : 'hidden';
+          return `
+            <div class="gps-marker-hit" title="Chạm vào dấu định vị để xem thông tin vị trí">
+              <div class="gps-heading-beam ${beamHiddenCls}" style="transform: rotate(${rot.toFixed(1)}deg)">
+                <svg viewBox="0 0 132 132" class="w-full h-full">
+                  <defs>
+                    <radialGradient id="qhGpsBeamGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.56"/>
+                      <stop offset="44%" stop-color="#3b82f6" stop-opacity="0.34"/>
+                      <stop offset="82%" stop-color="#60a5fa" stop-opacity="0.12"/>
+                      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+                    </radialGradient>
+                  </defs>
+                  <path d="M66,66 L29,12 A65,65 0 0,1 103,12 Z" fill="url(#qhGpsBeamGrad)"/>
+                  <line x1="66" y1="66" x2="31" y2="15" stroke="#2563eb" stroke-opacity="0.38" stroke-width="1.2"/>
+                  <line x1="66" y1="66" x2="101" y2="15" stroke="#2563eb" stroke-opacity="0.38" stroke-width="1.2"/>
+                  <polygon points="66,43 60.5,52.5 66,50 71.5,52.5" fill="#1d4ed8" stroke="#ffffff" stroke-width="1.2"/>
+                </svg>
+              </div>
+              <div class="gps-dot-wrap">
+                <div class="gps-dot-pulse"></div>
+                <div class="gps-dot-core"></div>
+              </div>
+            </div>
+          `;
+        }
+
+        function syncHeadingButtonUi() {
+          const btn = document.getElementById('btnHeadingMode');
+          const badge = document.getElementById('headingDegBadge');
+          if (!btn || !badge) return;
+          btn.setAttribute('aria-pressed', state.headingMode ? 'true' : 'false');
+          const iconEl = btn.querySelector('svg, i');
+          if (state.headingMode) {
+            btn.className = 'w-11 h-11 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg border border-blue-500 ring-2 ring-blue-300/80 flex flex-col items-center justify-center transition';
+            if (iconEl) {
+              iconEl.classList.remove('w-5', 'h-5');
+              iconEl.classList.add('w-4', 'h-4');
+            }
+            const info = formatCardinalVi(state.headingDeg ?? 0);
+            badge.textContent = `${info.short} ${info.deg}°`;
+            badge.classList.remove('hidden');
+          } else {
+            btn.className = 'w-11 h-11 rounded-2xl bg-white/95 hover:bg-blue-50 text-slate-700 hover:text-blue-600 shadow-lg border border-slate-200/90 flex flex-col items-center justify-center transition';
+            if (iconEl) {
+              iconEl.classList.remove('w-4', 'h-4');
+              iconEl.classList.add('w-5', 'h-5');
+            }
+            badge.classList.add('hidden');
+          }
+
+          if (state.gpsMarker && state.gpsMarker.getElement()) {
+            const beamEl = state.gpsMarker.getElement().querySelector('.gps-heading-beam');
+            if (beamEl) {
+              beamEl.classList.toggle('hidden', !state.headingMode);
+              const rot = Number.isFinite(state.headingRenderDeg) ? state.headingRenderDeg : (state.headingDeg ?? 0);
+              beamEl.style.transform = `rotate(${rot.toFixed(1)}deg)`;
+            }
+          }
+        }
+
+        function updateHeadingAngle(rawDeg, source = 'compass') {
+          if (!Number.isFinite(rawDeg)) return;
+          const target = ((rawDeg % 360) + 360) % 360;
+          state.headingDeg = target;
+          state.headingSource = source;
+
+          if (!Number.isFinite(state.headingRenderDeg)) {
+            state.headingRenderDeg = target;
+          } else {
+            const delta = ((target - state.headingRenderDeg + 540) % 360) - 180;
+            const alpha = source === 'compass' ? 0.32 : 0.55;
+            state.headingRenderDeg += delta * alpha;
+          }
+
+          if (!headingRaf) {
+            headingRaf = requestAnimationFrame(() => {
+              headingRaf = 0;
+              if (state.gpsMarker && state.gpsMarker.getElement()) {
+                const beamEl = state.gpsMarker.getElement().querySelector('.gps-heading-beam');
+                if (beamEl) {
+                  beamEl.classList.toggle('hidden', !state.headingMode);
+                  beamEl.style.transform = `rotate(${(state.headingRenderDeg || 0).toFixed(1)}deg)`;
+                }
+              }
+              const badge = document.getElementById('headingDegBadge');
+              const info = formatCardinalVi(state.headingDeg ?? 0);
+              if (badge && state.headingMode) {
+                badge.textContent = `${info.short} ${info.deg}°`;
+              }
+              const popHeadingEl = document.getElementById('gpsPopupHeadingRow');
+              const popHeadingVal = document.getElementById('gpsPopupHeadingVal');
+              if (popHeadingEl && popHeadingVal) {
+                popHeadingEl.classList.toggle('hidden', state.headingDeg === null);
+                popHeadingVal.textContent = `${info.full} (${info.deg}°)`;
+              }
+            });
+          }
+        }
+
+        function renderGpsPopupHtml() {
+          const c = state.lastGpsCoords || { latitude: 21.027764, longitude: 105.834160, accuracy: 20 };
+          const latStr = c.latitude.toFixed(6);
+          const lngStr = c.longitude.toFixed(6);
+          const coordStr = `${latStr}, ${lngStr}`;
+          const { prov, lon0, k0 } = getActiveVn2000Params();
+          const vn = wgs84ToVn2000(c.latitude, c.longitude, lon0, k0);
+          const vnCoordStr = `${vn.x.toFixed(2)}, ${vn.y.toFixed(2)}`;
+          const gmUrl = `https://www.google.com/maps?q=${latStr},${lngStr}`;
+          const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${latStr},${lngStr}`;
+          const svUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latStr},${lngStr}`;
+          const hasHeading = Number.isFinite(state.headingDeg);
+          const hInfo = formatCardinalVi(state.headingDeg ?? 0);
+          const addrText = gpsAddrCache.key === `${c.latitude.toFixed(4)},${c.longitude.toFixed(4)}` && gpsAddrCache.text
+            ? gpsAddrCache.text
+            : 'Đang tra cứu địa chỉ...';
+
+          return `
+            <div class="qh-popup-card text-xs space-y-2">
+              <div class="font-bold text-blue-700 pr-6 leading-snug">Vị trí định vị GPS của bạn</div>
+              <div id="gpsPopupAddr" class="text-[11px] text-slate-600 leading-snug">${escapeHtml(addrText)}</div>
+              <div class="bg-slate-100 border border-slate-200/80 rounded-xl p-2 space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="min-w-0">
+                    <div class="text-[9px] font-bold uppercase tracking-wide text-slate-500">WGS-84</div>
+                    <div data-copy-coord="${coordStr}" title="Chạm để sao chép" class="qh-coord-box font-mono text-[11px] font-semibold text-slate-900">${coordStr}</div>
+                  </div>
+                  <button data-copy-coord="${coordStr}" type="button" class="shrink-0 px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition">Sao chép</button>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-200/80">
+                  <div class="min-w-0">
+                    <div class="text-[9px] font-bold uppercase tracking-wide text-amber-800">VN-2000 (${escapeHtml(prov.name)})</div>
+                    <div data-copy-coord="${vnCoordStr}" title="Chạm để sao chép" class="qh-coord-box font-mono text-[10px] font-semibold text-amber-900">X=${vn.x.toFixed(2)}, Y=${vn.y.toFixed(2)}</div>
+                  </div>
+                  <button data-copy-coord="${vnCoordStr}" type="button" class="shrink-0 px-2 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[10px] font-semibold transition">Copy XY</button>
+                </div>
+              </div>
+              <div class="flex items-center justify-between gap-2 text-[11px] text-slate-600">
+                <span>Sai số GPS: <strong>±${Math.round(c.accuracy || 0)} m</strong></span>
+                <span id="gpsPopupHeadingRow" class="${hasHeading ? '' : 'hidden'} text-blue-700">Hướng: <strong id="gpsPopupHeadingVal">${hInfo.full} (${hInfo.deg}°)</strong></span>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <a href="${gmUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-primary text-center py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-[10px] font-semibold transition">Google Maps</a>
+                <a href="${dirUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-secondary text-center py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold transition">Chỉ đường</a>
+                <a href="${svUrl}" target="_blank" rel="noopener noreferrer" class="qh-btn-secondary text-center py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[10px] font-semibold transition">Street View</a>
+              </div>
+            </div>
+          `;
+        }
+
+        function fetchGpsPopupAddress() {
+          const c = state.lastGpsCoords;
+          if (!c) return;
+          const cacheKey = `${c.latitude.toFixed(4)},${c.longitude.toFixed(4)}`;
+          if (gpsAddrCache.key === cacheKey && gpsAddrCache.text) {
+            const el = document.getElementById('gpsPopupAddr');
+            if (el) el.textContent = gpsAddrCache.text;
+            return;
+          }
+          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${c.latitude}&longitude=${c.longitude}&localityLanguage=vi`)
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(d => {
+              const parts = [d.locality, d.city, d.principalSubdivision, d.countryName].filter(Boolean);
+              gpsAddrCache = { key: cacheKey, text: parts.length ? parts.join(', ') : 'Khu vực ngoài địa bàn hành chính' };
+              const el = document.getElementById('gpsPopupAddr');
+              if (el) el.textContent = gpsAddrCache.text;
+            })
+            .catch(() => {
+              const el = document.getElementById('gpsPopupAddr');
+              if (el) el.textContent = 'Không lấy được tên địa chỉ (tọa độ vẫn chính xác).';
+            });
+        }
+
+        function applyGpsPosition(coords, shouldFly = false) {
+          const { latitude, longitude, accuracy, heading, speed } = coords;
+          const prev = state.lastGpsCoords;
+          state.lastGpsCoords = { latitude, longitude, accuracy };
+
+          if (state.headingMode && state.headingSource !== 'compass') {
+            if (Number.isFinite(heading) && heading >= 0 && (speed === null || speed === undefined || speed > 0.25)) {
+              updateHeadingAngle(heading, 'gps');
+            } else if (prev) {
+              const movedMeters = geodesicDistance(prev.latitude, prev.longitude, latitude, longitude);
+              if (movedMeters >= 2.5) {
+                updateHeadingAngle(computeBearingDeg(prev.latitude, prev.longitude, latitude, longitude), 'gps');
+              }
+            }
+          }
+
+          if (!state.gpsCircle) {
+            state.gpsCircle = L.circle([latitude, longitude], {
+              radius: Math.max(accuracy || 20, 15),
+              color: '#2563eb', weight: 1.5, fillColor: '#3b82f6', fillOpacity: 0.16,
+              interactive: false
+            }).addTo(map);
+          } else {
+            state.gpsCircle.setLatLng([latitude, longitude]);
+            state.gpsCircle.setRadius(Math.max(accuracy || 20, 15));
+          }
+
+          if (!state.gpsMarker) {
+            state.gpsMarker = L.marker([latitude, longitude], {
+              icon: L.divIcon({
+                className: '',
+                html: buildGpsMarkerHtml(),
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
+                popupAnchor: [0, -14]
+              })
+            }).addTo(map);
+            state.gpsMarker.bindPopup(() => renderGpsPopupHtml(), getPopupOptions(252));
+            state.gpsMarker.on('popupopen', fetchGpsPopupAddress);
+          } else {
+            state.gpsMarker.setLatLng([latitude, longitude]);
+            if (state.gpsMarker.isPopupOpen()) {
+              state.gpsMarker.setPopupContent(renderGpsPopupHtml());
+              fetchGpsPopupAddress();
+            }
+          }
+
+          syncHeadingButtonUi();
+
+          if (shouldFly) {
+            map.closePopup();
+            const targetZoom = Math.max(map.getZoom(), 17);
+            map.flyTo([latitude, longitude], targetZoom, { duration: 0.85 });
+          }
+        }
+
+        function onDeviceOrientationAbsolute(e) {
+          if (!state.headingMode || e.alpha === null || e.alpha === undefined) return;
+          hasAbsoluteCompass = true;
+          updateHeadingAngle(computeTiltCompensatedHeading(e.alpha, e.beta, e.gamma), 'compass');
+        }
+
+        function onDeviceOrientation(e) {
+          if (!state.headingMode) return;
+          if (typeof e.webkitCompassHeading === 'number' && Number.isFinite(e.webkitCompassHeading) && e.webkitCompassHeading >= 0) {
+            updateHeadingAngle(e.webkitCompassHeading, 'compass');
+            return;
+          }
+          if (hasAbsoluteCompass) return;
+          if (e.absolute === true && e.alpha !== null && e.alpha !== undefined) {
+            updateHeadingAngle(computeTiltCompensatedHeading(e.alpha, e.beta, e.gamma), 'compass');
+          } else if (e.alpha !== null && e.alpha !== undefined) {
+            updateHeadingAngle(computeTiltCompensatedHeading(e.alpha, e.beta, e.gamma), 'compass');
+          }
+        }
+
+        function startGpsWatchForHeading(flyOnFirstFix) {
+          if (!navigator.geolocation || state.gpsWatchId !== null) return;
+          let firstFix = true;
+          state.gpsWatchId = navigator.geolocation.watchPosition(
+            pos => {
+              const doFly = firstFix && flyOnFirstFix;
+              firstFix = false;
+              applyGpsPosition(pos.coords, doFly);
+            },
+            () => { /* keep existing fix if watch encounters temporary timeout */ },
+            { enableHighAccuracy: true, maximumAge: 1000, timeout: 12000 }
+          );
+        }
+
+        function stopHeadingSensorsAndWatch() {
+          window.removeEventListener('deviceorientationabsolute', onDeviceOrientationAbsolute, true);
+          window.removeEventListener('deviceorientation', onDeviceOrientation, true);
+          if (state.gpsWatchId !== null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(state.gpsWatchId);
+            state.gpsWatchId = null;
+          }
+        }
+
+        async function toggleHeadingMode() {
+          if (state.headingMode) {
+            state.headingMode = false;
+            state.headingSource = null;
+            stopHeadingSensorsAndWatch();
+            syncHeadingButtonUi();
+            showToast('Đã tắt chế độ hiển thị hướng nhìn định vị.');
+            return;
+          }
+
+          // Request iOS Safari compass permission directly inside user click gesture
+          if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+              const perm = await DeviceOrientationEvent.requestPermission();
+              if (perm !== 'granted') {
+                showToast('Chưa được cấp quyền La bàn — sẽ dùng hướng di chuyển GPS.');
+              }
+            } catch (e) {
+              /* non-HTTPS or unsupported context; fallback to GPS heading */
+            }
+          }
+
+          state.headingMode = true;
+          hasAbsoluteCompass = false;
+          if (!Number.isFinite(state.headingDeg)) {
+            state.headingDeg = 0;
+            state.headingRenderDeg = 0;
+          }
+
+          window.addEventListener('deviceorientationabsolute', onDeviceOrientationAbsolute, true);
+          window.addEventListener('deviceorientation', onDeviceOrientation, true);
+          syncHeadingButtonUi();
+
+          const needInitialFly = !state.lastGpsCoords;
+          startGpsWatchForHeading(needInitialFly);
+
+          if (state.lastGpsCoords) {
+            showToast('Đã bật chế độ hiển thị hướng nhìn định vị (La bàn).');
+          } else {
+            showToast('Đã bật hướng nhìn & đang lấy tọa độ định vị GPS...');
+          }
+
+          setTimeout(() => {
+            if (state.headingMode && state.headingSource !== 'compass' && window.innerWidth >= 1024) {
+              showToast('Đang hiển thị chùm hướng nhìn. Trên máy tính không có la bàn, giữ phím Alt + di chuột để xoay hướng nhìn.');
+            }
+          }, 1600);
+        }
+
         function locateCurrentUser() {
           if (!navigator.geolocation) {
             showToast('Trình duyệt không hỗ trợ định vị GPS.');
@@ -3420,44 +4797,27 @@
             showToast('Lưu ý: GPS trình duyệt có thể bị chặn khi mở file:// trực tiếp. Nếu bị từ chối, hãy nhập tọa độ hoặc tìm địa chỉ trên thanh tìm kiếm.');
           }
           const btn = document.getElementById('btnLocateMe');
-          btn.classList.add('animate-pulse', 'bg-blue-600', 'text-white');
+          const setBtnBusy = busy => {
+            btn.classList.toggle('animate-pulse', busy);
+            btn.classList.toggle('bg-blue-600', busy);
+            btn.classList.toggle('text-white', busy);
+            btn.classList.toggle('bg-white/95', !busy);
+            btn.classList.toggle('text-blue-600', !busy);
+          };
+          setBtnBusy(true);
           showToast('Đang xác định vị trí GPS...');
 
           navigator.geolocation.getCurrentPosition(
             pos => {
-              btn.classList.remove('animate-pulse', 'bg-blue-600', 'text-white');
-              const { latitude, longitude, accuracy } = pos.coords;
-              if (state.gpsMarker) map.removeLayer(state.gpsMarker);
-              if (state.gpsCircle) map.removeLayer(state.gpsCircle);
-
-              state.gpsCircle = L.circle([latitude, longitude], {
-                radius: Math.max(accuracy || 20, 15),
-                color: '#2563eb', weight: 1.5, fillColor: '#3b82f6', fillOpacity: 0.16
-              }).addTo(map);
-
-              state.gpsMarker = L.marker([latitude, longitude], {
-                icon: L.divIcon({
-                  className: '',
-                  html: '<div class="gps-dot-wrap"><div class="gps-dot-pulse"></div><div class="gps-dot-core"></div></div>',
-                  iconSize: [22, 22], iconAnchor: [11, 11]
-                })
-              }).addTo(map);
-
-              const gmUrl = `https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
-              state.gpsMarker.bindPopup(`
-                <div class="text-xs space-y-1.5 min-w-[205px]">
-                  <div class="font-bold text-blue-700">Vị trí GPS hiện tại của bạn</div>
-                  <div class="font-mono text-[11px] bg-slate-100 px-2 py-1 rounded">${latitude.toFixed(6)}, ${longitude.toFixed(6)}</div>
-                  <div class="text-[11px] text-slate-600">Sai số: <strong>±${Math.round(accuracy || 0)} m</strong></div>
-                  <a href="${gmUrl}" target="_blank" rel="noopener noreferrer" class="block text-center py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">Xem trên Google Maps ↗</a>
-                </div>
-              `).openPopup();
-
-              map.flyTo([latitude, longitude], 17, { duration: 1.0 });
-              showToast(`Đã định vị: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+              setBtnBusy(false);
+              applyGpsPosition(pos.coords, true);
+              if (state.headingMode && state.gpsWatchId === null) {
+                startGpsWatchForHeading(false);
+              }
+              showToast(`Đã định vị: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} (chạm chấm xanh để xem chi tiết)`);
             },
             err => {
-              btn.classList.remove('animate-pulse', 'bg-blue-600', 'text-white');
+              setBtnBusy(false);
               const msg = err.code === 1
                 ? 'Trình duyệt từ chối quyền vị trí (hoặc bị chặn ở file://). Hãy gõ địa chỉ hoặc tọa độ vào ô tìm kiếm.'
                 : 'Không lấy được tín hiệu GPS. Bạn có thể tìm theo địa chỉ hoặc tọa độ.';
@@ -3731,14 +5091,14 @@
           if (parsed) {
             document.getElementById('searchResultsBox').classList.add('hidden');
             if (parsed.kind === 'wgs') {
-              map.flyTo([parsed.lat, parsed.lng], 17, { duration: 1.0 });
-              showInspectPopup(parsed.lat, parsed.lng, 'Tọa độ tìm kiếm (WGS-84)');
+              map.flyTo([parsed.lat, parsed.lng], 17, { duration: 0.9 });
+              showInspectPopup(parsed.lat, parsed.lng, 'Tọa độ tìm kiếm (WGS-84)', { autoOpen: false, persistentPin: true });
               showToast(`Đã bay tới ${parsed.lat.toFixed(5)}, ${parsed.lng.toFixed(5)}`);
             } else {
               const { prov, lon0, k0 } = getActiveVn2000Params();
               const wgs = vn2000ToWgs84(parsed.x, parsed.y, lon0, k0);
-              map.flyTo([wgs.lat, wgs.lng], 17, { duration: 1.0 });
-              showInspectPopup(wgs.lat, wgs.lng, `VN-2000 (${prov.name})`);
+              map.flyTo([wgs.lat, wgs.lng], 17, { duration: 0.9 });
+              showInspectPopup(wgs.lat, wgs.lng, `VN-2000 (${prov.name})`, { autoOpen: false, persistentPin: true });
               showToast(`Đã quy đổi VN-2000 (${prov.name}) → ${wgs.lat.toFixed(5)}, ${wgs.lng.toFixed(5)}`);
             }
             return;
@@ -3749,7 +5109,8 @@
           if (cityMatches.length === 1 && autoFly && raw.length < 16) {
             const c = cityMatches[0];
             document.getElementById('searchResultsBox').classList.add('hidden');
-            map.flyTo([c.lat, c.lng], c.zoom, { duration: 1.0 });
+            map.flyTo([c.lat, c.lng], c.zoom, { duration: 0.9 });
+            showInspectPopup(c.lat, c.lng, c.name, { autoOpen: false, persistentPin: true });
             showToast(`Đã chuyển tới ${c.name}`);
             return;
           }
@@ -3764,8 +5125,8 @@
           ];
           if (autoFly && combined.length > 0) {
             const top = combined[0];
-            map.flyTo([top.lat, top.lng], top.zoom || 16, { duration: 1.0 });
-            showInspectPopup(top.lat, top.lng, top.title);
+            map.flyTo([top.lat, top.lng], top.zoom || 16, { duration: 0.9 });
+            showInspectPopup(top.lat, top.lng, top.title, { autoOpen: false, persistentPin: true });
             renderSearchDropdown(combined.slice(0, 5));
             closeDrawerOnMobile();
           } else if (combined.length > 0) {
@@ -3886,6 +5247,10 @@
           document.getElementById('searchInput').value = '';
           document.getElementById('btnClearSearch').classList.add('hidden');
           document.getElementById('searchResultsBox').classList.add('hidden');
+          if (state.inspectMarker && state.inspectMarker._persistentPin) {
+            map.removeLayer(state.inspectMarker);
+            state.inspectMarker = null;
+          }
         });
 
         let searchDebounce = null;
@@ -3914,8 +5279,8 @@
           if (!item) return;
           document.getElementById('searchInput').value = item.title;
           document.getElementById('searchResultsBox').classList.add('hidden');
-          map.flyTo([item.lat, item.lng], item.zoom || 16, { duration: 1.0 });
-          showInspectPopup(item.lat, item.lng, item.title);
+          map.flyTo([item.lat, item.lng], item.zoom || 16, { duration: 0.9 });
+          showInspectPopup(item.lat, item.lng, item.title, { autoOpen: false, persistentPin: true });
           closeDrawerOnMobile();
         });
 
@@ -3928,38 +5293,17 @@
             closeDrawerOnMobile();
           });
         });
-        document.querySelectorAll('.city-pill').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const c = CITIES[btn.dataset.city];
-            if (c) {
-              map.flyTo([c.lat, c.lng], c.zoom, { duration: 1.0 });
-              if (c.vn2000Code) {
-                state.vn2000ProvinceCode = c.vn2000Code;
-                document.getElementById('vn2000Province').value = c.vn2000Code;
-              }
-              closeDrawerOnMobile();
-              showToast(`Đã chuyển tới ${c.name}`);
-            }
-          });
-        });
 
-        document.querySelectorAll('[data-quick-qh]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const mainId = btn.dataset.quickQh;
-            const extraId = btn.dataset.extraQh;
-            const vnCode = btn.dataset.vn2000;
-            if (extraId) toggleLiveLayer(extraId, true, false, true);
-            const cfg = LIVE_PLANNING_LAYERS.find(l => l.id === mainId);
-            toggleLiveLayer(mainId, true, false, false);
-            if (cfg) {
-              map.flyTo(cfg.center, cfg.zoom, { duration: 1.0 });
-            }
-            if (vnCode) {
-              state.vn2000ProvinceCode = vnCode;
-              document.getElementById('vn2000Province').value = vnCode;
-            }
-            closeDrawerOnMobile();
-          });
+        // Contextual suggestion bar + drawer suggestion box click handlers (toggle-only, never fly)
+        document.addEventListener('click', e => {
+          const suggestBtn = e.target.closest('[data-suggest-toggle]');
+          if (suggestBtn) {
+            toggleLiveLayer(suggestBtn.dataset.suggestToggle);
+            return;
+          }
+          if (e.target.closest('#btnQuickPortal')) {
+            switchTab('portals');
+          }
         });
 
         document.getElementById('liveLayerRegionFilters').addEventListener('click', e => {
@@ -3974,67 +5318,74 @@
           });
           renderLiveLayersList();
         });
-        document.getElementById('btnQuickPortal').addEventListener('click', () => switchTab('portals'));
 
         document.getElementById('liveLayersList').addEventListener('click', e => {
-          const spotBtn = e.target.closest('[data-spot-layer]');
-          if (spotBtn) {
-            const layerId = spotBtn.dataset.spotLayer;
-            const lat = Number(spotBtn.dataset.spotLat);
-            const lng = Number(spotBtn.dataset.spotLng);
-            const zoom = Number(spotBtn.dataset.spotZoom || 16);
-            toggleLiveLayer(layerId, true, false, true);
-            if (Number.isFinite(lat) && Number.isFinite(lng)) {
-              map.flyTo([lat, lng], zoom, { duration: 1.0 });
-            }
-            if (layerId && layerId.startsWith('hn_')) {
-              state.vn2000ProvinceCode = 'hanoi';
-              document.getElementById('vn2000Province').value = 'hanoi';
-            }
-            closeDrawerOnMobile();
-            showToast(`Đã bật lớp 1/500 và bay tới ${spotBtn.textContent.trim()}.`);
-            return;
-          }
           const toggleBtn = e.target.closest('[data-toggle-live]');
           if (toggleBtn) {
             toggleLiveLayer(toggleBtn.dataset.toggleLive);
-            return;
-          }
-          const flyBtn = e.target.closest('[data-fly-live]');
-          if (flyBtn) {
-            toggleLiveLayer(flyBtn.dataset.flyLive, true, true);
-            closeDrawerOnMobile();
           }
         });
 
         document.getElementById('btnRefreshLiveData').addEventListener('click', () => refreshAllLiveMapData(true));
         document.getElementById('btnChipRefresh').addEventListener('click', () => refreshAllLiveMapData(true));
         window.addEventListener('pageshow', e => {
-          if (e.persisted) refreshAllLiveMapData(false);
+          if (e.persisted) {
+            Object.values(state.activeLiveLayers).forEach(entry => {
+              if (entry.layer && typeof entry.layer._reconcileZoomState === 'function') {
+                entry.layer._reconcileZoomState();
+              }
+            });
+          }
         });
         document.addEventListener('visibilitychange', () => {
-          if (!document.hidden && Date.now() - state.dataVersion > 15 * 60 * 1000) {
-            refreshAllLiveMapData(false);
+          if (!document.hidden) {
+            Object.values(state.activeLiveLayers).forEach(entry => {
+              if (entry.layer && typeof entry.layer._reconcileZoomState === 'function') {
+                entry.layer._reconcileZoomState();
+              }
+            });
+            if (Date.now() - state.dataVersion > 15 * 60 * 1000) {
+              state.dataVersion = Date.now();
+              syncGovernmentStatus(state.dataVersion);
+            }
           }
         });
 
-        document.getElementById('btnFlyToActiveLayer').addEventListener('click', e => {
-          const btn = e.currentTarget;
-          if (!btn.dataset.targetCenter) return;
-          const center = JSON.parse(btn.dataset.targetCenter);
-          const zoom = Number(btn.dataset.targetZoom || 14);
-          map.flyTo(center, zoom, { duration: 1.0 });
-          closeDrawerOnMobile();
-          showToast(`Đã bay tới vùng phủ: ${btn.dataset.targetName}`);
+        document.getElementById('btnChipSuggestToggle').addEventListener('click', e => {
+          const id = e.currentTarget.dataset.suggestId;
+          if (id) toggleLiveLayer(id, true, false);
+        });
+
+        document.getElementById('btnChipZoomToLayer').addEventListener('click', e => {
+          const z = Number(e.currentTarget.dataset.targetZoom || 17);
+          if (Number.isFinite(z)) map.setZoom(Math.max(map.getZoom(), z));
         });
 
         document.getElementById('toggleDemoLayer').addEventListener('change', e => {
           state.showDemoOverlay = e.target.checked;
+          if (state.showDemoOverlay && !state.planningVisible) {
+            state.planningVisible = true;
+          }
           renderDemoZones();
-          updatePlanningStatusChip();
+          applyPlanningOpacity();
         });
 
-        document.getElementById('opacitySlider').addEventListener('input', e => {
+        const opacitySliderEl = document.getElementById('opacitySlider');
+        let multiTouchBlockSlider = false;
+        document.addEventListener('touchstart', e => {
+          if (e.touches && e.touches.length > 1) multiTouchBlockSlider = true;
+        }, { passive: true });
+        document.addEventListener('touchend', e => {
+          if (!e.touches || e.touches.length === 0) {
+            setTimeout(() => { multiTouchBlockSlider = false; }, 120);
+          }
+        }, { passive: true });
+
+        opacitySliderEl.addEventListener('input', e => {
+          if (multiTouchBlockSlider) {
+            e.target.value = String(Math.round(state.planningOpacity * 100));
+            return;
+          }
           state.planningOpacity = Number(e.target.value) / 100;
           if (state.planningOpacity > 0 && !state.planningVisible) {
             state.planningVisible = true;
@@ -4042,6 +5393,7 @@
           }
           applyPlanningOpacity();
         });
+        opacitySliderEl.addEventListener('change', saveDailyState);
 
         document.getElementById('btnQuickEye').addEventListener('click', () => {
           state.planningVisible = !state.planningVisible;
@@ -4052,6 +5404,7 @@
 
         // Right rail controls
         document.getElementById('btnLocateMe').addEventListener('click', locateCurrentUser);
+        document.getElementById('btnHeadingMode').addEventListener('click', toggleHeadingMode);
         document.getElementById('btnZoomIn').addEventListener('click', () => map.zoomIn());
         document.getElementById('btnZoomOut').addEventListener('click', () => map.zoomOut());
         document.getElementById('railDistance').addEventListener('click', () => {
@@ -4143,6 +5496,7 @@
         // VN-2000 & Sổ đỏ controls
         document.getElementById('vn2000Province').addEventListener('change', e => {
           state.vn2000ProvinceCode = e.target.value;
+          saveDailyState();
         });
         document.getElementById('vn2000Zone').addEventListener('change', e => {
           state.vn2000Scale = parseFloat(e.target.value) || 0.9999;
@@ -4186,9 +5540,10 @@
           const wgs = vn2000ToWgs84(x, y, lon0, k0);
           document.getElementById('singleWgsLat').value = wgs.lat.toFixed(6);
           document.getElementById('singleWgsLng').value = wgs.lng.toFixed(6);
-          map.flyTo([wgs.lat, wgs.lng], 17, { duration: 1.0 });
-          showInspectPopup(wgs.lat, wgs.lng, `Quy đổi VN-2000 (${prov.name})`);
+          map.flyTo([wgs.lat, wgs.lng], 17, { duration: 0.9 });
+          showInspectPopup(wgs.lat, wgs.lng, `Quy đổi VN-2000 (${prov.name})`, { autoOpen: false, persistentPin: true });
           closeDrawerOnMobile();
+          showToast(`Đã bay tới điểm VN-2000 (${prov.name})`);
         });
         document.getElementById('btnConvWgsToVn').addEventListener('click', () => {
           const lat = parseFloat(document.getElementById('singleWgsLat').value.trim());
@@ -4218,6 +5573,10 @@
               const txt = String(ev.target.result || '');
               const isKml = /\.kml$/i.test(file.name) || txt.trim().startsWith('<');
               const data = isKml ? parseKmlToGeoJSON(txt) : JSON.parse(txt);
+              if (!state.planningVisible) {
+                state.planningVisible = true;
+                renderDemoZones();
+              }
               const layer = L.geoJSON(data, {
                 style: { color: '#1d4ed8', weight: 2.5, fillColor: '#3b82f6', fillOpacity: state.planningOpacity },
                 onEachFeature: (feat, lyr) => {
@@ -4235,8 +5594,8 @@
                 map.fitBounds(layer.getBounds(), { padding: [40, 40] });
               }
               state.customLayers.push({ name: file.name, type: isKml ? 'kml' : 'geojson', layer, visible: true });
+              applyPlanningOpacity();
               renderCustomLayersList();
-              updatePlanningStatusChip();
               showToast(`Đã nạp file "${file.name}" lên bản đồ.`);
             } catch (err) {
               showToast('File GeoJSON / KML không hợp lệ.');
@@ -4253,7 +5612,15 @@
             const item = state.customLayers[idx];
             if (!item) return;
             item.visible = !item.visible;
-            if (item.visible) item.layer.addTo(map); else map.removeLayer(item.layer);
+            if (item.visible) {
+              if (!state.planningVisible) {
+                state.planningVisible = true;
+                renderDemoZones();
+              }
+              item.layer.addTo(map);
+            } else {
+              map.removeLayer(item.layer);
+            }
             saveCustomUrlLayers();
             applyPlanningOpacity();
             renderCustomLayersList();
@@ -4281,7 +5648,7 @@
           }
           const liveBtn = e.target.closest('.btn-live-portal');
           if (liveBtn) {
-            toggleLiveLayer(liveBtn.dataset.livePortal, true, true);
+            toggleLiveLayer(liveBtn.dataset.livePortal, true, false);
             if (!isMobile()) switchTab('layers'); else closeDrawerOnMobile();
             return;
           }
@@ -4337,11 +5704,15 @@
           renderSymbolsList();
         });
 
-        // Initial renders & default real Hanoi zoning overlay
+        // Initial renders & restore daily active planning overlays
         renderPortalsList();
         renderLegendList();
         renderSymbolsList();
-        toggleLiveLayer('hn_qhpk', true, false, true);
+        const initialLayers = Array.isArray(savedDaily.activeLiveLayerIds)
+          ? savedDaily.activeLiveLayerIds
+          : ['hn_qhpk'];
+        initialLayers.forEach(id => toggleLiveLayer(id, true, true));
+        updateLocationSuggestions();
         applyPlanningOpacity();
         syncGovernmentStatus(state.dataVersion);
         if (window.lucide) window.lucide.createIcons();
