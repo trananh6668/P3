@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fullstack Academy</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Highlight.js cho tô màu cú pháp -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Tùy chỉnh thanh cuộn cho trải nghiệm mượt mà */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.6); }
+    .code-editor {
+      tab-size: 2;
+      -moz-tab-size: 2;
+    }
+    @keyframes pulseFlow {
+      0%, 100% { opacity: 0.4; transform: translateX(0); }
+      50% { opacity: 1; transform: translateX(4px); }
+    }
+    .animate-flow {
+      animation: pulseFlow 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased transition-colors duration-200 selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Thông báo (thay thế alert) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Khung Layout Chính -->
+  <div class="flex h-screen overflow-hidden">
+    
+    <!-- Overlay Sidebar trên Mobile -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-30 hidden lg:hidden"></div>
+
+    <!-- SIDEBAR TRÁI: LỘ TRÌNH HỌC TẬP -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-80 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+      
+      <!-- Logo & Brand -->
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-base tracking-tight leading-tight">Fullstack Academy</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Frontend & PHP/MySQL</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Thanh Tiến Độ Tổng Quan -->
+      <div class="p-4 bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+          <span class="text-slate-600 dark:text-slate-300">Tiến độ khóa học</span>
+          <span id="progress-text" class="text-indigo-600 dark:text-indigo-400">0% (0/8 bài)</span>
+        </div>
+        <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Danh Sách Bài Học Theo 2 Phần Lớn -->
+      <nav id="lesson-nav" class="flex-1 overflow-y-auto p-3 space-y-5">
+        <!-- Nội dung được render bằng JS -->
+      </nav>
+
+      <!-- Footer Sidebar: Reset tiến độ -->
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <span>Lưu tự động LocalStorage</span>
+        <button onclick="resetProgress()" class="text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+          <i class="fa-solid fa-rotate-left"></i> Đặt lại
+        </button>
+      </div>
+    </aside>
+
+    <!-- KHU VỰC NỘI DUNG CHÍNH BÊN PHẢI -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      
+      <!-- Header Top Bar -->
+      <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 py-3 flex items-center justify-between gap-4 shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="lesson-badge" class="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">Phần 1: Frontend</span>
+              <span id="lesson-duration" class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline"><i class="fa-regular fa-clock mr-1"></i>25 phút</span>
+            </div>
+            <h2 id="lesson-title" class="text-base sm:text-lg font-bold truncate mt-0.5">Đang tải bài học...</h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Nút đánh dấu hoàn thành bài -->
+          <button id="btn-complete-lesson" onclick="toggleLessonComplete()" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition flex items-center gap-2">
+            <i class="fa-regular fa-circle-check"></i>
+            <span class="hidden sm:inline">Hoàn thành bài</span>
+          </button>
+
+          <!-- Chuyển đổi Dark / Light Mode -->
+          <button onclick="toggleTheme()" title="Chuyển giao diện Sáng / Tối" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <i id="theme-icon" class="fa-solid fa-sun"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Thanh Điều Hướng 4 Tabs -->
+      <div class="bg-white dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 flex items-center gap-1 sm:gap-2 overflow-x-auto shrink-0">
+        <button onclick="switchTab('theory')" data-tab="theory" class="tab-btn active px-3.5 py-3 text-xs sm:text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 whitespace-nowrap flex items-center gap-2 transition">
+          <i class="fa-solid fa-book-open"></i> <span>1. Lý thuyết & Kiến trúc</span>
+        </button>
+        <button onclick="switchTab('code')" data-tab="code" class="tab-btn px-3.5 py-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap flex items-center gap-2 transition">
+          <i class="fa-solid fa-code"></i> <span>2. Code mẫu & Giải thích</span>
+        </button>
+        <button onclick="switchTab('sandbox')" data-tab="sandbox" class="tab-btn px-3.5 py-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap flex items-center gap-2 transition">
+          <i class="fa-solid fa-terminal"></i> <span>3. Thực hành tương tác</span>
+        </button>
+        <button onclick="switchTab('quiz')" data-tab="quiz" class="tab-btn px-3.5 py-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap flex items-center gap-2 transition">
+          <i class="fa-solid fa-award"></i> <span>4. Trắc nghiệm & Thử thách</span>
+        </button>
+      </div>
+
+      <!-- Vùng Nội Dung Động Của Từng Tab -->
+      <main id="main-content" class="flex-1 overflow-y-auto p-4 lg:p-6">
+        <!-- Nội dung được render tự động theo bài học và tab đang chọn -->
+      </main>
+
+      <!-- Thanh Điều Hướng Bài Trước / Bài Tiếp Theo -->
+      <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 lg:px-6 py-2.5 flex items-center justify-between shrink-0">
+        <button id="btn-prev-lesson" onclick="navigateLesson(-1)" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 transition">
+          <i class="fa-solid fa-arrow-left"></i> Bài trước
+        </button>
+        <span id="footer-step-indicator" class="text-xs font-medium text-slate-500 dark:text-slate-400">Bài 1 / 8</span>
+        <button id="btn-next-lesson" onclick="navigateLesson(1)" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40 disabled:pointer-events-none flex items-center gap-2 shadow-sm transition">
+          Bài tiếp theo <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC & DATA -->
+  <script>
+    // =========================================================================
+    // 1. DỮ LIỆU KHÓA HỌC FULLSTACK (FRONTEND HTML/CSS/JS & BACKEND PHP/MYSQL)
+    // =========================================================================
+    const CURRICULUM = [
+      // ---------------- PHẦN 1: FRONTEND ----------------
+      {
+        id: 'fe-1',
+        part: 1,
+        partTitle: 'Phần 1: Frontend & Giao diện',
+        title: 'Bài 1: HTML5 Semantic & Cấu trúc Web chuẩn',
+        duration: '20 phút',
+        icon: 'fa-brands fa-html5 text-orange-500',
+        type: 'frontend',
+        theory: {
+          summary: 'HTML5 Semantic (Ngữ nghĩa) sử dụng các thẻ mô tả chính xác vai trò của từng khối nội dung thay vì lạm dụng thẻ <div>. Điều này giúp công cụ tìm kiếm (SEO), trình đọc màn hình (Accessibility) và lập trình viên dễ dàng hiểu cấu trúc trang web.',
+          keyPoints: [
+            { title: '<header> & <nav>', desc: 'Định nghĩa phần đầu trang (logo, tiêu đề) và thanh điều hướng chứa các liên kết chính.' },
+            { title: '<main>, <section>, <article>', desc: '<main> bao bọc nội dung độc nhất của trang; <section> chia nhóm chủ đề; <article> chứa nội dung độc lập như bài viết, thẻ sản phẩm.' },
+            { title: '<aside> & <footer>', desc: '<aside> dành cho thanh bên (sidebar/quảng cáo); <footer> chứa thông tin bản quyền, liên hệ cuối trang.' },
+            { title: 'Form HTML5 & Validation', desc: 'Sử dụng các thuộc tính required, type="email", minlength, placeholder giúp kiểm tra dữ liệu ngay trên trình duyệt.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-indigo-500 mb-3 text-center">Sơ đồ Bố cục Chuẩn HTML5 Semantic</div>
+              <div class="max-w-xl mx-auto space-y-2 font-mono text-xs">
+                <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 text-orange-700 dark:text-orange-300 text-center font-semibold">&lt;header&gt; Logo & Thanh điều hướng &lt;nav&gt; &lt;/header&gt;</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div class="sm:col-span-2 p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/40 space-y-2">
+                    <div class="font-semibold text-indigo-700 dark:text-indigo-300 text-center">&lt;main&gt; Nội dung chính</div>
+                    <div class="p-2 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-indigo-400/30 text-center">&lt;section&gt; Danh sách sản phẩm &lt;/section&gt;</div>
+                    <div class="p-2 rounded-lg bg-white/70 dark:bg-slate-900/70 border border-indigo-400/30 text-center">&lt;article&gt; Bài viết chi tiết &lt;/article&gt;</div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 text-purple-700 dark:text-purple-300 flex items-center justify-center text-center font-semibold">&lt;aside&gt;<br/>Sidebar / Bộ lọc<br/>&lt;/aside&gt;</div>
+                </div>
+                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-center font-semibold">&lt;footer&gt; Bản quyền & Liên hệ &lt;/footer&gt;</div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'html',
+          filename: 'index.html',
+          code: `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang Giới Thiệu Khóa Học</title>
+</head>
+<body>
+  <!-- Phần đầu trang -->
+  <header>
+    <h1>Fullstack Dev</h1>
+    <nav>
+      <a href="#courses">Khóa học</a> |
+      <a href="#register">Đăng ký</a>
+    </nav>
+  </header>
+
+  <!-- Nội dung chính -->
+  <main>
+    <section id="courses">
+      <h2>Lộ trình đào tạo</h2>
+      <article>
+        <h3>Lập trình Web PHP & MySQL</h3>
+        <p>Xây dựng hệ thống quản lý hoàn chỉnh từ cơ bản đến thực chiến.</p>
+      </article>
+    </section>
+
+    <!-- Biểu mẫu đăng ký có validation HTML5 -->
+    <section id="register">
+      <h2>Đăng ký tư vấn</h2>
+      <form action="/register.php" method="POST">
+        <label for="fullname">Họ và tên:</label>
+        <input type="text" id="fullname" name="fullname" required placeholder="Nguyễn Văn A">
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required placeholder="email@example.com">
+        
+        <button type="submit">Gửi thông tin</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Fullstack Academy. Bản quyền được bảo lưu.</p>
+  </footer>
+</body>
+</html>`,
+          explanations: [
+            { line: 'Dòng 8-14 (<header> & <nav>)', text: 'Định nghĩa khu vực tiêu đề trang và nhóm các liên kết điều hướng chính.' },
+            { line: 'Dòng 17-24 (<main> & <article>)', text: 'Bao bọc nội dung trọng tâm của trang, giúp Google Bot nhận diện đúng chủ đề bài viết.' },
+            { line: 'Dòng 29 (method="POST")', text: 'Gửi dữ liệu form qua HTTP POST tới Backend PHP để bảo mật thông tin người dùng.' },
+            { line: 'Dòng 31 & 34 (required, type="email")', text: 'Ràng buộc dữ liệu đầu vào ngay tại trình duyệt trước khi gửi lên máy chủ.' }
+          ]
+        },
+        sandbox: {
+          mode: 'frontend',
+          defaultCode: `<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f8fafc; color: #1e293b; }
+  header { background: #4f46e5; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+  nav a { color: #e0e7ff; text-decoration: none; margin-left: 16px; font-weight: 500; }
+  main { max-width: 680px; margin: 24px auto; padding: 0 16px; }
+  article { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+  input { width: 100%; padding: 10px; margin: 6px 0 14px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+  button { background: #4f46e5; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  button:hover { background: #4338ca; }
+  footer { text-align: center; padding: 16px; color: #64748b; font-size: 13px; }
+</style>
+
+<header>
+  <strong>🚀 Fullstack Dev</strong>
+  <nav>
+    <a href="#about">Giới thiệu</a>
+    <a href="#form">Đăng ký</a>
+  </nav>
+</header>
+
+<main>
+  <article id="about">
+    <h2 style="margin-top:0">Xây dựng nền tảng HTML5 chuẩn SEO</h2>
+    <p>Hãy thử chỉnh sửa tiêu đề hoặc thêm trường nhập liệu <strong>Số điện thoại</strong> vào form bên dưới rồi nhấn <em>Chạy Code</em>!</p>
+  </article>
+
+  <article id="form">
+    <h3 style="margin-top:0">Form Đăng Ký Học Thử</h3>
+    <form onsubmit="event.preventDefault(); document.getElementById('msg').innerText = '✅ Đã nhận đăng ký của: ' + document.getElementById('name').value;">
+      <label>Họ và tên:</label>
+      <input type="text" id="name" required placeholder="Nhập tên của bạn...">
+      <label>Email liên hệ:</label>
+      <input type="email" required placeholder="name@domain.com">
+      <button type="submit">Đăng ký ngay</button>
+      <p id="msg" style="color: #059669; font-weight: 600; margin-bottom: 0;"></p>
+    </form>
+  </article>
+</main>
+
+<footer>© 2026 Thực hành HTML5 Semantic</footer>`
+        },
+        quiz: [
+          {
+            q: 'Thẻ HTML5 nào được dùng để bao bọc nội dung chính và duy nhất của một trang web?',
+            options: ['<section>', '<main>', '<aside>', '<header>'],
+            answer: 1,
+            explain: 'Thẻ <main> đại diện cho nội dung trọng tâm, duy nhất của tài liệu và không nên lặp lại ở nhiều nơi.'
+          },
+          {
+            q: 'Thuộc tính nào trên thẻ <input> bắt buộc người dùng phải nhập dữ liệu trước khi submit form?',
+            options: ['validate', 'mandatory', 'required', 'important'],
+            answer: 2,
+            explain: 'Thuộc tính boolean "required" ngăn form gửi đi nếu trường nhập liệu còn trống.'
+          }
+        ]
+      },
+      {
+        id: 'fe-2',
+        part: 1,
+        partTitle: 'Phần 1: Frontend & Giao diện',
+        title: 'Bài 2: CSS3 Flexbox, Grid & Responsive Design',
+        duration: '30 phút',
+        icon: 'fa-brands fa-css3-alt text-sky-500',
+        type: 'frontend',
+        theory: {
+          summary: 'Để giao diện hiển thị đẹp mắt trên cả màn hình điện thoại, máy tính bảng và laptop, CSS3 cung cấp hai hệ thống bố cục mạnh mẽ là Flexbox (bố cục 1 chiều: hàng hoặc cột) và CSS Grid (bố cục lưới 2 chiều), kết hợp cùng Media Queries.',
+          keyPoints: [
+            { title: 'CSS Flexbox (1 chiều)', desc: 'Dùng display: flex; justify-content (căn trục chính) và align-items (căn trục phụ). Lý tưởng cho Navbar, thanh công cụ, căn giữa phần tử.' },
+            { title: 'CSS Grid (2 chiều)', desc: 'Dùng display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) để tạo lưới thẻ sản phẩm tự động co giãn.' },
+            { title: 'Đơn vị linh hoạt (Relative Units)', desc: 'Ưu tiên dùng %, rem, vw, vh thay vì px cố định để giao diện thích ứng mượt mà.' },
+            { title: 'Media Queries (@media)', desc: 'Áp dụng luật CSS riêng cho từng kích thước màn hình, ví dụ @media (max-width: 768px) cho thiết bị di động.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-sky-500 mb-3 text-center">So sánh Trực quan Flexbox vs CSS Grid</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                  <div class="font-bold text-sky-600 dark:text-sky-400 mb-2">Flexbox (1 Chiều - Hàng ngang)</div>
+                  <div class="flex justify-between items-center gap-2 p-2 bg-sky-500/10 rounded-lg border border-sky-500/30">
+                    <span class="px-2 py-1 bg-sky-500 text-white rounded">Logo</span>
+                    <div class="flex gap-1">
+                      <span class="px-2 py-1 bg-sky-500/80 text-white rounded">Link 1</span>
+                      <span class="px-2 py-1 bg-sky-500/80 text-white rounded">Link 2</span>
+                    </div>
+                  </div>
+                  <p class="mt-2 text-slate-500">justify-content: space-between</p>
+                </div>
+                <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                  <div class="font-bold text-purple-600 dark:text-purple-400 mb-2">CSS Grid (2 Chiều - Lưới thẻ)</div>
+                  <div class="grid grid-cols-3 gap-1.5 p-2 bg-purple-500/10 rounded-lg border border-purple-500/30 text-center text-white">
+                    <div class="py-1.5 bg-purple-500 rounded">Card 1</div>
+                    <div class="py-1.5 bg-purple-500 rounded">Card 2</div>
+                    <div class="py-1.5 bg-purple-500 rounded">Card 3</div>
+                    <div class="py-1.5 bg-purple-500/80 rounded">Card 4</div>
+                    <div class="py-1.5 bg-purple-500/80 rounded">Card 5</div>
+                    <div class="py-1.5 bg-purple-500/80 rounded">Card 6</div>
+                  </div>
+                  <p class="mt-2 text-slate-500">grid-template-columns: repeat(3, 1fr)</p>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'css',
+          filename: 'layout.css',
+          code: `/* 1. Thanh điều hướng sử dụng Flexbox */
+.navbar {
+  display: flex;
+  justify-content: space-between; /* Đẩy 2 đầu trái - phải */
+  align-items: center;            /* Căn giữa theo chiều dọc */
+  padding: 1rem 2rem;
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+/* 2. Lưới sản phẩm Responsive tự động chia cột với CSS Grid */
+.product-grid {
+  display: grid;
+  /* Tự động tạo cột tối thiểu 240px, tối đa 1 phần bằng nhau */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* 3. Media Query cho màn hình điện thoại (< 640px) */
+@media (max-width: 640px) {
+  .navbar {
+    flex-direction: column; /* Xếp dọc trên mobile */
+    gap: 0.75rem;
+  }
+}`,
+          explanations: [
+            { line: 'Dòng 3-5 (display: flex)', text: 'Kích hoạt Flexbox giúp sắp xếp Logo bên trái và Menu bên phải trên cùng một hàng.' },
+            { line: 'Dòng 15 (repeat(auto-fit, minmax(240px, 1fr)))', text: 'Kỹ thuật Grid Responsive hiện đại: tự động xuống dòng khi màn hình hẹp mà không cần viết nhiều @media.' },
+            { line: 'Dòng 33 (@media (max-width: 640px))', text: 'Khi chiều rộng màn hình nhỏ hơn 640px, thanh điều hướng tự động chuyển từ hàng ngang sang cột dọc.' }
+          ]
+        },
+        sandbox: {
+          mode: 'frontend',
+          defaultCode: `<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f1f5f9; color: #0f172a; }
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #0284c7, #4f46e5);
+    color: white;
+    padding: 14px 20px;
+  }
+  .badge { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 99px; font-size: 12px; }
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07);
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-4px); border-color: #6366f1; }
+  .price { color: #4f46e5; font-weight: 700; font-size: 18px; margin: 8px 0; }
+  .btn { width: 100%; padding: 8px; border: none; border-radius: 8px; background: #0f172a; color: white; cursor: pointer; }
+</style>
+
+<div class="navbar">
+  <strong>🛍️ TechStore Grid</strong>
+  <span class="badge">CSS Grid Auto-Fit</span>
+</div>
+
+<div class="grid-container">
+  <div class="card">
+    <div style="font-size:28px">💻</div>
+    <h4 style="margin:8px 0 4px">Laptop Dev Pro</h4>
+    <div class="price">24.500.000đ</div>
+    <button class="btn">Xem chi tiết</button>
+  </div>
+  <div class="card">
+    <div style="font-size:28px">⌨️</div>
+    <h4 style="margin:8px 0 4px">Bàn phím Cơ 75%</h4>
+    <div class="price">1.850.000đ</div>
+    <button class="btn">Xem chi tiết</button>
+  </div>
+  <div class="card">
+    <div style="font-size:28px">🖥️</div>
+    <h4 style="margin:8px 0 4px">Màn hình 4K IPS</h4>
+    <div class="price">8.900.000đ</div>
+    <button class="btn">Xem chi tiết</button>
+  </div>
+</div>`
+        },
+        quiz: [
+          {
+            q: 'Thuộc tính Flexbox nào dùng để căn chỉnh các phần tử con theo trục chính (mặc định là chiều ngang)?',
+            options: ['align-items', 'justify-content', 'flex-wrap', 'align-content'],
+            answer: 1,
+            explain: 'justify-content điều khiển cách phân bổ khoảng trống dọc theo trục chính (main axis).'
+          },
+          {
+            q: 'Đoạn mã CSS nào giúp lưới Grid tự động chia cột linh hoạt với độ rộng tối thiểu 250px?',
+            options: [
+              'grid-template-columns: 250px 250px;',
+              'grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));',
+              'flex-basis: 250px;',
+              'grid-auto-flow: dense;'
+            ],
+            answer: 1,
+            explain: 'repeat(auto-fit, minmax(250px, 1fr)) tự động tính toán số cột vừa với chiều rộng khung nhìn.'
+          }
+        ]
+      },
+      {
+        id: 'fe-3',
+        part: 1,
+        partTitle: 'Phần 1: Frontend & Giao diện',
+        title: 'Bài 3: JavaScript ES6+, DOM & Sự kiện (Events)',
+        duration: '30 phút',
+        icon: 'fa-brands fa-js text-yellow-400',
+        type: 'frontend',
+        theory: {
+          summary: 'JavaScript giúp trang web trở nên sống động bằng cách thao tác trực tiếp với cây cấu trúc DOM (Document Object Model), lắng nghe hành vi người dùng (click, submit, input) và cập nhật giao diện tức thì mà không cần tải lại trang.',
+          keyPoints: [
+            { title: 'Biến hiện đại ES6+', desc: 'Sử dụng const cho hằng số (ưu tiên mặc định) và let cho biến có thể thay đổi giá trị; tránh dùng var.' },
+            { title: 'Truy vấn & Thao tác DOM', desc: 'document.querySelector() chọn phần tử theo CSS selector; .textContent, .innerHTML, .classList.toggle() thay đổi nội dung và giao diện.' },
+            { title: 'Xử lý sự kiện (Event Listener)', desc: 'element.addEventListener("click", (e) => { ... }) tách biệt logic JS khỏi HTML và hỗ trợ gắn nhiều sự kiện.' },
+            { title: 'Template Literals & Arrow Function', desc: 'Dùng dấu backtick (`Xin chào ${name}`) để nối chuỗi và render HTML động sạch sẽ.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-500 mb-3 text-center">Luồng Tương Tác Sự Kiện & DOM trong Trình Duyệt</div>
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-3 text-xs font-medium">
+                <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-center w-full sm:w-44">
+                  <i class="fa-solid fa-hand-pointer text-amber-500 text-lg mb-1"></i>
+                  <div class="font-bold">1. User Event</div>
+                  <div class="text-[11px] opacity-80">Click nút / Gõ phím</div>
+                </div>
+                <i class="fa-solid fa-arrow-right text-slate-400 rotate-90 sm:rotate-0 animate-flow"></i>
+                <div class="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/40 text-center w-full sm:w-48">
+                  <i class="fa-brands fa-js text-indigo-500 text-lg mb-1"></i>
+                  <div class="font-bold">2. JS Event Handler</div>
+                  <div class="text-[11px] opacity-80">Xử lý mảng/state dữ liệu</div>
+                </div>
+                <i class="fa-solid fa-arrow-right text-slate-400 rotate-90 sm:rotate-0 animate-flow"></i>
+                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-center w-full sm:w-44">
+                  <i class="fa-solid fa-sitemap text-emerald-500 text-lg mb-1"></i>
+                  <div class="font-bold">3. Cập nhật DOM</div>
+                  <div class="text-[11px] opacity-80">Render lại UI tức thì</div>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'javascript',
+          filename: 'todo-app.js',
+          code: `// Khai báo mảng lưu trữ danh sách công việc
+const tasks = ['Học HTML5 Semantic', 'Thực hành CSS Grid'];
+
+// Truy xuất các phần tử DOM cần thiết
+const taskForm = document.querySelector('#task-form');
+const taskInput = document.querySelector('#task-input');
+const taskList = document.querySelector('#task-list');
+
+// Hàm render danh sách ra giao diện bằng Template Literals
+const renderTasks = () => {
+  taskList.innerHTML = tasks
+    .map((task, index) => \`
+      <li class="task-item">
+        <span>\${task}</span>
+        <button onclick="removeTask(\${index})">Xóa</button>
+      </li>
+    \`)
+    .join('');
+};
+
+// Lắng nghe sự kiện submit form
+taskForm.addEventListener('submit', (event) => {
+  event.preventDefault(); // Ngăn trình duyệt reload trang
+  const newTask = taskInput.value.trim();
+  
+  if (newTask !== '') {
+    tasks.push(newTask);
+    taskInput.value = '';
+    renderTasks();
+  }
+});
+
+// Hàm xóa công việc theo vị trí index
+window.removeTask = (index) => {
+  tasks.splice(index, 1);
+  renderTasks();
+};
+
+renderTasks();`,
+          explanations: [
+            { line: 'Dòng 5-7 (document.querySelector)', text: 'Tìm kiếm và lưu tham chiếu tới các thẻ HTML dựa trên thuộc tính id.' },
+            { line: 'Dòng 11-18 (.map() & Template Literals)', text: 'Biến đổi từng phần tử trong mảng thành chuỗi HTML thẻ <li> và gắn vào danh sách.' },
+            { line: 'Dòng 23 (event.preventDefault())', text: 'Chặn hành vi mặc định của form (tải lại toàn bộ trang), giúp trải nghiệm mượt như ứng dụng SPA.' }
+          ]
+        },
+        sandbox: {
+          mode: 'frontend',
+          defaultCode: `<style>
+  body { font-family: system-ui, sans-serif; background: #f8fafc; padding: 20px; color: #1e293b; }
+  .box { max-width: 460px; margin: 0 auto; background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+  .row { display: flex; gap: 8px; margin-bottom: 16px; }
+  input { flex: 1; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+  input:focus { border-color: #6366f1; }
+  button.add { background: #6366f1; color: white; border: none; padding: 0 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f5f9; border-radius: 8px; margin-bottom: 8px; }
+  button.del { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+</style>
+
+<div class="box">
+  <h3 style="margin-top:0">📝 Quản lý Công việc (DOM & Events)</h3>
+  <form id="todo-form" class="row">
+    <input type="text" id="todo-input" placeholder="Nhập công việc mới..." required>
+    <button type="submit" class="add">Thêm</button>
+  </form>
+  <ul id="todo-list"></ul>
+</div>
+
+<script>
+  const items = ['Ôn tập HTML5 & CSS3', 'Viết code JS xử lý DOM'];
+  const form = document.getElementById('todo-form');
+  const input = document.getElementById('todo-input');
+  const list = document.getElementById('todo-list');
+
+  function render() {
+    list.innerHTML = items.map((text, i) => 
+      \`<li><span>✅ \${text}</span><button class="del" onclick="delItem(\${i})">Xóa</button></li>\`
+    ).join('');
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!input.value.trim()) return;
+    items.push(input.value.trim());
+    input.value = '';
+    render();
+  });
+
+  window.delItem = (i) => { items.splice(i, 1); render(); };
+  render();
+<\/script>`
+        },
+        quiz: [
+          {
+            q: 'Phương thức nào dùng để ngăn trình duyệt tải lại trang khi người dùng nhấn nút Submit trong Form?',
+            options: ['event.stopPropagation()', 'event.preventDefault()', 'return false;', 'form.reset()'],
+            answer: 1,
+            explain: 'event.preventDefault() hủy bỏ hành động mặc định của sự kiện (như reload trang khi submit form).'
+          },
+          {
+            q: 'Trong ES6+, từ khóa nào nên được ưu tiên sử dụng khi khai báo biến không gán lại giá trị?',
+            options: ['var', 'let', 'const', 'static'],
+            answer: 2,
+            explain: 'const giúp tránh việc vô tình ghi đè biến, giúp mã nguồn an toàn và dễ bảo trì hơn.'
+          }
+        ]
+      },
+      {
+        id: 'fe-4',
+        part: 1,
+        partTitle: 'Phần 1: Frontend & Giao diện',
+        title: 'Bài 4: Fetch API & Kết nối Bất đồng bộ (JSON)',
+        duration: '25 phút',
+        icon: 'fa-solid fa-cloud-arrow-down text-emerald-500',
+        type: 'frontend',
+        theory: {
+          summary: 'Fetch API cho phép Frontend gửi yêu cầu HTTP (GET, POST, PUT, DELETE) tới Backend (như PHP REST API) dưới dạng bất đồng bộ (Async/Await) và nhận dữ liệu JSON để hiển thị lên giao diện mà không làm gián đoạn trải nghiệm người dùng.',
+          keyPoints: [
+            { title: 'Định dạng trao đổi JSON', desc: 'JSON (JavaScript Object Notation) là ngôn ngữ chung giúp Frontend (JS) và Backend (PHP) giao tiếp dễ dàng.' },
+            { title: 'Cú pháp Async / Await', desc: 'Giúp viết mã bất đồng bộ tuần tự, dễ đọc như mã đồng bộ, kết hợp khối try { ... } catch (err) { ... } để bắt lỗi mạng.' },
+            { title: 'Gửi dữ liệu với HTTP POST', desc: 'Cần khai báo headers: { "Content-Type": "application/json" } và chuyển object JS thành chuỗi bằng JSON.stringify().' },
+            { title: 'Cầu nối Fullstack', desc: 'Đây chính là mắt xích kết nối phần Frontend bạn vừa học với phần Backend PHP & MySQL ở chương tiếp theo!' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-3 text-center">Chu trình Giao tiếp Fetch API (Client ↔ Server)</div>
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div class="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/40 text-center flex-1 w-full">
+                  <div class="font-bold text-indigo-600 dark:text-indigo-300">Frontend (JavaScript)</div>
+                  <code class="text-[11px] block mt-1">fetch('/api/users.php')</code>
+                </div>
+                <div class="flex flex-col items-center gap-1 text-[11px] font-mono">
+                  <span class="text-sky-500">HTTP Request (JSON) ➔</span>
+                  <span class="text-emerald-500">⬅ HTTP Response (200 OK)</span>
+                </div>
+                <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 text-center flex-1 w-full">
+                  <div class="font-bold text-purple-600 dark:text-purple-300">Backend (PHP + MySQL)</div>
+                  <code class="text-[11px] block mt-1">echo json_encode($data);</code>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'javascript',
+          filename: 'api-client.js',
+          code: `// 1. Lấy danh sách sinh viên từ API PHP (HTTP GET)
+async function fetchStudents() {
+  try {
+    const response = await fetch('http://localhost/api/students.php');
+    
+    // Kiểm tra mã trạng thái HTTP (200-299 là thành công)
+    if (!response.ok) {
+      throw new Error(\`Lỗi HTTP: \${response.status}\`);
+    }
+    
+    const result = await response.json();
+    console.log('Dữ liệu từ PHP:', result.data);
+  } catch (error) {
+    console.error('Không thể kết nối máy chủ:', error.message);
+  }
+}
+
+// 2. Gửi dữ liệu tạo mới sinh viên lên PHP (HTTP POST)
+async function createStudent(studentData) {
+  const response = await fetch('http://localhost/api/students.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(studentData) // Chuyển Object sang chuỗi JSON
+  });
+  
+  return await response.json();
+}`,
+          explanations: [
+            { line: 'Dòng 4 (await fetch(...))', text: 'Tạm dừng hàm tại dòng này cho đến khi máy chủ PHP trả về phản hồi mà không làm treo trình duyệt.' },
+            { line: 'Dòng 11 (await response.json())', text: 'Phân tích cú pháp chuỗi JSON từ máy chủ thành đối tượng/mảng JavaScript.' },
+            { line: 'Dòng 25 (JSON.stringify(studentData))', text: 'Đóng gói dữ liệu JS thành chuỗi JSON chuẩn để gửi qua phần thân (body) của HTTP POST.' }
+          ]
+        },
+        sandbox: {
+          mode: 'frontend',
+          defaultCode: `<style>
+  body { font-family: system-ui, sans-serif; background: #f8fafc; padding: 20px; color: #1e293b; }
+  .card { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  button { background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  button:hover { background: #059669; }
+  .user-item { padding: 10px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
+  .tag { background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; }
+</style>
+
+<div class="card">
+  <h3 style="margin-top:0">🌐 Demo Fetch API Nhận Dữ Liệu JSON</h3>
+  <p style="font-size:14px; color:#475569">Nhấn nút bên dưới để mô phỏng gọi API lấy danh sách học viên từ Backend:</p>
+  <button onclick="loadUsers()">Tải dữ liệu từ API</button>
+  <div id="status" style="margin-top:12px; font-size:13px; color:#64748b;"></div>
+  <div id="result" style="margin-top:12px;"></div>
+</div>
+
+<script>
+  // Mô phỏng endpoint trả về JSON giống hệt PHP json_encode()
+  function mockPhpApi() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          status: 'success',
+          data: [
+            { id: 1, name: 'Trần Minh Khôi', role: 'Frontend Dev' },
+            { id: 2, name: 'Lê Thu Hà', role: 'PHP Backend' },
+            { id: 3, name: 'Phạm Quốc Bảo', role: 'Fullstack' }
+          ]
+        });
+      }, 500);
+    });
+  }
+
+  async function loadUsers() {
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+    statusEl.innerText = '⏳ Đang gửi HTTP GET Request...';
+    
+    const res = await mockPhpApi();
+    statusEl.innerText = '✅ Nhận JSON thành công (200 OK)';
+    resultEl.innerHTML = res.data.map(u => 
+      \`<div class="user-item"><strong>#\${u.id} \${u.name}</strong><span class="tag">\${u.role}</span></div>\`
+    ).join('');
+  }
+<\/script>`
+        },
+        quiz: [
+          {
+            q: 'Phương thức nào chuyển đổi một JavaScript Object thành chuỗi JSON trước khi gửi lên Server?',
+            options: ['JSON.parse()', 'JSON.stringify()', 'JSON.toText()', 'Object.toJSON()'],
+            answer: 1,
+            explain: 'JSON.stringify() chuyển Object JS thành chuỗi JSON; ngược lại JSON.parse() chuyển chuỗi JSON thành Object.'
+          },
+          {
+            q: 'Từ khóa nào luôn đi kèm bên trong một hàm được khai báo là async?',
+            options: ['defer', 'yield', 'await', 'pause'],
+            answer: 2,
+            explain: 'Từ khóa await chỉ có thể sử dụng bên trong hàm async để chờ một Promise hoàn thành.'
+          }
+        ]
+      },
+
+      // ---------------- PHẦN 2: BACKEND PHP & MYSQL ----------------
+      {
+        id: 'be-1',
+        part: 2,
+        partTitle: 'Phần 2: Backend PHP & MySQL',
+        title: 'Bài 5: PHP Cơ bản, Form Handling & Session',
+        duration: '25 phút',
+        icon: 'fa-brands fa-php text-indigo-400',
+        type: 'backend',
+        theory: {
+          summary: 'PHP là ngôn ngữ lập trình phía máy chủ (Server-side) phổ biến bậc nhất để xây dựng web động. PHP tiếp nhận dữ liệu từ Form HTML thông qua biến siêu toàn cục $_POST / $_GET, xử lý logic nghiệp vụ và duy trì trạng thái đăng nhập bằng $_SESSION.',
+          keyPoints: [
+            { title: 'Cú pháp PHP & Kiểu dữ liệu', desc: 'Mã PHP đặt trong thẻ <?php ... ?>, biến bắt đầu bằng ký tự $ (ví dụ: $username = "admin";). Hỗ trợ mảng kết hợp (Associative Array) rất mạnh mẽ.' },
+            { title: 'Tiếp nhận Form ($_POST & $_GET)', desc: '$_GET lấy dữ liệu từ thanh địa chỉ URL (tìm kiếm, phân trang); $_POST lấy dữ liệu ẩn trong thân request (đăng nhập, đăng ký).' },
+            { title: 'Bảo mật XSS với htmlspecialchars()', desc: 'Luôn lọc dữ liệu người dùng nhập vào trước khi hiển thị ra HTML bằng htmlspecialchars() để chống chèn mã độc JavaScript.' },
+            { title: 'Quản lý phiên làm việc ($_SESSION)', desc: 'Gọi session_start() ở đầu file để lưu thông tin người dùng xuyên suốt nhiều trang (ví dụ: $_SESSION["user_id"]).' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 text-center">Luồng Xử Lý PHP Form & Session Trên Server</div>
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-3 text-xs">
+                <div class="p-3 rounded-xl bg-sky-500/15 border border-sky-500/40 text-center w-full sm:w-44">
+                  <div class="font-bold">1. Trình duyệt (Client)</div>
+                  <div class="text-[11px] opacity-80">Submit Form POST<br/>user & password</div>
+                </div>
+                <i class="fa-solid fa-arrow-right text-slate-400 rotate-90 sm:rotate-0 animate-flow"></i>
+                <div class="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/40 text-center w-full sm:w-52">
+                  <div class="font-bold">2. PHP Server (login.php)</div>
+                  <div class="text-[11px] opacity-80">Kiểm tra $_POST<br/>Tạo $_SESSION['user']</div>
+                </div>
+                <i class="fa-solid fa-arrow-right text-slate-400 rotate-90 sm:rotate-0 animate-flow"></i>
+                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-center w-full sm:w-44">
+                  <div class="font-bold">3. Phản hồi HTML</div>
+                  <div class="text-[11px] opacity-80">Chuyển hướng tới<br/>Dashboard bảo mật</div>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'php',
+          filename: 'login_handler.php',
+          code: `<?php
+// Bắt buộc khởi tạo session ở dòng đầu tiên
+session_start();
+
+$error = '';
+
+// Kiểm tra xem người dùng có gửi form bằng phương thức POST không
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Lấy và làm sạch khoảng trắng dữ liệu đầu vào
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($email) || empty($password)) {
+        $error = 'Vui lòng nhập đầy đủ Email và Mật khẩu!';
+    } elseif ($email === 'admin@fullstack.vn' && $password === '123456') {
+        // Lưu thông tin đăng nhập vào Session trên máy chủ
+        $_SESSION['user'] = [
+            'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
+            'role'  => 'Administrator'
+        ];
+        echo "Đăng nhập thành công! Xin chào " . $_SESSION['user']['email'];
+    } else {
+        $error = 'Sai thông tin tài khoản hoặc mật khẩu!';
+    }
+}
+?>`,
+          explanations: [
+            { line: 'Dòng 3 (session_start())', text: 'Khởi tạo hoặc khôi phục phiên làm việc hiện tại của người dùng trên máy chủ.' },
+            { line: 'Dòng 8 ($_SERVER["REQUEST_METHOD"] === "POST")', text: 'Đảm bảo code xử lý chỉ chạy khi form được gửi đi qua HTTP POST.' },
+            { line: 'Dòng 18 (htmlspecialchars(...))', text: 'Mã hóa các ký tự đặc biệt (<, >, ", \') thành thực thể HTML an toàn, ngăn chặn tấn công XSS.' }
+          ]
+        },
+        sandbox: {
+          mode: 'php-sim',
+          preset: 'session',
+          description: 'Trình mô phỏng thực thi mã PHP trên Server: Thử gửi dữ liệu Form POST để kiểm tra cơ chế $_POST, lọc XSS và lưu $_SESSION.'
+        },
+        quiz: [
+          {
+            q: 'Hàm PHP nào dùng để ngăn chặn tấn công XSS khi hiển thị dữ liệu do người dùng nhập ra trình duyệt?',
+            options: ['mysqli_escape()', 'htmlspecialchars()', 'md5()', 'strip_session()'],
+            answer: 1,
+            explain: 'htmlspecialchars() chuyển đổi ký tự <, > thành &lt;, &gt; khiến trình duyệt hiển thị văn bản thay vì thực thi thẻ <script>.'
+          },
+          {
+            q: 'Hàm nào phải được gọi trước khi sử dụng biến siêu toàn cục $_SESSION?',
+            options: ['session_init()', 'start_session()', 'session_start()', 'session_open()'],
+            answer: 2,
+            explain: 'session_start() phải được gọi trước bất kỳ nội dung HTML nào được xuất ra trình duyệt.'
+          }
+        ]
+      },
+      {
+        id: 'be-2',
+        part: 2,
+        partTitle: 'Phần 2: Backend PHP & MySQL',
+        title: 'Bài 6: Kết nối Database MySQL với PHP PDO',
+        duration: '30 phút',
+        icon: 'fa-solid fa-database text-cyan-500',
+        type: 'backend',
+        theory: {
+          summary: 'PDO (PHP Data Objects) là lớp trừu tượng truy xuất cơ sở dữ liệu hiện đại, an toàn và hỗ trợ nhiều hệ quản trị CSDL (MySQL, PostgreSQL, SQLite). PDO hỗ trợ xử lý lỗi bằng Exception và Prepared Statements chống SQL Injection tuyệt đối.',
+          keyPoints: [
+            { title: 'Chuỗi kết nối DSN (Data Source Name)', desc: 'Xác định loại CSDL, máy chủ (host), tên database và bảng mã ký tự utf8mb4 (hỗ trợ đầy đủ tiếng Việt có dấu & emoji).' },
+            { title: 'Cấu hình PDO Attributes chuẩn', desc: 'PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION (ném ngoại lệ khi lỗi SQL) và PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC (trả về mảng kết hợp gọn gàng).' },
+            { title: 'Tắt giả lập Prepared Statements', desc: 'PDO::ATTR_EMULATE_PREPARES => false buộc MySQL biên dịch câu lệnh SQL tách biệt hoàn toàn với tham số truyền vào.' },
+            { title: 'Khối Try / Catch', desc: 'Bắt ngoại lệ PDOException để ghi log lỗi nội bộ thay vì làm lộ thông tin mật khẩu database ra màn hình người dùng.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-cyan-500 mb-3 text-center">Kiến trúc Kết nối An toàn PHP PDO ↔ MySQL</div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs items-center">
+                <div class="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/40 text-center">
+                  <div class="font-bold">Ứng dụng PHP</div>
+                  <div class="text-[11px] mt-1 font-mono">$pdo = new PDO(...)</div>
+                </div>
+                <div class="p-3 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-center">
+                  <div class="font-bold text-cyan-600 dark:text-cyan-300">PDO Driver (utf8mb4)</div>
+                  <div class="text-[11px] mt-1">ERRMODE_EXCEPTION<br/>FETCH_ASSOC</div>
+                </div>
+                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-center">
+                  <div class="font-bold text-emerald-600 dark:text-emerald-300">MySQL Server</div>
+                  <div class="text-[11px] mt-1">Database: fullstack_db<br/>Table: students</div>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'php',
+          filename: 'config/database.php',
+          code: `<?php
+// Thông số cấu hình kết nối MySQL
+$host    = '127.0.0.1';
+$db      = 'fullstack_db';
+$user    = 'root';
+$pass    = '';
+$charset = 'utf8mb4';
+
+// Chuỗi DSN (Data Source Name)
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+// Các tùy chọn bảo mật và tối ưu cho PDO
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Bật báo lỗi dạng Exception
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Trả về mảng kết hợp ['col' => 'val']
+    PDO::ATTR_EMULATE_PREPARES   => false,                  // Dùng Prepared Statement thật của MySQL
+];
+
+try {
+    // Khởi tạo đối tượng kết nối PDO
+    $pdo = new PDO($dsn, $user, $pass, $options);
+    // echo "Kết nối cơ sở dữ liệu thành công!";
+} catch (PDOException $e) {
+    // Không hiển thị chi tiết lỗi nhạy cảm cho người dùng cuối
+    http_response_code(500);
+    die("Lỗi kết nối hệ thống cơ sở dữ liệu. Vui lòng thử lại sau.");
+}
+?>`,
+          explanations: [
+            { line: 'Dòng 7 ($charset = "utf8mb4")', text: 'Đảm bảo lưu trữ và truy xuất tiếng Việt có dấu chính xác 100%, không bị lỗi font.' },
+            { line: 'Dòng 14 (PDO::ERRMODE_EXCEPTION)', text: 'Khi câu lệnh SQL sai cú pháp, PHP sẽ nhảy thẳng vào khối catch (PDOException) để xử lý.' },
+            { line: 'Dòng 16 (PDO::ATTR_EMULATE_PREPARES => false)', text: 'Tăng cường lớp phòng thủ chống tấn công SQL Injection ở tầng Database Engine.' }
+          ]
+        },
+        sandbox: {
+          mode: 'php-sim',
+          preset: 'connect',
+          description: 'Kiểm tra kết nối PHP PDO tới cơ sở dữ liệu MySQL ảo và xem cấu trúc bảng `students` đang hoạt động.'
+        },
+        quiz: [
+          {
+            q: 'Bảng mã ký tự (charset) nào được khuyến nghị sử dụng trong chuỗi DSN của MySQL để hỗ trợ tiếng Việt đầy đủ?',
+            options: ['latin1', 'ascii', 'utf8mb4', 'windows-1252'],
+            answer: 2,
+            explain: 'utf8mb4 hỗ trợ toàn bộ bộ ký tự Unicode (bao gồm tiếng Việt có dấu và biểu tượng cảm xúc).'
+          },
+          {
+            q: 'Tùy chọn PDO nào giúp dữ liệu truy vấn trả về dưới dạng mảng kết hợp theo tên cột (ví dụ: $row["name"])?',
+            options: ['PDO::FETCH_NUM', 'PDO::FETCH_ASSOC', 'PDO::FETCH_OBJ', 'PDO::FETCH_COLUMN'],
+            answer: 1,
+            explain: 'PDO::FETCH_ASSOC trả về mảng có khóa là tên các cột trong bảng MySQL.'
+          }
+        ]
+      },
+      {
+        id: 'be-3',
+        part: 2,
+        partTitle: 'Phần 2: Backend PHP & MySQL',
+        title: 'Bài 7: Truy vấn CRUD & Chống SQL Injection',
+        duration: '35 phút',
+        icon: 'fa-solid fa-shield-halved text-rose-500',
+        type: 'backend',
+        theory: {
+          summary: 'CRUD (Create - Read - Update - Delete) là 4 thao tác cốt lõi của mọi hệ thống Backend. Khi thực thi truy vấn với dữ liệu từ người dùng, tuyệt đối không nối chuỗi trực tiếp vào câu SQL mà phải sử dụng Prepared Statements (prepare + execute).',
+          keyPoints: [
+            { title: 'SQL Injection là gì?', desc: 'Là lỗ hổng khi kẻ tấn công nhập mã SQL độc hại (như \' OR 1=1 --) vào ô nhập liệu để đánh cắp hoặc xóa sạch dữ liệu.' },
+            { title: 'Cơ chế Prepared Statements', desc: 'Bước 1: Gửi khung câu lệnh SQL chứa tham số giữ chỗ (:name, :email) qua $pdo->prepare(). Bước 2: Truyền giá trị thật qua $stmt->execute([...]).' },
+            { title: 'CREATE & UPDATE & DELETE', desc: 'Dùng INSERT INTO, UPDATE ... SET, DELETE FROM kèm điều kiện WHERE id = :id và kiểm tra $stmt->rowCount().' },
+            { title: 'READ (SELECT)', desc: 'Dùng $stmt->fetchAll() để lấy danh sách nhiều bản ghi hoặc $stmt->fetch() để lấy 1 bản ghi duy nhất.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-rose-500 mb-3 text-center">Tại sao Prepared Statements Chống Được SQL Injection?</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/40">
+                  <div class="font-bold text-rose-600 dark:text-rose-400 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Cách Nối Chuỗi (NGUY HIỂM)</div>
+                  <code class="text-[11px] block bg-slate-900 text-rose-300 p-2 rounded mt-1">"SELECT * FROM users WHERE email = '$email'"</code>
+                  <p class="mt-1.5 text-[11px] opacity-85">Nếu $email = <code>' OR '1'='1</code> ➔ Lộ toàn bộ bảng dữ liệu!</p>
+                </div>
+                <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40">
+                  <div class="font-bold text-emerald-600 dark:text-emerald-400 mb-1"><i class="fa-solid fa-shield-check mr-1"></i> Prepared Statement (AN TOÀN)</div>
+                  <code class="text-[11px] block bg-slate-900 text-emerald-300 p-2 rounded mt-1">$stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");<br/>$stmt->execute(['email' => $email]);</code>
+                  <p class="mt-1.5 text-[11px] opacity-85">MySQL coi tham số chỉ là chuỗi văn bản thuần túy, không bao giờ thực thi như lệnh SQL.</p>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'php',
+          filename: 'crud_operations.php',
+          code: `<?php
+require_once 'config/database.php';
+
+// 1. CREATE: Thêm học viên mới an toàn
+function addStudent(PDO $pdo, string $name, string $email, string $course): int {
+    $sql = "INSERT INTO students (name, email, course) VALUES (:name, :email, :course)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        'name'   => $name,
+        'email'  => $email,
+        'course' => $course
+    ]);
+    return (int) $pdo->lastInsertId();
+}
+
+// 2. READ: Lấy danh sách tất cả học viên
+function getAllStudents(PDO $pdo): array {
+    $stmt = $pdo->query("SELECT id, name, email, course FROM students ORDER BY id DESC");
+    return $stmt->fetchAll();
+}
+
+// 3. UPDATE: Cập nhật khóa học theo ID
+function updateStudentCourse(PDO $pdo, int $id, string $newCourse): bool {
+    $sql = "UPDATE students SET course = :course WHERE id = :id";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute(['course' => $newCourse, 'id' => $id]);
+}
+
+// 4. DELETE: Xóa học viên theo ID
+function deleteStudent(PDO $pdo, int $id): bool {
+    $sql = "DELETE FROM students WHERE id = :id";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute(['id' => $id]);
+}
+?>`,
+          explanations: [
+            { line: 'Dòng 6-12 (INSERT INTO ... VALUES (:name, ...))', text: 'Sử dụng Named Placeholders (:name, :email) giúp câu lệnh SQL rõ ràng và chống SQL Injection.' },
+            { line: 'Dòng 13 ($pdo->lastInsertId())', text: 'Trả về khóa chính ID tự động tăng vừa được MySQL tạo ra cho bản ghi mới.' },
+            { line: 'Dòng 24 & 31 (WHERE id = :id)', text: 'Luôn có mệnh đề WHERE khi UPDATE hoặc DELETE để tránh ghi đè hoặc xóa nhầm toàn bộ bảng!' }
+          ]
+        },
+        sandbox: {
+          mode: 'php-sim',
+          preset: 'crud',
+          description: 'Thực hành trực tiếp 4 lệnh SELECT, INSERT, UPDATE, DELETE với PHP PDO và quan sát bảng dữ liệu MySQL thay đổi theo thời gian thực!'
+        },
+        quiz: [
+          {
+            q: 'Phương thức PDO nào dùng để biên dịch trước câu lệnh SQL có chứa tham số giữ chỗ (:id)?',
+            options: ['$pdo->query()', '$pdo->prepare()', '$pdo->exec()', '$pdo->escape()'],
+            answer: 1,
+            explain: '$pdo->prepare() gửi khung câu lệnh SQL tới MySQL để phân tích cú pháp trước khi truyền dữ liệu qua execute().'
+          },
+          {
+            q: 'Điều gì xảy ra nếu thực thi lệnh "DELETE FROM students" mà quên mệnh đề WHERE?',
+            options: [
+              'MySQL báo lỗi cú pháp',
+              'Chỉ xóa dòng đầu tiên',
+              'Toàn bộ dữ liệu trong bảng students bị xóa sạch',
+              'Không có dòng nào bị xóa'
+            ],
+            answer: 2,
+            explain: 'Thiếu điều kiện WHERE sẽ khiến lệnh DELETE hoặc UPDATE áp dụng lên toàn bộ các hàng trong bảng.'
+          }
+        ]
+      },
+      {
+        id: 'be-4',
+        part: 2,
+        partTitle: 'Phần 2: Backend PHP & MySQL',
+        title: 'Bài 8: Xây dựng REST API JSON kết nối Frontend',
+        duration: '35 phút',
+        icon: 'fa-solid fa-diagram-project text-purple-500',
+        type: 'backend',
+        theory: {
+          summary: 'Trong kiến trúc Fullstack hiện đại, PHP đóng vai trò là RESTful API Server trả về dữ liệu JSON chuẩn hóa, còn Frontend (HTML/CSS/JS Fetch API) tiêu thụ API đó để hiển thị giao diện tương tác mượt mà.',
+          keyPoints: [
+            { title: 'Thiết lập HTTP Headers chuẩn API', desc: 'Khai báo header("Content-Type: application/json; charset=UTF-8") để trình duyệt và Fetch API hiểu phản hồi là JSON.' },
+            { title: 'Đọc dữ liệu JSON gửi lên từ JS', desc: 'Dùng json_decode(file_get_contents("php://input"), true) để đọc dữ liệu JSON từ thân HTTP POST/PUT.' },
+            { title: 'Mã trạng thái HTTP (Status Codes)', desc: '200 (OK), 201 (Created - Tạo mới thành công), 400 (Bad Request - Dữ liệu lỗi), 404 (Not Found), 500 (Server Error).' },
+            { title: 'Kiến trúc Fullstack hoàn chỉnh', desc: 'Kết hợp toàn bộ kiến thức Phần 1 (HTML/CSS/JS Fetch) + Phần 2 (PHP PDO + MySQL) thành ứng dụng web hoàn chỉnh.' }
+          ],
+          architectureDiagram: `
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div class="text-xs font-bold uppercase tracking-wider text-purple-500 mb-3 text-center">Kiến Trúc Fullstack Toàn Diện (Frontend + PHP API + MySQL)</div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs items-center">
+                <div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-center">
+                  <div class="font-bold text-amber-600 dark:text-amber-300">1. Frontend UI (HTML/CSS/JS)</div>
+                  <div class="text-[11px] mt-1">fetch('/api/students.php')<br/>Render DOM & Bảng</div>
+                </div>
+                <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 text-center">
+                  <div class="font-bold text-purple-600 dark:text-purple-300">2. PHP REST API</div>
+                  <div class="text-[11px] mt-1">Header: application/json<br/>json_encode() / json_decode()</div>
+                </div>
+                <div class="p-3 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-center">
+                  <div class="font-bold text-cyan-600 dark:text-cyan-300">3. MySQL Database</div>
+                  <div class="text-[11px] mt-1">PDO Prepared Statements<br/>Lưu trữ bền vững</div>
+                </div>
+              </div>
+            </div>`
+        },
+        codeSample: {
+          language: 'php',
+          filename: 'api/students.php',
+          code: `<?php
+header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, DELETE');
+
+require_once '../config/database.php';
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET') {
+    // Trả về danh sách học viên dạng JSON
+    $stmt = $pdo->query("SELECT * FROM students ORDER BY id DESC");
+    echo json_encode([
+        'status' => 'success',
+        'data'   => $stmt->fetchAll()
+    ], JSON_UNESCAPED_UNICODE);
+
+} elseif ($method === 'POST') {
+    // Đọc dữ liệu JSON từ Frontend Fetch API gửi lên
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (empty($input['name']) || empty($input['email'])) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Thiếu tên hoặc email']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("INSERT INTO students (name, email, course) VALUES (:name, :email, :course)");
+    $stmt->execute([
+        'name'   => htmlspecialchars($input['name']),
+        'email'  => htmlspecialchars($input['email']),
+        'course' => htmlspecialchars($input['course'] ?? 'Fullstack Web')
+    ]);
+
+    http_response_code(201);
+    echo json_encode([
+        'status'  => 'success',
+        'message' => 'Thêm học viên thành công',
+        'id'      => $pdo->lastInsertId()
+    ], JSON_UNESCAPED_UNICODE);
+}
+?>`,
+          explanations: [
+            { line: 'Dòng 2 (Content-Type: application/json)', text: 'Thông báo cho trình duyệt biết nội dung trả về là dữ liệu JSON chứ không phải trang HTML.' },
+            { line: 'Dòng 16 (JSON_UNESCAPED_UNICODE)', text: 'Giữ nguyên ký tự tiếng Việt có dấu trong chuỗi JSON thay vì mã hóa thành dạng \\u1ec7.' },
+            { line: 'Dòng 20 (file_get_contents("php://input"))', text: 'Đọc luồng dữ liệu JSON thô được gửi từ hàm fetch() của JavaScript.' }
+          ]
+        },
+        sandbox: {
+          mode: 'php-sim',
+          preset: 'api',
+          description: 'Test gọi REST API JSON (GET / POST / DELETE) từ Frontend Fetch API tới Backend PHP + MySQL và xem JSON Response trực tiếp!'
+        },
+        quiz: [
+          {
+            q: 'Cách nào dùng để đọc dữ liệu JSON được gửi từ Frontend Fetch API (method POST) trong PHP?',
+            options: [
+              '$_POST["json"]',
+              'json_decode(file_get_contents("php://input"), true)',
+              '$_GET["body"]',
+              'json_parse($_REQUEST)'
+            ],
+            answer: 1,
+            explain: 'Khi Frontend gửi Content-Type: application/json, PHP không tự đổ vào $_POST mà cần đọc từ luồng php://input.'
+          },
+          {
+            q: 'Mã trạng thái HTTP nào biểu thị việc tạo mới tài nguyên thành công qua REST API?',
+            options: ['200 OK', '201 Created', '403 Forbidden', '502 Bad Gateway'],
+            answer: 1,
+            explain: 'HTTP 201 Created là mã chuẩn xác nhất khi một yêu cầu POST tạo thành công bản ghi mới trong Database.'
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. QUẢN LÝ TRẠNG THÁI ỨNG DỤNG & CƠ SỞ DỮ LIỆU MYSQL MÔ PHỎNG
+    // =========================================================================
+    const STORAGE_KEY = 'fullstack_academy_state_v1';
+
+    let appState = {
+      currentLessonId: 'fe-1',
+      activeTab: 'theory',
+      completedLessons: [],
+      quizAnswers: {}, // { lessonId: { qIndex: selectedOptionIndex } }
+      theme: 'dark',
+      // Bảng dữ liệu MySQL mô phỏng cho phần Backend PHP & PDO
+      mockDbStudents: [
+        { id: 1, name: 'Nguyễn Minh Tuấn', email: 'tuan.nm@gmail.com', course: 'Frontend HTML/CSS/JS' },
+        { id: 2, name: 'Trần Thị Lan Anh', email: 'lananh.tran@yahoo.com', course: 'PHP & MySQL PDO' },
+        { id: 3, name: 'Lê Hoàng Nam', email: 'nam.lh@fullstack.vn', course: 'Fullstack Web Pro' }
+      ],
+      mockSession: null
+    };
+
+    // Khôi phục dữ liệu từ LocalStorage nếu có
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          appState = { ...appState, ...parsed };
+        }
+      } catch (e) {
+        console.warn('Không thể đọc LocalStorage:', e);
+      }
+      applyTheme(appState.theme);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Không thể lưu LocalStorage:', e);
+      }
+    }
+
+    // =========================================================================
+    // 3. TIỆN ÍCH UI (TOAST, THEME, SIDEBAR, COPY CLIPBOARD)
+    // =========================================================================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white border-emerald-500',
+        info: 'bg-indigo-600 text-white border-indigo-500',
+        error: 'bg-rose-600 text-white border-rose-500'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        info: 'fa-circle-info',
+        error: 'fa-triangle-exclamation'
+      };
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transform transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function applyTheme(theme) {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      if (theme === 'dark') {
+        html.classList.add('dark');
+        if (icon) icon.className = 'fa-solid fa-sun text-amber-400';
+      } else {
+        html.classList.remove('dark');
+        if (icon) icon.className = 'fa-solid fa-moon text-slate-700';
+      }
+    }
+
+    function toggleTheme() {
+      appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(appState.theme);
+      saveState();
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+    }
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Đã sao chép code vào bộ nhớ tạm!', 'success');
+      } catch (err) {
+        showToast('Không thể sao chép tự động.', 'error');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // =========================================================================
+    // 4. RENDER SIDEBAR & ĐIỀU HƯỚNG BÀI HỌC
+    // =========================================================================
+    function getCurrentLessonIndex() {
+      return CURRICULUM.findIndex(item => item.id === appState.currentLessonId);
+    }
+
+    function getCurrentLesson() {
+      return CURRICULUM[getCurrentLessonIndex()] || CURRICULUM[0];
+    }
+
+    function renderSidebar() {
+      const nav = document.getElementById('lesson-nav');
+      const parts = [
+        { part: 1, label: 'PHẦN 1: FRONTEND (HTML/CSS/JS)', badgeColor: 'text-sky-600 dark:text-sky-400' },
+        { part: 2, label: 'PHẦN 2: BACKEND (PHP & MYSQL)', badgeColor: 'text-purple-600 dark:text-purple-400' }
+      ];
+
+      nav.innerHTML = parts.map(p => {
+        const lessons = CURRICULUM.filter(l => l.part === p.part);
+        const itemsHtml = lessons.map(lesson => {
+          const isActive = lesson.id === appState.currentLessonId;
+          const isDone = appState.completedLessons.includes(lesson.id);
+          return `
+            <button onclick="selectLesson('${lesson.id}')"
+              class="w-full text-left px-3 py-2.5 rounded-xl flex items-start gap-3 transition group ${
+                isActive
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300'
+              }">
+              <div class="mt-0.5 text-base shrink-0">
+                <i class="${isActive ? 'fa-solid fa-play text-white text-xs' : lesson.icon}"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-semibold leading-snug line-clamp-2">${lesson.title}</div>
+                <div class="text-[11px] mt-1 flex items-center gap-2 ${isActive ? 'text-indigo-200' : 'text-slate-400'}">
+                  <span>${lesson.duration}</span>
+                  ${isDone ? `<span class="inline-flex items-center gap-1 font-medium ${isActive ? 'text-emerald-200' : 'text-emerald-500'}"><i class="fa-solid fa-circle-check"></i> Xong</span>` : ''}
+                </div>
+              </div>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div>
+            <div class="px-2 mb-2 text-[11px] font-bold tracking-wider uppercase ${p.badgeColor}">${p.label}</div>
+            <div class="space-y-1">${itemsHtml}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Cập nhật thanh tiến độ
+      const total = CURRICULUM.length;
+      const completed = appState.completedLessons.length;
+      const pct = Math.round((completed / total) * 100);
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+      document.getElementById('progress-text').textContent = `${pct}% (${completed}/${total} bài)`;
+    }
+
+    function selectLesson(id) {
+      appState.currentLessonId = id;
+      saveState();
+      renderApp();
+      // Đóng sidebar trên mobile sau khi chọn bài
+      const sidebar = document.getElementById('sidebar');
+      if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        toggleSidebar();
+      }
+    }
+
+    function navigateLesson(direction) {
+      const idx = getCurrentLessonIndex();
+      const nextIdx = idx + direction;
+      if (nextIdx >= 0 && nextIdx < CURRICULUM.length) {
+        selectLesson(CURRICULUM[nextIdx].id);
+      }
+    }
+
+    function toggleLessonComplete() {
+      const id = appState.currentLessonId;
+      const idx = appState.completedLessons.indexOf(id);
+      if (idx === -1) {
+        appState.completedLessons.push(id);
+        showToast('Chúc mừng! Bạn đã hoàn thành bài học này.', 'success');
+      } else {
+        appState.completedLessons.splice(idx, 1);
+        showToast('Đã bỏ đánh dấu hoàn thành bài học.', 'info');
+      }
+      saveState();
+      renderApp();
+    }
+
+    function resetProgress() {
+      appState.completedLessons = [];
+      appState.quizAnswers = {};
+      saveState();
+      renderApp();
+      showToast('Đã đặt lại toàn bộ tiến độ học tập.', 'info');
+    }
+
+    function switchTab(tabName) {
+      appState.activeTab = tabName;
+      saveState();
+      renderTabs();
+      renderMainContent();
+    }
+
+    function renderTabs() {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const isTabActive = btn.dataset.tab === appState.activeTab;
+        if (isTabActive) {
+          btn.className = 'tab-btn active px-3.5 py-3 text-xs sm:text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 whitespace-nowrap flex items-center gap-2 transition';
+        } else {
+          btn.className = 'tab-btn px-3.5 py-3 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap flex items-center gap-2 transition';
+        }
+      });
+    }
+
+    // =========================================================================
+    // 5. RENDER NỘI DUNG TỪNG TAB (LÝ THUYẾT, CODE, SANDBOX, QUIZ)
+    // =========================================================================
+    function renderHeaderAndFooter() {
+      const lesson = getCurrentLesson();
+      const idx = getCurrentLessonIndex();
+      const isDone = appState.completedLessons.includes(lesson.id);
+
+      document.getElementById('lesson-badge').textContent = lesson.partTitle;
+      document.getElementById('lesson-duration').innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${lesson.duration}`;
+      document.getElementById('lesson-title').textContent = lesson.title;
+
+      const btnComplete = document.getElementById('btn-complete-lesson');
+      if (isDone) {
+        btnComplete.className = 'px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center gap-2 transition';
+        btnComplete.innerHTML = `<i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline">Đã hoàn thành</span>`;
+      } else {
+        btnComplete.className = 'px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 text-slate-700 dark:text-slate-200 flex items-center gap-2 transition';
+        btnComplete.innerHTML = `<i class="fa-regular fa-circle-check"></i><span class="hidden sm:inline">Hoàn thành bài</span>`;
+      }
+
+      document.getElementById('btn-prev-lesson').disabled = idx === 0;
+      document.getElementById('btn-next-lesson').disabled = idx === CURRICULUM.length - 1;
+      document.getElementById('footer-step-indicator').textContent = `Bài ${idx + 1} / ${CURRICULUM.length}`;
+    }
+
+    function renderMainContent() {
+      const lesson = getCurrentLesson();
+      const main = document.getElementById('main-content');
+
+      if (appState.activeTab === 'theory') {
+        main.innerHTML = `
+          <div class="max-w-4xl mx-auto space-y-6">
+            <!-- Tổng quan bài học -->
+            <div class="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-sm mb-2">
+                <i class="fa-solid fa-lightbulb"></i> TỔNG QUAN KIẾN THỨC
+              </div>
+              <p class="text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">${lesson.theory.summary}</p>
+            </div>
+
+            <!-- Sơ đồ kiến trúc trực quan -->
+            ${lesson.theory.architectureDiagram}
+
+            <!-- Các khái niệm cốt lõi -->
+            <div>
+              <h3 class="text-base font-bold mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-emerald-500"></i> Các điểm trọng tâm cần nắm vững
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${lesson.theory.keyPoints.map((pt, i) => `
+                  <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 transition">
+                    <div class="flex items-center gap-2.5 mb-1.5">
+                      <span class="w-6 h-6 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">${i + 1}</span>
+                      <h4 class="font-bold text-sm">${escapeHtml(pt.title)}</h4>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">${escapeHtml(pt.desc)}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Nút chuyển nhanh sang Tab Thực hành -->
+            <div class="p-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <div class="font-bold text-sm sm:text-base">Sẵn sàng xem mã nguồn và thực hành trực tiếp?</div>
+                <div class="text-xs text-indigo-100">Chuyển sang Tab 2 để xem code mẫu chi tiết hoặc Tab 3 để chạy thử nghiệm.</div>
+              </div>
+              <div class="flex gap-2 shrink-0">
+                <button onclick="switchTab('code')" class="px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-xs sm:text-sm font-semibold transition">Xem Code mẫu</button>
+                <button onclick="switchTab('sandbox')" class="px-4 py-2 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 text-xs sm:text-sm font-bold shadow transition">Thực hành ngay</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (appState.activeTab === 'code') {
+        const sample = lesson.codeSample;
+        main.innerHTML = `
+          <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Cột Code Highlight -->
+            <div class="lg:col-span-2 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-[#282c34] shadow-lg flex flex-col">
+              <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                  <span class="ml-2 text-xs font-mono text-slate-300">${sample.filename}</span>
+                </div>
+                <button id="btn-copy-sample" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition">
+                  <i class="fa-regular fa-copy"></i> Copy Code
+                </button>
+              </div>
+              <pre class="p-4 text-xs sm:text-sm font-mono overflow-x-auto leading-relaxed flex-1 m-0"><code id="highlighted-code" class="language-${sample.language}">${escapeHtml(sample.code)}</code></pre>
+            </div>
+
+            <!-- Cột Giải thích từng dòng -->
+            <div class="space-y-4">
+              <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <h3 class="font-bold text-sm mb-3 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                  <i class="fa-solid fa-magnifying-glass-chart"></i> Giải thích chi tiết mã nguồn
+                </h3>
+                <div class="space-y-3">
+                  ${sample.explanations.map(exp => `
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80">
+                      <div class="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 mb-1">${escapeHtml(exp.line)}</div>
+                      <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">${escapeHtml(exp.text)}</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <button onclick="switchTab('sandbox')" class="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-play"></i> Mở trong Môi trường Thực hành
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Tô màu cú pháp và gắn sự kiện Copy
+        const codeEl = document.getElementById('highlighted-code');
+        if (window.hljs && codeEl) hljs.highlightElement(codeEl);
+        document.getElementById('btn-copy-sample').addEventListener('click', () => copyToClipboard(sample.code));
+
+      } else if (appState.activeTab === 'sandbox') {
+        if (lesson.sandbox.mode === 'frontend') {
+          renderFrontendSandbox(lesson, main);
+        } else {
+          renderPhpMysqlSimulator(lesson, main);
+        }
+      } else if (appState.activeTab === 'quiz') {
+        renderQuizTab(lesson, main);
+      }
+    }
+
+    // =========================================================================
+    // 6. SANDBOX PHẦN 1: LIVE HTML / CSS / JS EDITOR + IFRAME PREVIEW
+    // =========================================================================
+    function renderFrontendSandbox(lesson, container) {
+      container.innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2 text-xs sm:text-sm font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Live Frontend Sandbox (HTML5 + CSS3 + JS)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="resetFrontendSandbox()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium transition">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Khôi phục mặc định
+              </button>
+              <button onclick="runFrontendSandbox()" class="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-play"></i> Chạy Code
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[520px]">
+            <!-- Khung viết code -->
+            <div class="flex flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900">
+              <div class="px-4 py-2 bg-slate-950 text-slate-400 text-xs font-mono flex justify-between items-center border-b border-slate-800">
+                <span>index.html (Chỉnh sửa trực tiếp)</span>
+                <span>Ctrl + Enter để chạy</span>
+              </div>
+              <textarea id="fe-sandbox-editor" spellcheck="false"
+                class="code-editor flex-1 w-full p-4 bg-slate-900 text-emerald-300 font-mono text-xs sm:text-sm resize-none focus:outline-none leading-relaxed">${escapeHtml(lesson.sandbox.defaultCode)}</textarea>
+            </div>
+
+            <!-- Khung xem trước Preview -->
+            <div class="flex flex-col rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white">
+              <div class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+                <span><i class="fa-solid fa-window-maximize mr-1.5 text-indigo-500"></i>Kết quả hiển thị trực tiếp (Preview)</span>
+                <span class="text-[11px] text-slate-400">Viewport Responsive</span>
+              </div>
+              <iframe id="fe-sandbox-preview" class="flex-1 w-full bg-white border-0"></iframe>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const editor = document.getElementById('fe-sandbox-editor');
+      editor.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          runFrontendSandbox();
+        }
+      });
+
+      runFrontendSandbox();
+    }
+
+    function runFrontendSandbox() {
+      const editor = document.getElementById('fe-sandbox-editor');
+      const iframe = document.getElementById('fe-sandbox-preview');
+      if (!editor || !iframe) return;
+      iframe.srcdoc = editor.value;
+    }
+
+    function resetFrontendSandbox() {
+      const lesson = getCurrentLesson();
+      const editor = document.getElementById('fe-sandbox-editor');
+      if (editor) {
+        editor.value = lesson.sandbox.defaultCode;
+        runFrontendSandbox();
+        showToast('Đã khôi phục mã nguồn mẫu ban đầu.', 'info');
+      }
+    }
+
+    // =========================================================================
+    // 7. SANDBOX PHẦN 2: TRÌNH MÔ PHỎNG PHP SERVER & MYSQL PDO REAL-TIME
+    // =========================================================================
+    function renderPhpMysqlSimulator(lesson, container) {
+      container.innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-5">
+          <!-- Banner mô tả bài thực hành -->
+          <div class="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fa-solid fa-server"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-indigo-700 dark:text-indigo-300">Môi trường Mô phỏng PHP 8.3 + MySQL PDO Server</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">${lesson.sandbox.description}</p>
+              </div>
+            </div>
+            <button onclick="resetMockDatabase()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium hover:border-indigo-500 shrink-0 transition">
+              <i class="fa-solid fa-database mr-1 text-cyan-500"></i> Reset DB Mẫu
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- Cột Trái (5 cột): Bảng điều khiển gửi Request PHP / CRUD / API -->
+            <div class="lg:col-span-5 space-y-4">
+              <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                  <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">1. Gửi Yêu Cầu Tới PHP Backend</span>
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono">PDO Connected</span>
+                </div>
+
+                <!-- Form INSERT / API POST -->
+                <form onsubmit="handleSimInsert(event)" class="space-y-3">
+                  <div class="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-mono text-[10px]">INSERT / POST</span>
+                    <span>Thêm học viên mới (Prepared Statement)</span>
+                  </div>
+                  <div>
+                    <input type="text" id="sim-name" required placeholder="Họ tên (VD: Đỗ Gia Huy)"
+                      class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:outline-none">
+                  </div>
+                  <div>
+                    <input type="email" id="sim-email" required placeholder="Email (VD: huy.dg@gmail.com)"
+                      class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:outline-none">
+                  </div>
+                  <div>
+                    <select id="sim-course" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:outline-none">
+                      <option value="Frontend HTML/CSS/JS">Khóa: Frontend HTML/CSS/JS</option>
+                      <option value="PHP & MySQL PDO">Khóa: PHP & MySQL PDO</option>
+                      <option value="Fullstack Web Pro">Khóa: Fullstack Web Pro</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> Thực thi PHP PDO INSERT
+                  </button>
+                </form>
+
+                <!-- Thử nghiệm tấn công SQL Injection để thấy cơ chế bảo vệ -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <div class="text-xs font-semibold text-rose-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bug"></i> Thử nghiệm Chống SQL Injection
+                  </div>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400">Bấm nút dưới để gửi chuỗi độc hại <code>' OR '1'='1; DROP TABLE students;--</code> qua Prepared Statement:</p>
+                  <button onclick="simulateSqlInjectionTest()" class="w-full py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-semibold transition">
+                    Test Chặn SQL Injection
+                  </button>
+                </div>
+
+                <!-- Nút gọi API GET -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <button onclick="simulateApiGet()" class="w-full py-2 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-code"></i> Test GET /api/students.php (JSON)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột Phải (7 cột): Bảng dữ liệu MySQL Real-time & Console Output PHP -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Bảng MySQL trực quan -->
+              <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div class="flex items-center gap-2 text-xs font-bold">
+                    <i class="fa-solid fa-table text-cyan-500"></i>
+                    <span>MySQL Table: <code class="text-cyan-600 dark:text-cyan-400">fullstack_db.students</code></span>
+                  </div>
+                  <span id="db-row-count" class="text-[11px] font-mono text-slate-500">3 rows</span>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr class="bg-slate-100/70 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                        <th class="py-2.5 px-3 font-mono">id</th>
+                        <th class="py-2.5 px-3">name</th>
+                        <th class="py-2.5 px-3">email</th>
+                        <th class="py-2.5 px-3">course</th>
+                        <th class="py-2.5 px-3 text-right">Thao tác SQL</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mock-mysql-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <!-- Render động -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Terminal Log PHP Execution & JSON Response -->
+              <div class="rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden">
+                <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+                  <span><i class="fa-solid fa-terminal text-emerald-400 mr-1.5"></i>PHP Server Execution Log & JSON Output</span>
+                  <span class="text-[11px] text-slate-500">HTTP/1.1 200 OK</span>
+                </div>
+                <pre id="php-sim-console" class="p-4 text-xs font-mono text-emerald-300 overflow-x-auto max-h-56 leading-relaxed whitespace-pre-wrap"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      renderMockMysqlTable();
+      updatePhpConsole(
+        `// Kết nối MySQL PDO thành công: mysql:host=127.0.0.1;dbname=fullstack_db;charset=utf8mb4\n` +
+        `$stmt = $pdo->query("SELECT * FROM students ORDER BY id DESC");\n` +
+        `// Trả về ${appState.mockDbStudents.length} bản ghi từ cơ sở dữ liệu.`
+      );
+    }
+
+    function renderMockMysqlTable() {
+      const tbody = document.getElementById('mock-mysql-tbody');
+      const countEl = document.getElementById('db-row-count');
+      if (!tbody) return;
+
+      countEl.textContent = `${appState.mockDbStudents.length} rows`;
+
+      if (appState.mockDbStudents.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Bảng trống (0 bản ghi). Hãy thêm học viên mới ở cột bên trái!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = appState.mockDbStudents.map(row => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">#${row.id}</td>
+          <td class="py-2.5 px-3 font-medium">${escapeHtml(row.name)}</td>
+          <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400">${escapeHtml(row.email)}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-medium">${escapeHtml(row.course)}</span>
+          </td>
+          <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-1">
+            <button onclick="handleSimUpdate(${row.id})" title="UPDATE course" class="px-2 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 font-mono text-[11px] transition">UPDATE</button>
+            <button onclick="handleSimDelete(${row.id})" title="DELETE row" class="px-2 py-1 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 font-mono text-[11px] transition">DELETE</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updatePhpConsole(text) {
+      const el = document.getElementById('php-sim-console');
+      if (el) el.textContent = text;
+    }
+
+    function handleSimInsert(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('sim-name');
+      const emailInput = document.getElementById('sim-email');
+      const courseInput = document.getElementById('sim-course');
+
+      const nextId = appState.mockDbStudents.length > 0
+        ? Math.max(...appState.mockDbStudents.map(s => s.id)) + 1
+        : 1;
+
+      const newRecord = {
+        id: nextId,
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        course: courseInput.value
+      };
+
+      appState.mockDbStudents.unshift(newRecord);
+      saveState();
+      renderMockMysqlTable();
+
+      updatePhpConsole(
+        `// [PHP PDO EXECUTED - HTTP 201 Created]\n` +
+        `$sql = "INSERT INTO students (name, email, course) VALUES (:name, :email, :course)";\n` +
+        `$stmt = $pdo->prepare($sql);\n` +
+        `$stmt->execute(${JSON.stringify({ name: newRecord.name, email: newRecord.email, course: newRecord.course })});\n\n` +
+        `// JSON Response trả về Frontend:\n` +
+        JSON.stringify({ status: 'success', message: 'Thêm học viên thành công', id: nextId }, null, 2)
+      );
+
+      nameInput.value = '';
+      emailInput.value = '';
+      showToast(`Đã INSERT bản ghi #${nextId} vào MySQL!`, 'success');
+    }
+
+    function handleSimUpdate(id) {
+      const student = appState.mockDbStudents.find(s => s.id === id);
+      if (!student) return;
+      const courses = ['Frontend HTML/CSS/JS', 'PHP & MySQL PDO', 'Fullstack Web Pro'];
+      const nextCourse = courses[(courses.indexOf(student.course) + 1) % courses.length];
+      student.course = nextCourse;
+
+      saveState();
+      renderMockMysqlTable();
+
+      updatePhpConsole(
+        `// [PHP PDO UPDATE EXECUTED]\n` +
+        `$stmt = $pdo->prepare("UPDATE students SET course = :course WHERE id = :id");\n` +
+        `$stmt->execute(['course' => '${nextCourse}', 'id' => ${id}]);\n` +
+        `// Affected rows: 1`
+      );
+      showToast(`Đã UPDATE khóa học cho ID #${id}`, 'info');
+    }
+
+    function handleSimDelete(id) {
+      appState.mockDbStudents = appState.mockDbStudents.filter(s => s.id !== id);
+      saveState();
+      renderMockMysqlTable();
+
+      updatePhpConsole(
+        `// [PHP PDO DELETE EXECUTED]\n` +
+        `$stmt = $pdo->prepare("DELETE FROM students WHERE id = :id");\n` +
+        `$stmt->execute(['id' => ${id}]);\n` +
+        `// Bản ghi #${id} đã được xóa an toàn khỏi MySQL.`
+      );
+      showToast(`Đã DELETE bản ghi #${id} khỏi MySQL`, 'info');
+    }
+
+    function simulateSqlInjectionTest() {
+      const payload = "' OR '1'='1; DROP TABLE students;--";
+      updatePhpConsole(
+        `// [BẢO MẬT SQL INJECTION TEST]\n` +
+        `$maliciousInput = "${payload}";\n` +
+        `$stmt = $pdo->prepare("SELECT * FROM students WHERE email = :email");\n` +
+        `$stmt->execute(['email' => $maliciousInput]);\n\n` +
+        `🛡️ KẾT QUẢ: Bị vô hiệu hóa hoàn toàn!\n` +
+        `MySQL tìm kiếm chuỗi văn bản chính xác là "${payload}" và trả về 0 bản ghi. Bảng students vẫn an toàn 100%.`
+      );
+      showToast('Prepared Statement đã chặn đứng mã độc SQL Injection!', 'success');
+    }
+
+    function simulateApiGet() {
+      const responsePayload = {
+        status: 'success',
+        count: appState.mockDbStudents.length,
+        data: appState.mockDbStudents
+      };
+      updatePhpConsole(
+        `// GET /api/students.php\n` +
+        `// Header: Content-Type: application/json; charset=UTF-8\n\n` +
+        JSON.stringify(responsePayload, null, 2)
+      );
+      showToast('Đã gọi API GET /api/students.php thành công!', 'success');
+    }
+
+    function resetMockDatabase() {
+      appState.mockDbStudents = [
+        { id: 1, name: 'Nguyễn Minh Tuấn', email: 'tuan.nm@gmail.com', course: 'Frontend HTML/CSS/JS' },
+        { id: 2, name: 'Trần Thị Lan Anh', email: 'lananh.tran@yahoo.com', course: 'PHP & MySQL PDO' },
+        { id: 3, name: 'Lê Hoàng Nam', email: 'nam.lh@fullstack.vn', course: 'Fullstack Web Pro' }
+      ];
+      saveState();
+      renderMockMysqlTable();
+      showToast('Đã khôi phục dữ liệu mẫu bảng students.', 'info');
+    }
+
+    // =========================================================================
+    // 8. TAB 4: BÀI TẬP TRẮC NGHIỆM & CHẤM ĐIỂM TỰ ĐỘNG
+    // =========================================================================
+    function renderQuizTab(lesson, container) {
+      const savedLessonAnswers = appState.quizAnswers[lesson.id] || {};
+      const questions = lesson.quiz;
+
+      let correctCount = 0;
+      questions.forEach((q, idx) => {
+        if (savedLessonAnswers[idx] === q.answer) correctCount++;
+      });
+
+      container.innerHTML = `
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-bold text-base">Kiểm tra kiến thức: ${lesson.title}</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Chọn đáp án đúng nhất cho từng câu hỏi bên dưới để nhận giải thích chi tiết.</p>
+            </div>
+            <div class="px-3.5 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-bold text-xs sm:text-sm shrink-0">
+              Điểm số: ${correctCount} / ${questions.length}
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${questions.map((q, qIdx) => {
+              const userChoice = savedLessonAnswers[qIdx];
+              const hasAnswered = userChoice !== undefined;
+              const isCorrect = userChoice === q.answer;
+
+              return `
+                <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div class="font-semibold text-sm sm:text-base">
+                    <span class="text-indigo-600 dark:text-indigo-400 font-bold mr-1.5">Câu ${qIdx + 1}:</span>${escapeHtml(q.q)}
+                  </div>
+                  <div class="space-y-2">
+                    ${q.options.map((opt, optIdx) => {
+                      let btnStyle = 'border-slate-200 dark:border-slate-700 hover:border-indigo-500 bg-slate-50/60 dark:bg-slate-800/50';
+                      let iconHtml = `<span class="w-6 h-6 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-xs font-bold shrink-0">${String.fromCharCode(65 + optIdx)}</span>`;
+
+                      if (hasAnswered) {
+                        if (optIdx === q.answer) {
+                          btnStyle = 'border-emerald-500 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-semibold';
+                          iconHtml = `<i class="fa-solid fa-circle-check text-emerald-500 text-lg shrink-0"></i>`;
+                        } else if (optIdx === userChoice) {
+                          btnStyle = 'border-rose-500 bg-rose-500/15 text-rose-700 dark:text-rose-300';
+                          iconHtml = `<i class="fa-solid fa-circle-xmark text-rose-500 text-lg shrink-0"></i>`;
+                        }
+                      }
+
+                      return `
+                        <button onclick="selectQuizOption('${lesson.id}', ${qIdx}, ${optIdx})"
+                          class="w-full text-left p-3 rounded-xl border text-xs sm:text-sm flex items-center gap-3 transition ${btnStyle}">
+                          ${iconHtml}
+                          <span>${escapeHtml(opt)}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+
+                  ${hasAnswered ? `
+                    <div class="p-3.5 rounded-xl text-xs leading-relaxed ${isCorrect ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30'}">
+                      <strong>${isCorrect ? '🎉 Chính xác!' : '💡 Giải thích:'}</strong> ${escapeHtml(q.explain)}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function selectQuizOption(lessonId, qIdx, optIdx) {
+      if (!appState.quizAnswers[lessonId]) {
+        appState.quizAnswers[lessonId] = {};
+      }
+      appState.quizAnswers[lessonId][qIdx] = optIdx;
+
+      // Tự động đánh dấu hoàn thành bài nếu trả lời đúng hết câu hỏi
+      const lesson = CURRICULUM.find(l => l.id === lessonId);
+      if (lesson) {
+        const allCorrect = lesson.quiz.every((q, i) => appState.quizAnswers[lessonId][i] === q.answer);
+        if (allCorrect && !appState.completedLessons.includes(lessonId)) {
+          appState.completedLessons.push(lessonId);
+          showToast('Xuất sắc! Bạn đã vượt qua bài kiểm tra và hoàn thành bài học.', 'success');
+        }
+      }
+
+      saveState();
+      renderApp();
+    }
+
+    // Hàm escape HTML chống XSS khi render nội dung
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return str;
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // =========================================================================
+    // 9. KHỞI TẠO ỨNG DỤNG
+    // =========================================================================
+    function renderApp() {
+      renderSidebar();
+      renderHeaderAndFooter();
+      renderTabs();
+      renderMainContent();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      renderApp();
+    });
+  </script>
+</body>
+</html>

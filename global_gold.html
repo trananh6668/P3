@@ -1,0 +1,2904 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRUNG TÂM DỮ LIỆU VĨ MÔ GIÁ VÀNG THẾ GIỚI | GLOBAL GOLD MACRO TERMINAL</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono cho thẩm mỹ Bloomberg Financial Terminal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            terminal: {
+              bg: '#0B0F17',
+              surface: '#121826',
+              surfaceHover: '#172033',
+              border: '#1E293B',
+              gold: '#F5C542',
+              goldDeep: '#D4AF37',
+              up: '#10B981',
+              down: '#EF4444',
+            }
+          },
+          boxShadow: {
+            'gold-glow': '0 0 24px -6px rgba(245, 197, 66, 0.22)',
+            'terminal-card': '0 10px 30px -12px rgba(0, 0, 0, 0.65)',
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-[#0B0F17] text-slate-100 font-sans antialiased selection:bg-[#F5C542]/30 selection:text-[#F5C542] overflow-x-hidden">
+
+  <!-- ===================================================================== -->
+  <!-- 1. STICKY HEADER & NAVIGATION BAR                                     -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-50 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[#1E293B] shadow-lg">
+    <div class="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6">
+      <!-- Top Row: Brand, Controls, Live Clock -->
+      <div class="flex flex-wrap items-center justify-between gap-3 py-3">
+        <!-- Brand Logo & Title -->
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="relative flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#F5C542] via-[#D4AF37] to-[#8A6D1C] p-[1px] shadow-gold-glow">
+            <div class="w-full h-full rounded-[11px] bg-[#0B0F17] flex items-center justify-center">
+              <svg class="w-6 h-6 text-[#F5C542]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 12 12 17 22 12"></polyline>
+                <polyline points="2 17 12 22 22 17"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h1 class="text-sm sm:text-base lg:text-lg font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#FFF3C4] via-[#F5C542] to-[#D4AF37] truncate">
+                TRUNG TÂM DỮ LIỆU VĨ MÔ GIÁ VÀNG THẾ GIỚI
+              </h1>
+              <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold tracking-wider bg-[#F5C542]/10 text-[#F5C542] border border-[#F5C542]/30">
+                PRO TERMINAL
+              </span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-400 font-mono tracking-wide truncate">
+              GLOBAL GOLD MACRO TERMINAL • REAL-TIME LIVE MARKET INTELLIGENCE
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Controls: Clock, Auto-Refresh, Reload Button, Copy Snapshot -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto">
+          <!-- Live Vietnam Clock -->
+          <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#121826] border border-[#1E293B]">
+            <svg class="w-3.5 h-3.5 text-[#F5C542]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"></path>
+            </svg>
+            <span id="live-clock" class="font-mono text-xs font-semibold text-slate-200">--:--:-- UTC+7</span>
+          </div>
+
+          <!-- Auto-Refresh Selector -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#121826] border border-[#1E293B]">
+            <span class="text-[11px] text-slate-400 hidden sm:inline">Tự làm mới:</span>
+            <select id="auto-refresh-select" aria-label="Tự động làm mới" class="bg-transparent text-xs font-mono font-semibold text-[#F5C542] focus:outline-none cursor-pointer">
+              <option value="0" class="bg-[#121826] text-slate-200">Tắt</option>
+              <option value="30" class="bg-[#121826] text-slate-200">30 giây</option>
+              <option value="60" class="bg-[#121826] text-slate-200" selected>60 giây</option>
+              <option value="300" class="bg-[#121826] text-slate-200">5 phút</option>
+            </select>
+            <span id="auto-refresh-countdown" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">--s</span>
+          </div>
+
+          <!-- Copy Market Snapshot Button -->
+          <button id="btn-copy-snapshot" type="button" title="Sao chép nhanh báo cáo thị trường" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#121826] hover:bg-[#172033] text-slate-200 border border-[#1E293B] hover:border-slate-600 text-xs font-medium transition-all active:scale-95">
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2"></rect>
+              <path stroke-width="2" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+            </svg>
+            <span class="hidden md:inline">Sao chép</span>
+          </button>
+
+          <!-- Reload All Live Data Button -->
+          <button id="btn-reload-all" type="button" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#F5C542] hover:from-[#E5BE46] hover:to-[#FFD566] text-[#0B0F17] font-bold text-xs shadow-gold-glow transition-all active:scale-95">
+            <svg id="reload-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>Tải lại dữ liệu ngay</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Quick Section Navigation -->
+      <nav aria-label="Điều hướng nhanh" class="flex items-center gap-1.5 overflow-x-auto pb-2.5 pt-1 border-t border-[#1E293B]/60">
+        <a href="#section-kpi" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">Tổng quan KPI</a>
+        <a href="#section-chart" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">Biểu đồ & Kỹ thuật</a>
+        <a href="#section-drivers" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">6 Biến số Cốt lõi</a>
+        <a href="#section-quotes" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">Toàn bộ Chỉ số Thế giới</a>
+        <a href="#section-calendar-news" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">Lịch Kinh tế & Tin tức</a>
+        <a href="#section-matrix" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-[#F5C542] hover:bg-[#121826] transition-colors">Ma trận Tương quan</a>
+        <a href="#section-scorecard" class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#F5C542] bg-[#F5C542]/10 border border-[#F5C542]/30 hover:bg-[#F5C542]/20 transition-colors">Chấm điểm Xu hướng Vàng</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 2. LIVE STATUS BAR & TRADINGVIEW TICKER TAPE                          -->
+  <!-- ===================================================================== -->
+  <section class="bg-[#0E1420] border-b border-[#1E293B]">
+    <!-- API Live Connection Status Strip -->
+    <div class="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono">
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Pulsing LIVE Indicator -->
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold tracking-wider">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          LIVE
+        </div>
+        <!-- Exact Update Timestamp -->
+        <span class="text-slate-400">
+          Cập nhật: <strong id="last-updated-time" class="text-slate-200">Đang đồng bộ...</strong>
+        </span>
+      </div>
+
+      <!-- Individual Feed Status Indicators -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <span id="status-gold" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#121826] border border-[#1E293B] text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Gold/Metals API</span>
+        </span>
+        <span id="status-fx" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#121826] border border-[#1E293B] text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>FX &amp; DXY Engine</span>
+        </span>
+        <span id="status-treasury" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#121826] border border-[#1E293B] text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>US Yields &amp; Fed</span>
+        </span>
+        <span id="status-crypto" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#121826] border border-[#1E293B] text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Binance 24/7 &amp; F&amp;G</span>
+        </span>
+        <span id="status-tv" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#121826] border border-[#1E293B] text-slate-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>TradingView Live</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- TradingView Live Ticker Tape -->
+    <div class="border-t border-[#1E293B]/70 bg-[#0B0F17] min-h-[46px]">
+      <div id="tv-ticker-tape" class="w-full"></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT CONTAINER                                                -->
+  <!-- ===================================================================== -->
+  <main class="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6 py-6 space-y-8">
+
+    <!-- =================================================================== -->
+    <!-- B. HERO REAL-TIME KPI CARDS (LIVE FETCHED APIs)                     -->
+    <!-- =================================================================== -->
+    <section id="section-kpi" class="scroll-mt-32 space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Real-Time API Telemetry</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            Chỉ Số Định Giá Vàng &amp; Vĩ Mô Trực Tuyến
+          </h2>
+        </div>
+        <p class="text-xs text-slate-400">
+          Dữ liệu tải trực tiếp từ REST API mỗi lần F5 hoặc bấm Tải lại • Không lưu cache
+        </p>
+      </div>
+
+      <!-- 6 Hero KPI Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <!-- CARD 1: XAU/USD SPOT + VND/LUONG -->
+        <article class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#161D2F] via-[#121826] to-[#121826] border border-[#F5C542]/40 p-5 shadow-gold-glow transition-all hover:border-[#F5C542]/70">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#F5C542]">Vàng Thế Giới Spot</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[#F5C542]/15 text-[#F5C542] border border-[#F5C542]/30">XAU/USD</span>
+              </div>
+              <p id="kpi-xau-source" class="text-[11px] text-slate-400 mt-0.5 font-mono">Nguồn: Đang kết nối...</p>
+            </div>
+            <span id="kpi-xau-badge" class="px-2 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-300">LIVE</span>
+          </div>
+
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="kpi-xau-price" class="text-3xl sm:text-4xl font-mono font-extrabold text-white tracking-tight">---</span>
+            <span class="text-xs font-mono text-slate-400">USD / oz</span>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1E293B] flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="block text-[11px] text-slate-400">Quy đổi VNĐ / lượng (chưa thuế phí)</span>
+              <span id="kpi-xau-vnd" class="text-sm sm:text-base font-mono font-bold text-[#F5C542]">Đang tính...</span>
+            </div>
+            <div class="text-right">
+              <span class="block text-[10px] text-slate-500 font-mono">Công thức chuẩn</span>
+              <span class="text-[11px] font-mono text-slate-400">XAU × 1.20565 × USD/VND</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD 2: USD INDEX (DXY - ICE LIVE FORMULA) -->
+        <article class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-slate-600 p-5 shadow-terminal-card transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-sky-400">Sức Mạnh Đồng USD</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/30">DXY • ICE</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Tương quan nghịch biến mạnh với Vàng</p>
+            </div>
+            <span id="kpi-dxy-zone" class="px-2 py-1 rounded-lg text-[11px] font-mono font-semibold bg-slate-800 text-slate-300">---</span>
+          </div>
+
+          <div class="mt-4 flex items-baseline gap-2">
+            <span id="kpi-dxy-val" class="text-3xl sm:text-4xl font-mono font-extrabold text-white tracking-tight">---</span>
+            <span class="text-xs font-mono text-slate-400">pts</span>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1E293B] grid grid-cols-3 gap-2 text-xs font-mono">
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">EUR/USD</span>
+              <span id="kpi-eurusd" class="font-semibold text-slate-100">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">USD/JPY</span>
+              <span id="kpi-usdjpy" class="font-semibold text-slate-100">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">GBP/USD</span>
+              <span id="kpi-gbpusd" class="font-semibold text-slate-100">---</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD 3: US 10Y REAL YIELD (TIPS) & TREASURY YIELDS -->
+        <article class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-slate-600 p-5 shadow-terminal-card transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-400">Lợi Suất Thực &amp; Trái Phiếu Mỹ</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-rose-500/10 text-rose-300 border border-rose-500/30">TIPS Real 10Y</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Biến số #1 chi phối chi phí cơ hội giữ Vàng</p>
+            </div>
+            <span id="kpi-real10y-badge" class="px-2 py-1 rounded-lg text-[11px] font-mono font-semibold bg-slate-800 text-slate-300">---</span>
+          </div>
+
+          <div class="mt-4 flex items-baseline justify-between gap-2">
+            <div class="flex items-baseline gap-2">
+              <span id="kpi-real10y" class="text-3xl sm:text-4xl font-mono font-extrabold text-white tracking-tight">---</span>
+              <span class="text-xs font-mono text-slate-400">Thực 10Y (TIPS)</span>
+            </div>
+            <span id="kpi-real10y-chg" class="text-xs font-mono font-semibold text-slate-400">---</span>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1E293B] grid grid-cols-3 gap-2 text-xs font-mono">
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">US10Y</span>
+              <span id="kpi-us10y" class="font-semibold text-slate-100">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">Lạm phát 10Y</span>
+              <span id="kpi-bei10y" class="font-semibold text-amber-300">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">Spread 10Y-2Y</span>
+              <span id="kpi-spread10y2y" class="font-semibold text-sky-300">---</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD 4: SILVER (XAG/USD), PLATINUM, COPPER & RATIOS -->
+        <article class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-slate-600 p-5 shadow-terminal-card transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-200">Bạc, Bạch Kim &amp; Đồng</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-700/60 text-slate-300 border border-slate-600">XAG • XAU/Cu</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Độ rộng chu kỳ kim loại quý &amp; kinh tế thực</p>
+            </div>
+            <span id="kpi-gsr-badge" class="px-2 py-1 rounded-lg text-[11px] font-mono font-semibold bg-slate-800 text-slate-300">---</span>
+          </div>
+
+          <div class="mt-3 flex items-baseline justify-between gap-3">
+            <div class="flex items-baseline gap-1.5">
+              <span id="kpi-xag-price" class="text-3xl sm:text-4xl font-mono font-extrabold text-white tracking-tight">---</span>
+              <span class="text-xs font-mono text-slate-400">USD/oz</span>
+            </div>
+            <div class="text-right">
+              <span class="block text-[10px] font-mono uppercase text-slate-400">Gold/Silver Ratio</span>
+              <span id="kpi-gsr-val" class="text-xl font-mono font-bold text-[#F5C542]">---</span>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-[#1E293B] grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">Bạch Kim (XPT/USD)</span>
+              <span id="kpi-xpt-price" class="font-semibold text-slate-100">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">Đồng (Hg) • XAU/Cu</span>
+              <span id="kpi-copper-ratio" class="font-semibold text-amber-300">---</span>
+            </div>
+          </div>
+
+          <p id="kpi-gsr-note" class="mt-2.5 text-[11px] text-slate-300 leading-snug">
+            Đang tính toán tỷ lệ XAU / XAG...
+          </p>
+        </article>
+
+        <!-- CARD 5: PAXG/USDT (24/7 TOKENIZED GOLD) + BTC/USDT -->
+        <article class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-slate-600 p-5 shadow-terminal-card transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-amber-300">Vàng 24/7 &amp; Bitcoin</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30">PAXG • BTC</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Giao dịch 24/7 kể cả cuối tuần (Binance / OKX)</p>
+            </div>
+            <span id="kpi-paxg-chg" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-300">---%</span>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-baseline justify-between gap-2">
+            <div class="flex items-baseline gap-1.5">
+              <span id="kpi-paxg-price" class="text-3xl sm:text-4xl font-mono font-extrabold text-white tracking-tight">---</span>
+              <span class="text-xs font-mono text-slate-400">PAXG</span>
+            </div>
+            <span id="kpi-paxg-range" class="text-[11px] font-mono text-slate-400">24h: ---</span>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[#1E293B] grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] text-slate-400">BTC/USDT</span>
+                <span id="kpi-btc-chg" class="text-[10px] font-bold text-slate-400">---%</span>
+              </div>
+              <span id="kpi-btc-price" class="font-semibold text-orange-300">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2.5 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">BTC/XAU • KLGD 24h</span>
+              <div class="flex items-baseline justify-between gap-1">
+                <span id="kpi-btc-gold-ratio" class="font-semibold text-amber-300">--- oz</span>
+                <span id="kpi-btc-vol" class="text-[10px] text-slate-400">---</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD 6: ASIAN GOLD FX (VND, CNY, INR) + CRYPTO FEAR & GREED -->
+        <article class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-slate-600 p-5 shadow-terminal-card transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-violet-400">Tỷ Giá Châu Á &amp; Crypto F&amp;G</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-violet-500/10 text-violet-400 border border-violet-500/30">FX • F&amp;G</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-0.5">Cầu vật chất VN, TQ, Ấn Độ &amp; tâm lý Crypto</p>
+            </div>
+            <span id="kpi-fng-badge" class="px-2 py-1 rounded-lg text-[11px] font-mono font-semibold bg-slate-800 text-slate-300">---</span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-3 gap-2 text-xs font-mono">
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">USD / VND</span>
+              <span id="kpi-usdvnd" class="font-semibold text-[#F5C542]">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">USD / CNY</span>
+              <span id="kpi-usdcny" class="font-semibold text-slate-100">---</span>
+            </div>
+            <div class="bg-[#0B0F17]/70 rounded-lg px-2 py-1.5 border border-[#1E293B]/60">
+              <span class="block text-[10px] text-slate-400">USD / INR</span>
+              <span id="kpi-usdinr" class="font-semibold text-slate-100">---</span>
+            </div>
+          </div>
+
+          <div class="mt-3.5 pt-3 border-t border-[#1E293B]">
+            <div class="flex items-baseline justify-between mb-1.5">
+              <div class="flex items-baseline gap-2">
+                <span class="text-[11px] text-slate-400">Crypto F&amp;G:</span>
+                <span id="kpi-fng-val" class="text-xl font-mono font-extrabold text-white">---</span>
+                <span class="text-[11px] font-mono text-slate-400">/ 100</span>
+              </div>
+              <span id="kpi-fng-label" class="text-xs font-semibold text-slate-300">Đang tải...</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div id="kpi-fng-bar" class="h-full rounded-full bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-500 transition-all duration-700" style="width: 50%;"></div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- OFFICIAL DAILY US TREASURY YIELDS, FED EFFR & US NATIONAL DEBT STRIP -->
+      <div class="rounded-2xl bg-[#121826] border border-[#1E293B] p-4 shadow-terminal-card">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#F5C542]"></span>
+            <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-200">
+              Đường Cong Lợi Suất Mỹ Hằng Ngày, Lãi Suất Fed &amp; Nợ Công Mỹ (US Treasury • NY Fed)
+            </h3>
+          </div>
+          <span id="treasury-record-date" class="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-[#0B0F17] border border-[#1E293B] text-slate-400">
+            Đang đồng bộ dữ liệu US Treasury &amp; NY Fed...
+          </span>
+        </div>
+        <div id="treasury-rates-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          <!-- Dynamically populated by US Treasury Daily XML, NY Fed EFFR & Fiscal Data API -->
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+          <div class="rounded-xl bg-[#0B0F17]/80 border border-[#1E293B]/80 p-3 animate-pulse">
+            <div class="h-3 w-20 bg-slate-800 rounded mb-2"></div>
+            <div class="h-5 w-14 bg-slate-700 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- C. INTERACTIVE ADVANCED CHART + LIVE TECHNICAL ANALYSIS             -->
+    <!-- =================================================================== -->
+    <section id="section-chart" class="scroll-mt-32 space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Interactive Market Chart &amp; Technical Gauge</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            Biểu Đồ Chuyên Sâu &amp; Tín Hiệu Kỹ Thuật Thời Gian Thực
+          </h2>
+        </div>
+        <span id="active-chart-label" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-[#121826] border border-[#F5C542]/40 text-[#F5C542]">
+          Đang xem: Vàng Spot (OANDA:XAUUSD)
+        </span>
+      </div>
+
+      <!-- Quick Symbol Switcher Pills -->
+      <div id="chart-symbol-bar" class="flex flex-wrap items-center gap-1.5 sm:gap-2 p-2.5 rounded-2xl bg-[#121826] border border-[#1E293B]">
+        <!-- Buttons injected & bound via JS for clean active state management -->
+      </div>
+
+      <!-- 2-Column Layout: Advanced Chart (8 cols) + Technical Analysis (4 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Left: Advanced Chart -->
+        <div class="lg:col-span-8 rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card flex flex-col">
+          <div class="px-4 py-2.5 border-b border-[#1E293B] flex items-center justify-between bg-[#0E1420]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="text-xs font-semibold text-slate-200">Biểu đồ trực tuyến TradingView Advanced</span>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 hidden sm:inline">Hỗ trợ so sánh chỉ số (+ Compare) trực tiếp trên biểu đồ</span>
+          </div>
+          <div id="tv-advanced-chart" class="w-full h-[540px] bg-[#0B0F17]"></div>
+        </div>
+
+        <!-- Right: Live Technical Analysis Widget with 4 Verified Tabs -->
+        <div class="lg:col-span-4 rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card flex flex-col">
+          <div class="px-4 py-2.5 border-b border-[#1E293B] bg-[#0E1420] space-y-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Chỉ Báo Kỹ Thuật Trực Tuyến</h3>
+              <span class="text-[10px] font-mono text-[#F5C542]">MA + Oscillators</span>
+            </div>
+            <!-- 4 Live Tabs: XAU/USD, UUP (USD Proxy), TLT (20Y+ Treasury), SILVER -->
+            <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[#0B0F17] border border-[#1E293B]">
+              <button type="button" data-ta-symbol="OANDA:XAUUSD" class="ta-tab-btn py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-bold transition-all bg-[#F5C542] text-[#0B0F17]">
+                XAU/USD
+              </button>
+              <button type="button" data-ta-symbol="AMEX:UUP" class="ta-tab-btn py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all text-slate-400 hover:text-white">
+                USD (UUP)
+              </button>
+              <button type="button" data-ta-symbol="NASDAQ:TLT" class="ta-tab-btn py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all text-slate-400 hover:text-white">
+                TP Mỹ (TLT)
+              </button>
+              <button type="button" data-ta-symbol="TVC:SILVER" class="ta-tab-btn py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all text-slate-400 hover:text-white">
+                Bạc (XAG)
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-tight">
+              UUP đại diện xu hướng USD Index; TLT ngược chiều lợi suất Mỹ 20Y+
+            </p>
+          </div>
+          <div id="tv-technical-analysis" class="w-full h-[468px] bg-[#121826]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- E. CORE DRIVERS MINI-CHART GRID (6 KEY MACRO VARIABLES)             -->
+    <!-- =================================================================== -->
+    <section id="section-drivers" class="scroll-mt-32 space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Core Macro Drivers Snapshot</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            6 Biến Số Quyết Định Xu Hướng Giá Vàng (Biểu Đồ Mini Trực Tuyến)
+          </h2>
+        </div>
+        <p class="text-xs text-slate-400">
+          Nhấn vào nút <span class="text-[#F5C542] font-semibold">"Mở biểu đồ lớn"</span> trên từng thẻ để phân tích chi tiết
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="mini-charts-grid">
+        <!-- 6 Mini Chart Cards rendered via JS -->
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- D. FULL WORLD MACRO MARKET QUOTES TABLE (ALL 5 GROUPS)              -->
+    <!-- =================================================================== -->
+    <section id="section-quotes" class="scroll-mt-32 space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Comprehensive Global Market Quotes</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            Bảng Tổng Hợp Toàn Bộ Chỉ Số Thế Giới Ảnh Hưởng Giá Vàng
+          </h2>
+        </div>
+        <div class="flex flex-wrap gap-1.5 text-[11px] font-mono">
+          <span class="px-2 py-0.5 rounded bg-[#121826] border border-[#1E293B] text-[#F5C542]">1. Kim loại quý, Đa tiền tệ &amp; ETF</span>
+          <span class="px-2 py-0.5 rounded bg-[#121826] border border-[#1E293B] text-sky-400">2. Lợi suất Thực, Lạm phát &amp; Trái phiếu</span>
+          <span class="px-2 py-0.5 rounded bg-[#121826] border border-[#1E293B] text-emerald-400">3. USD &amp; Ngoại hối</span>
+          <span class="px-2 py-0.5 rounded bg-[#121826] border border-[#1E293B] text-amber-400">4. Hàng hóa &amp; Năng lượng</span>
+          <span class="px-2 py-0.5 rounded bg-[#121826] border border-[#1E293B] text-violet-400">5. Rủi ro, Thanh khoản &amp; Chứng khoán</span>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card">
+        <div id="tv-market-quotes" class="w-full h-[760px] bg-[#121826]"></div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- F. ECONOMIC CALENDAR & LIVE GOLD MACRO NEWS (2 COLUMNS)             -->
+    <!-- =================================================================== -->
+    <section id="section-calendar-news" class="scroll-mt-32 space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Macro Events &amp; Breaking Wire</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            Lịch Kinh Tế Vĩ Mô Toàn Cầu &amp; Tin Tức Giá Vàng Thời Gian Thực
+          </h2>
+        </div>
+        <p class="text-xs text-slate-400">
+          Theo dõi sát CPI, Core PCE, FOMC/Fed, Non-Farm Payrolls, GDP, PMI của các nền kinh tế lớn
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Left Column: Economic Calendar -->
+        <div class="lg:col-span-7 rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card flex flex-col">
+          <div class="px-4 py-3 border-b border-[#1E293B] bg-[#0E1420] flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#F5C542]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2"></line>
+                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2"></line>
+                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2"></line>
+              </svg>
+              <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-100">Lịch Công Bố Sự Kiện Kinh Tế (US, EU, CN, JP, GB, CH, AU, CA)</h3>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30">Mức độ Trung bình &amp; Cao</span>
+          </div>
+          <div id="tv-economic-calendar" class="w-full h-[580px] bg-[#121826]"></div>
+        </div>
+
+        <!-- Right Column: Live Gold & Macro News Feed -->
+        <div class="lg:col-span-5 rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card flex flex-col">
+          <div class="px-4 py-3 border-b border-[#1E293B] bg-[#0E1420] flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#F5C542]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2"></path>
+              </svg>
+              <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-100">Dòng Tin Tức Vàng &amp; Vĩ Mô</h3>
+            </div>
+            <!-- News Source Switcher -->
+            <div class="flex items-center gap-1 p-0.5 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+              <button type="button" data-news-mode="xau" class="news-tab-btn px-2 py-1 rounded-md text-[11px] font-mono font-bold bg-[#F5C542] text-[#0B0F17]">XAU/USD</button>
+              <button type="button" data-news-mode="macro" class="news-tab-btn px-2 py-1 rounded-md text-[11px] font-mono font-medium text-slate-400 hover:text-white">Vĩ mô Toàn cầu</button>
+            </div>
+          </div>
+          <div id="tv-news-timeline" class="w-full h-[580px] bg-[#121826]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- G. CORRELATION MATRIX & INTERACTIVE GOLD MACRO SCORECARD            -->
+    <!-- =================================================================== -->
+    <section id="section-matrix" class="scroll-mt-32 space-y-6">
+      <!-- Part 1: Correlation Matrix Table -->
+      <div class="space-y-4">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Institutional Macro Playbook</span>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            Ma Trận Cơ Chế Tác Động &amp; Tương Quan Các Chỉ Số Tới Giá Vàng
+          </h2>
+        </div>
+
+        <div class="rounded-2xl bg-[#121826] border border-[#1E293B] overflow-hidden shadow-terminal-card">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[820px]">
+              <thead>
+                <tr class="bg-[#0E1420] border-b border-[#1E293B] text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                  <th class="py-3.5 px-4">Chỉ số / Nhân tố Vĩ mô</th>
+                  <th class="py-3.5 px-4">Chiều Tương Quan</th>
+                  <th class="py-3.5 px-4">Độ Mạnh</th>
+                  <th class="py-3.5 px-4">Cơ Chế Truyền Dẫn Tới Giá Vàng</th>
+                  <th class="py-3.5 px-4">Ngưỡng / Tín Hiệu Cần Lưu Ý</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1E293B]/70 text-xs sm:text-sm">
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Lợi suất Thực Mỹ<br/>
+                    <span class="text-[11px] font-mono text-slate-400">TIPS Real 10Y (FRED:DFII10), 10Y BEI (FRED:T10YIE), AMEX:TIP</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">Nghịch biến mạnh</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★★ (Rất cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Vàng không trả lãi suất định kỳ. Khi lợi suất thực (`DFII10 = US10Y - T10YIE`) giảm, chi phí cơ hội nắm giữ vàng giảm mạnh, kích thích dòng tiền lớn chảy vào vàng.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">FRED:DFII10 giảm (hoặc TIPS ETF AMEX:TIP tăng) &amp; T10YIE giữ cao → Rất tích cực cho Vàng.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Chỉ số Sức Mạnh USD<br/>
+                    <span class="text-[11px] font-mono text-slate-400">CAPITALCOM:DXY &amp; AMEX:UUP (Rổ 6 đồng tiền)</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">Nghịch biến mạnh</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★★ (Rất cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Vàng được định giá toàn cầu bằng USD. Khi USD suy yếu, vàng trở nên rẻ hơn đối với nhà đầu tư nắm giữ EUR, JPY, CNY, INR..., làm tăng lực cầu vật chất.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">CAPITALCOM:DXY thủng mốc hỗ trợ 100-102 thường mở sóng tăng mạnh cho XAU.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Chính sách Fed &amp; Lãi suất<br/>
+                    <span class="text-[11px] font-mono text-slate-400">FOMC, EFFR, OTCB:US02Y, NASDAQ:TLT</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">Nghịch biến (theo kỳ vọng)</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★★ (Rất cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Chu kỳ Fed cắt giảm lãi suất (Dovish) hoặc bơm thanh khoản (QE) làm suy giảm giá trị tiền pháp định và hạ lợi suất trái phiếu kỳ hạn ngắn (US02Y), kéo giá TLT tăng.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">OTCB:US02Y phản ứng nhanh nhất trước thông điệp Chủ tịch Fed &amp; Non-Farm.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Lạm phát Mỹ &amp; Năng lượng<br/>
+                    <span class="text-[11px] font-mono text-slate-400">CPI, Core PCE, T10YIE, Dầu WTI/Brent</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">Đồng biến dài hạn</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★☆ (Cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Vàng là hầm trú ẩn bảo toàn sức mua trước lạm phát dai dẳng (đặc biệt kịch bản đình lạm - Stagflation). Lưu ý: Ngắn hạn, CPI nóng quá mức có thể khiến Fed "diều hâu".</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">Lạm phát neo cao trên 2.5-3% trong khi kinh tế chững lại → Cực lợi cho Vàng.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Địa chính trị &amp; Sợ hãi<br/>
+                    <span class="text-[11px] font-mono text-slate-400">VIX, GVZ (Biến động Vàng), HYG (Tín dụng)</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Đồng biến mạnh</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★☆ (Cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Bất ổn chiến tranh, khủng hoảng ngân hàng, nới rộng chênh lệch tín dụng (HYG giảm) kích hoạt tâm lý phòng thủ (Risk-Off), thúc đẩy dòng vốn trú ẩn tìm đến Vàng.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">VIX vượt 20-25 hoặc GVZ tăng vọt báo hiệu biến động mạnh &amp; nhu cầu trú ẩn cao.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Mua ròng NHTW &amp; Quỹ ETF<br/>
+                    <span class="text-[11px] font-mono text-slate-400">PBoC, RBI, SPDR (GLD), GDX / GDXJ</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Đồng biến cơ cấu</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★☆ (Cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Xu hướng phi USD hóa khiến các NHTW mua gom vàng vật chất làm dự trữ tạo "đáy cứng". Khi quỹ ETF phương Tây (GLD) và nhóm mỏ (GDX/GDXJ) cùng bứt phá, xu hướng rất bền.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">GDX/GDXJ dẫn dắt vượt đỉnh trước XAU thường xác nhận sóng tăng lớn.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Đường cong Lợi suất<br/>
+                    <span class="text-[11px] font-mono text-slate-400">Spread 10Y-2Y (FRED:T10Y2Y) &amp; 10Y-3M</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30">Cảnh báo Chu kỳ</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★☆☆ (Trung-Cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Khi đường cong hết đảo ngược (từ âm chuyển sang dốc dương mạnh do US02Y giảm nhanh - Bull Steepening), suy thoái thường cận kề và vàng tăng rất mạnh.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">T10Y2Y chuyển dương nhanh kèm thất nghiệp tăng → Tín hiệu lớn cho Vàng.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Cung tiền M2, Bảng Cân đối Fed &amp; Nợ Công Mỹ<br/>
+                    <span class="text-[11px] font-mono text-slate-400">FRED:M2SL, FRED:WALCL, US National Debt</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Đồng biến dài hạn</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★★ (Rất cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Mất giá tiền pháp định (Monetary Debasement) và áp lực thâm hụt tài khóa (Fiscal Dominance): nợ công Mỹ phình to và cung tiền M2 mở rộng buộc nhà đầu tư dài hạn phòng vệ bằng Vàng.</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">WALCL ngừng thắt chặt (QT) hoặc M2SL tăng trở lại + Nợ công vượt ngưỡng → Đỡ giá Vàng dài hạn.</td>
+                </tr>
+                <tr class="hover:bg-[#172033]/60 transition-colors">
+                  <td class="py-3.5 px-4 font-semibold text-white">
+                    Tỷ lệ Vàng/Bạc (GSR), Vàng/Đồng &amp; Vàng Đa Tiền Tệ<br/>
+                    <span class="text-[11px] font-mono text-slate-400">XAU/XAG, XAU/Cu, XAU/EUR, XAU/JPY, XAU/CNY</span>
+                  </td>
+                  <td class="py-3.5 px-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">Xác nhận Chu kỳ &amp; Độ rộng</span>
+                  </td>
+                  <td class="py-3.5 px-4 font-mono text-[#F5C542]">★★★★☆ (Cao)</td>
+                  <td class="py-3.5 px-4 text-slate-300">Vàng tăng đồng thời bằng EUR, JPY, CNY cho thấy xu hướng mất giá tiền tệ toàn cầu chứ không chỉ riêng USD. Trong khi tỷ lệ Vàng/Đồng tăng phản ánh kinh tế suy yếu (trú ẩn thắng tăng trưởng).</td>
+                  <td class="py-3.5 px-4 text-slate-300 font-mono text-xs">XAU/EUR &amp; XAU/JPY cùng phá đỉnh + GSR giảm dưới 75 khi sóng kim loại quý lan tỏa.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Part 2: Interactive Gold Macro Bias Calculator (Scorecard) -->
+      <div id="section-scorecard" class="scroll-mt-32 rounded-2xl bg-gradient-to-br from-[#141B2D] via-[#121826] to-[#0E1420] border border-[#F5C542]/35 p-5 sm:p-6 shadow-gold-glow">
+        <div class="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#1E293B]">
+          <div>
+            <span class="text-[11px] font-mono uppercase tracking-widest text-[#F5C542]">Interactive Decision Engine</span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-white mt-0.5">
+              Bộ Chấm Điểm Nhanh Xu Hướng Vàng (Gold Macro Bias Calculator)
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+              Chọn nhanh trạng thái thực tế bạn đang quan sát từ các bảng dữ liệu trực tuyến phía trên để lượng hóa điểm vĩ mô từ <strong class="text-rose-400">-100</strong> đến <strong class="text-emerald-400">+100</strong>.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btn-auto-score" type="button" class="px-3.5 py-2 rounded-xl bg-[#F5C542]/15 hover:bg-[#F5C542]/25 border border-[#F5C542]/40 text-[#F5C542] text-xs font-bold transition-all active:scale-95">
+              Tự động điền từ API Live
+            </button>
+            <button id="btn-reset-score" type="button" class="px-3.5 py-2 rounded-xl bg-[#0B0F17] hover:bg-slate-800 border border-[#1E293B] text-slate-300 text-xs font-semibold transition-all active:scale-95">
+              Đặt lại Trung lập
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
+          <!-- Left: 8 Interactive Factor Selectors -->
+          <div id="scorecard-factors" class="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <!-- Dynamically rendered by JS -->
+          </div>
+
+          <!-- Right: Live Score Output Gauge & Verdict -->
+          <div class="xl:col-span-4 rounded-2xl bg-[#0B0F17] border border-[#1E293B] p-5 flex flex-col justify-between gap-5">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Tổng Điểm Vĩ Mô Vàng</span>
+                <span id="score-confidence-tag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">8 Yếu tố trọng số</span>
+              </div>
+
+              <!-- Big Score Number -->
+              <div class="mt-4 text-center">
+                <div id="macro-total-score" class="text-5xl sm:text-6xl font-mono font-extrabold text-[#F5C542] tracking-tight">0</div>
+                <div class="text-xs font-mono text-slate-400 mt-1">Thang điểm: -100 (Rất Xấu) → +100 (Rất Tốt)</div>
+              </div>
+
+              <!-- Visual Meter Bar -->
+              <div class="mt-5">
+                <div class="relative h-3.5 w-full rounded-full bg-gradient-to-r from-rose-600 via-amber-400 to-emerald-500 p-[1px]">
+                  <!-- Center tick -->
+                  <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-[#0B0F17]/80 z-10"></div>
+                  <!-- Dynamic Needle Marker -->
+                  <div id="score-needle" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-white border-[3px] border-[#0B0F17] shadow-lg transition-all duration-500 z-20" style="left: 50%;"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-slate-400 mt-1.5">
+                  <span>-100</span>
+                  <span>-50</span>
+                  <span>0</span>
+                  <span>+50</span>
+                  <span>+100</span>
+                </div>
+              </div>
+
+              <!-- Verdict Badge -->
+              <div class="mt-5 text-center">
+                <span id="macro-verdict-badge" class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/40 w-full">
+                  TRUNG LẬP / GIẰNG CO
+                </span>
+              </div>
+
+              <!-- Verdict Description -->
+              <p id="macro-verdict-desc" class="mt-3.5 text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#121826] border border-[#1E293B] rounded-xl p-3.5">
+                Các yếu tố vĩ mô đang cân bằng giữa lực đẩy và áp lực cản. Nhà đầu tư nên theo dõi thêm phản ứng giá tại các vùng hỗ trợ/kháng cự quan trọng và chờ tin kinh tế lớn tiếp theo.
+              </p>
+            </div>
+
+            <!-- Breakdown Mini Bars -->
+            <div class="pt-4 border-t border-[#1E293B] space-y-2 text-xs font-mono">
+              <div class="flex items-center justify-between">
+                <span class="text-emerald-400">Yếu tố Ủng hộ Vàng (+)</span>
+                <span id="score-pos-sum" class="font-bold text-emerald-400">+0</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-rose-400">Yếu tố Gây áp lực (-)</span>
+                <span id="score-neg-sum" class="font-bold text-rose-400">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER                                                                -->
+  <!-- ===================================================================== -->
+  <footer class="mt-10 border-t border-[#1E293B] bg-[#090D14]">
+    <div class="max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-6 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-xs text-slate-400">
+      <div class="space-y-1">
+        <p class="font-semibold text-slate-200">
+          TRUNG TÂM DỮ LIỆU VĨ MÔ GIÁ VÀNG THẾ GIỚI (GLOBAL GOLD MACRO TERMINAL)
+        </p>
+        <p>
+          Nguồn dữ liệu trực tuyến: Gold-API (XAU/XAG/XPT/HG), Binance/OKX (PAXG/BTC), Open Exchange Rates / Currency CDN / Frankfurter (ICE DXY &amp; FX), US Treasury Daily Yield &amp; Real Yield XML, US Fiscal Data (Debt-to-Penny), NY Fed (EFFR), Alternative.me (Crypto F&amp;G) &amp; TradingView Live Stream.
+        </p>
+      </div>
+      <p class="text-[11px] text-slate-500 max-w-md md:text-right">
+        Lưu ý: Hệ thống tổng hợp dữ liệu trực tuyến phục vụ mục đích theo dõi và phân tích thị trường vĩ mô, không phải lời khuyên đầu tư tài chính.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION CONTAINER (NO alert() USED)                        -->
+  <!-- ===================================================================== -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-[calc(100vw-2rem)] pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION JAVASCRIPT ENGINE                                         -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * =========================================================================
+     * GLOBAL GOLD MACRO TERMINAL - REAL-TIME LIVE ENGINE
+     * =========================================================================
+     * Architecture:
+     * 1. State store holding live API telemetry + widget selection state.
+     * 2. Resilient CORS-safe REST/XML fetchers using cache: 'no-store' (no
+     *    mutated query strings like ?_t=), AbortController timeout, and
+     *    multi-tier fallbacks that preserve last good telemetry.
+     * 3. Dynamic TradingView widget mounter using 100% embed-verified symbols.
+     * 4. Interactive Gold Macro Bias Scorecard calculator.
+     */
+
+    const AppState = {
+      activeChartSymbol: 'OANDA:XAUUSD',
+      activeChartLabel: 'Vàng Spot (OANDA:XAUUSD)',
+      activeTechnicalSymbol: 'OANDA:XAUUSD',
+      activeNewsMode: 'xau',
+      autoRefreshSeconds: 60,
+      countdownRemaining: 60,
+      autoRefreshIntervalId: null,
+      isLoading: false,
+      liveData: {
+        xauUsd: null,
+        xauSource: '',
+        xagUsd: null,
+        xptUsd: null,
+        hgUsd: null,
+        gsr: null,
+        goldCopperRatio: null,
+        xauVndPerTael: null,
+        dxy: null,
+        eurUsd: null,
+        usdJpy: null,
+        gbpUsd: null,
+        usdVnd: null,
+        usdCny: null,
+        usdInr: null,
+        fxSource: '',
+        paxgPrice: null,
+        paxgChangePct: null,
+        paxgHigh: null,
+        paxgLow: null,
+        btcPrice: null,
+        btcChangePct: null,
+        btcQuoteVol: null,
+        fngValue: null,
+        fngLabelVi: null,
+        yieldDate: null,
+        us3m: null,
+        us2y: null,
+        us2yChgBps: null,
+        us5y: null,
+        us10y: null,
+        us10yChgBps: null,
+        us30y: null,
+        us30yChgBps: null,
+        real10y: null,
+        real10yChgBps: null,
+        real5y: null,
+        bei10y: null,
+        bei10yChgBps: null,
+        spread10y2y: null,
+        spread10y2yChgBps: null,
+        effr: null,
+        effrDate: null,
+        usDebtTrillion: null,
+        usDebtDate: null,
+        lastUpdatedStr: ''
+      }
+    };
+
+    // Quick Chart Switcher Configuration (14 verified-LIVE symbols)
+    const CHART_SYMBOLS = [
+      { symbol: 'OANDA:XAUUSD', short: 'Vàng Spot', sub: 'XAU/USD' },
+      { symbol: 'BINANCE:PAXGUSDT', short: 'Vàng 24/7', sub: 'PAXG' },
+      { symbol: 'CAPITALCOM:DXY', short: 'USD Index', sub: 'DXY' },
+      { symbol: 'OTCB:US10Y', short: 'Trái phiếu 10Y', sub: 'US10Y' },
+      { symbol: 'OTCB:US02Y', short: 'Trái phiếu 2Y', sub: 'US02Y' },
+      { symbol: 'FRED:DFII10', short: 'Lợi suất Thực 10Y', sub: 'Real 10Y' },
+      { symbol: 'FRED:T10Y2Y', short: 'Đường cong 10Y-2Y', sub: 'Spread' },
+      { symbol: 'FRED:T10YIE', short: 'Kỳ vọng Lạm phát', sub: '10Y BEI' },
+      { symbol: 'AMEX:GLD', short: 'SPDR Gold ETF', sub: 'GLD' },
+      { symbol: 'AMEX:GDX', short: 'Mỏ Vàng ETF', sub: 'GDX' },
+      { symbol: 'TVC:USOIL', short: 'Dầu WTI', sub: 'USOIL' },
+      { symbol: 'CAPITALCOM:VIX', short: 'Sợ hãi VIX', sub: 'VIX' },
+      { symbol: 'TVC:GOLDSILVER', short: 'Vàng / Bạc', sub: 'GSR' },
+      { symbol: 'OANDA:SPX500USD', short: 'S&P 500', sub: 'SPX500' }
+    ];
+
+    // 6 Core Drivers Mini Charts Configuration (100% embed-verified live symbols)
+    const CORE_DRIVERS = [
+      {
+        id: 'mini-dxy',
+        symbol: 'CAPITALCOM:DXY',
+        dateRange: '1M',
+        title: 'USD Index (DXY)',
+        relation: 'Nghịch biến mạnh',
+        relationClass: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+        desc: 'USD giảm → Vàng tăng sức bật'
+      },
+      {
+        id: 'mini-real10y',
+        symbol: 'FRED:DFII10',
+        dateRange: '12M',
+        title: 'Lợi suất Thực Mỹ 10Y (TIPS Yield)',
+        relation: 'Nghịch biến #1',
+        relationClass: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+        desc: 'Lợi suất thực giảm → Bệ phóng mạnh nhất cho Vàng'
+      },
+      {
+        id: 'mini-tlt',
+        symbol: 'NASDAQ:TLT',
+        dateRange: '1M',
+        title: 'Trái phiếu Mỹ 20Y+ (TLT — Proxy Lợi suất)',
+        relation: 'Đồng biến (Ngược LS)',
+        relationClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        desc: 'Giá TLT tăng = Lợi suất dài hạn giảm → Lợi Vàng'
+      },
+      {
+        id: 'mini-vix',
+        symbol: 'CAPITALCOM:VIX',
+        dateRange: '1M',
+        title: 'Chỉ số Sợ Hãi VIX',
+        relation: 'Đồng biến (Trú ẩn)',
+        relationClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        desc: 'VIX tăng cao → Dòng tiền trú ẩn vào Vàng'
+      },
+      {
+        id: 'mini-oil',
+        symbol: 'TVC:USOIL',
+        dateRange: '1M',
+        title: 'Dầu Thô WTI (USOIL)',
+        relation: 'Áp lực Lạm phát',
+        relationClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+        desc: 'Dầu tăng → Kỳ vọng lạm phát & rủi ro địa chính trị'
+      },
+      {
+        id: 'mini-gld',
+        symbol: 'AMEX:GLD',
+        dateRange: '1M',
+        title: 'Quỹ ETF Vàng SPDR (GLD)',
+        relation: 'Đồng biến dòng tiền',
+        relationClass: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        desc: 'Đại diện dòng tiền tổ chức phương Tây'
+      }
+    ];
+
+    // Macro Bias Scorecard Factors (Total max weight = 100)
+    const SCORECARD_FACTORS = [
+      {
+        id: 'f_dxy',
+        title: '1. Xu hướng Đồng USD (DXY)',
+        weight: 20,
+        hint: 'Nghịch biến: DXY giảm mạnh là tích cực cho Vàng',
+        value: 0,
+        options: [
+          { label: 'DXY Giảm mạnh', score: 20 },
+          { label: 'DXY Giảm nhẹ', score: 10 },
+          { label: 'Đi ngang', score: 0 },
+          { label: 'DXY Tăng nhẹ', score: -10 },
+          { label: 'DXY Tăng mạnh', score: -20 }
+        ]
+      },
+      {
+        id: 'f_yield',
+        title: '2. Lợi suất Thực 10Y (TIPS) & US10Y',
+        weight: 20,
+        hint: 'Nghịch biến: Real 10Y / US10Y giảm ủng hộ mạnh cho Vàng',
+        value: 0,
+        options: [
+          { label: 'Lợi suất Giảm mạnh', score: 20 },
+          { label: 'Lợi suất Hạ nhiệt', score: 10 },
+          { label: 'Ổn định', score: 0 },
+          { label: 'Lợi suất Nhích tăng', score: -10 },
+          { label: 'Lợi suất Cao/Tăng vọt', score: -20 }
+        ]
+      },
+      {
+        id: 'f_fed',
+        title: '3. Thông điệp Fed / Kỳ vọng Lãi suất',
+        weight: 15,
+        hint: 'Bồ câu (cắt lãi suất) ủng hộ mạnh cho Vàng',
+        value: 0,
+        options: [
+          { label: 'Rất Bồ câu (Cắt LS)', score: 15 },
+          { label: 'Nghiêng Bồ câu', score: 8 },
+          { label: 'Trung lập', score: 0 },
+          { label: 'Nghiêng Diều hâu', score: -8 },
+          { label: 'Rất Diều hâu (Giữ/Tăng LS)', score: -15 }
+        ]
+      },
+      {
+        id: 'f_vix',
+        title: '4. Chỉ số VIX & Căng thẳng Địa chính trị',
+        weight: 15,
+        hint: 'Rủi ro leo thang thúc đẩy nhu cầu trú ẩn',
+        value: 0,
+        options: [
+          { label: 'Căng thẳng cao / VIX > 22', score: 15 },
+          { label: 'Bất ổn nhẹ / VIX 17-22', score: 8 },
+          { label: 'Bình ổn', score: 0 },
+          { label: 'Tâm lý Risk-On mạnh', score: -8 },
+          { label: 'Hưng phấn cực độ / VIX < 13', score: -15 }
+        ]
+      },
+      {
+        id: 'f_cpi',
+        title: '5. Kỳ vọng Lạm phát (10Y BEI / CPI / PCE)',
+        weight: 10,
+        hint: 'Lạm phát kỳ vọng neo cao hoặc đình lạm hỗ trợ trú ẩn Vàng',
+        value: 0,
+        options: [
+          { label: 'Lạm phát cao / Đình lạm', score: 10 },
+          { label: 'Hơi hỗ trợ Vàng', score: 5 },
+          { label: 'Đúng kỳ vọng (2.0-2.3%)', score: 0 },
+          { label: 'Hạ nhiệt (Fed giữ LS thực cao)', score: -5 },
+          { label: 'Giảm phát / Sốc thắt chặt', score: -10 }
+        ]
+      },
+      {
+        id: 'f_etf',
+        title: '6. Dòng tiền ETF Vàng (GLD) & NHTW',
+        weight: 10,
+        hint: 'Mua ròng từ SPDR GLD và NHTW tạo nền vững',
+        value: 0,
+        options: [
+          { label: 'Mua ròng mạnh', score: 10 },
+          { label: 'Mua ròng nhẹ', score: 5 },
+          { label: 'Cân bằng', score: 0 },
+          { label: 'Bán ròng nhẹ', score: -5 },
+          { label: 'Rút ròng mạnh', score: -10 }
+        ]
+      },
+      {
+        id: 'f_oil',
+        title: '7. Giá Dầu thô (WTI) & Hàng hóa',
+        weight: 5,
+        hint: 'Dầu & hàng hóa tăng củng cố làn sóng hàng hóa',
+        value: 0,
+        options: [
+          { label: 'Tăng mạnh', score: 5 },
+          { label: 'Tăng nhẹ', score: 2 },
+          { label: 'Đi ngang', score: 0 },
+          { label: 'Giảm nhẹ', score: -2 },
+          { label: 'Giảm sâu', score: -5 }
+        ]
+      },
+      {
+        id: 'f_tech',
+        title: '8. Tín hiệu Kỹ thuật XAU/USD (Live)',
+        weight: 5,
+        hint: 'Quan sát đồng hồ Kỹ thuật TradingView ở trên',
+        value: 0,
+        options: [
+          { label: 'Mua Mạnh', score: 5 },
+          { label: 'Mua', score: 3 },
+          { label: 'Trung Lập', score: 0 },
+          { label: 'Bán', score: -3 },
+          { label: 'Bán Mạnh', score: -5 }
+        ]
+      }
+    ];
+
+    /* =========================================================================
+     * UTILITY HELPERS
+     * ========================================================================= */
+
+    function isFiniteNum(val) {
+      return typeof val === 'number' && Number.isFinite(val);
+    }
+
+    function isFinitePos(val) {
+      return typeof val === 'number' && Number.isFinite(val) && val > 0;
+    }
+
+    /** Format Vietnam time (UTC+7) accurately to seconds */
+    function getVietnamTimeString(includeDate = false) {
+      const now = new Date();
+      const timeOpts = {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      const timeStr = new Intl.DateTimeFormat('vi-VN', timeOpts).format(now);
+      if (!includeDate) return `${timeStr} UTC+7`;
+      const dateStr = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }).format(now);
+      return `${timeStr} • ${dateStr} (UTC+7)`;
+    }
+
+    /** Format numbers cleanly */
+    function fmtNum(val, decimals = 2) {
+      if (val === null || val === undefined || val === '') return '---';
+      const num = Number(val);
+      if (!Number.isFinite(num)) return '---';
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    /** Format signed numbers safely (never prints +--- on null) */
+    function fmtSigned(val, decimals = 2, suffix = '') {
+      if (val === null || val === undefined || val === '') return '---';
+      const num = Number(val);
+      if (!Number.isFinite(num)) return '---';
+      const sign = num > 0 ? '+' : '';
+      return `${sign}${fmtNum(num, decimals)}${suffix}`;
+    }
+
+    /** Format basis points change */
+    function fmtBps(bps) {
+      if (!isFiniteNum(bps)) return '';
+      const rounded = Math.round(bps);
+      if (rounded === 0) return '0 bps';
+      return `${rounded > 0 ? '+' : ''}${rounded} bps`;
+    }
+
+    /** Format VND currency */
+    function fmtVND(val) {
+      if (!isFinitePos(Number(val))) return '---';
+      const num = Number(val);
+      const millions = num / 1_000_000;
+      return `${millions.toFixed(2)} triệu VNĐ (${Math.round(num).toLocaleString('vi-VN')} đ)`;
+    }
+
+    /**
+     * Fetch JSON or text without mutating URL query params (no ?_t=),
+     * using HTTP cache: 'no-store' and AbortController timeout.
+     */
+    async function fetchNoCache(url, responseType = 'json', timeoutMs = 10000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, {
+          method: 'GET',
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return responseType === 'text' ? await res.text() : await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function fetchJSONNoCache(url, timeoutMs = 10000) {
+      return fetchNoCache(url, 'json', timeoutMs);
+    }
+
+    function fetchTextNoCache(url, timeoutMs = 10000) {
+      return fetchNoCache(url, 'text', timeoutMs);
+    }
+
+    /** Update individual feed status pill in the Live Status Bar */
+    function setFeedStatus(elementId, state, detailText = '') {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const dot = el.querySelector('span:first-child');
+      const label = el.querySelector('span:last-child');
+      const baseName = el.dataset.name || label.textContent.split(' (')[0];
+      el.dataset.name = baseName;
+
+      dot.className = 'w-1.5 h-1.5 rounded-full';
+      if (state === 'loading') {
+        dot.classList.add('bg-amber-400', 'animate-pulse');
+        label.textContent = baseName;
+      } else if (state === 'ok') {
+        dot.classList.add('bg-emerald-400');
+        label.textContent = detailText ? `${baseName} (${detailText})` : baseName;
+      } else if (state === 'fallback') {
+        dot.classList.add('bg-amber-400');
+        label.textContent = detailText ? `${baseName} (${detailText})` : `${baseName} (Dự phòng)`;
+      } else {
+        dot.classList.add('bg-rose-500');
+        label.textContent = `${baseName} (Lỗi mạng)`;
+      }
+    }
+
+    /** Show sleek non-blocking Toast notification (safe textContent, no alert()) */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const colors = {
+        success: 'bg-[#121826] border-emerald-500/50 text-emerald-300',
+        gold: 'bg-[#121826] border-[#F5C542]/60 text-[#F5C542]',
+        warn: 'bg-[#121826] border-amber-500/50 text-amber-300',
+        error: 'bg-[#121826] border-rose-500/50 text-rose-300'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-2xl text-xs font-medium backdrop-blur-md transition-all duration-300 translate-y-2 opacity-0 ${colors[type] || colors.gold}`;
+
+      const dot = document.createElement('span');
+      dot.className = `w-2 h-2 rounded-full flex-shrink-0 ${type === 'error' ? 'bg-rose-400' : type === 'warn' ? 'bg-amber-400' : 'bg-emerald-400'}`;
+
+      const msgSpan = document.createElement('span');
+      msgSpan.className = 'text-slate-100 leading-snug';
+      msgSpan.textContent = message;
+
+      toast.appendChild(dot);
+      toast.appendChild(msgSpan);
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    /* =========================================================================
+     * LIVE REST & XML API FETCHERS (WITH AUTOMATIC FALLBACKS)
+     * ========================================================================= */
+
+    /** 1. Fetch Binance PAXG/USDT & BTC/USDT + Alternative.me Crypto F&G */
+    async function fetchBinanceAndSentiment() {
+      setFeedStatus('status-crypto', 'loading');
+      let cryptoOk = false;
+      let usedFallback = false;
+      let fngOk = false;
+
+      // A. Crypto 24/7 Gold & Bitcoin
+      const marketTask = (async () => {
+        try {
+          const tickers = await fetchJSONNoCache(
+            'https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22PAXGUSDT%22%5D'
+          );
+          if (Array.isArray(tickers)) {
+            const btc = tickers.find(t => t.symbol === 'BTCUSDT');
+            const paxg = tickers.find(t => t.symbol === 'PAXGUSDT');
+
+            if (btc && isFinitePos(parseFloat(btc.lastPrice))) {
+              AppState.liveData.btcPrice = parseFloat(btc.lastPrice);
+              AppState.liveData.btcChangePct = parseFloat(btc.priceChangePercent);
+              AppState.liveData.btcQuoteVol = parseFloat(btc.quoteVolume);
+            }
+            if (paxg && isFinitePos(parseFloat(paxg.lastPrice))) {
+              AppState.liveData.paxgPrice = parseFloat(paxg.lastPrice);
+              AppState.liveData.paxgChangePct = parseFloat(paxg.priceChangePercent);
+              AppState.liveData.paxgHigh = parseFloat(paxg.highPrice);
+              AppState.liveData.paxgLow = parseFloat(paxg.lowPrice);
+              cryptoOk = true;
+            }
+          }
+        } catch (err) {
+          console.warn('Binance batch API failed, trying OKX/CoinGecko fallback:', err);
+        }
+
+        // Fallback via OKX XAUT + CoinGecko if Binance failed
+        if (!cryptoOk) {
+          try {
+            const [okxRes, cgRes] = await Promise.allSettled([
+              fetchJSONNoCache('https://www.okx.com/api/v5/market/ticker?instId=XAUT-USDT'),
+              fetchJSONNoCache('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold,bitcoin&vs_currencies=usd&include_24hr_change=true')
+            ]);
+
+            if (okxRes.status === 'fulfilled' && okxRes.value?.data?.[0]) {
+              const row = okxRes.value.data[0];
+              const last = parseFloat(row.last);
+              const open = parseFloat(row.open24h);
+              if (isFinitePos(last)) {
+                AppState.liveData.paxgPrice = last;
+                AppState.liveData.paxgHigh = parseFloat(row.high24h);
+                AppState.liveData.paxgLow = parseFloat(row.low24h);
+                if (isFinitePos(open)) {
+                  AppState.liveData.paxgChangePct = ((last - open) / open) * 100;
+                }
+                cryptoOk = true;
+                usedFallback = true;
+              }
+            }
+
+            if (cgRes.status === 'fulfilled' && cgRes.value) {
+              const cg = cgRes.value;
+              if (!cryptoOk && cg['pax-gold'] && isFinitePos(cg['pax-gold'].usd)) {
+                AppState.liveData.paxgPrice = cg['pax-gold'].usd;
+                AppState.liveData.paxgChangePct = cg['pax-gold'].usd_24h_change;
+                cryptoOk = true;
+                usedFallback = true;
+              }
+              if (cg.bitcoin && isFinitePos(cg.bitcoin.usd)) {
+                AppState.liveData.btcPrice = cg.bitcoin.usd;
+                AppState.liveData.btcChangePct = cg.bitcoin.usd_24h_change;
+              }
+            }
+          } catch (fbErr) {
+            console.warn('Crypto fallback failed:', fbErr);
+          }
+        }
+
+        if (cryptoOk || isFinitePos(AppState.liveData.btcPrice)) {
+          renderBinanceKPIs();
+        }
+      })();
+
+      // B. Alternative.me Crypto Fear & Greed Index
+      const fngTask = (async () => {
+        try {
+          const fngRes = await fetchJSONNoCache('https://api.alternative.me/fng/?limit=1');
+          if (fngRes?.data?.[0]) {
+            const item = fngRes.data[0];
+            const val = parseInt(item.value, 10);
+            if (Number.isFinite(val)) {
+              AppState.liveData.fngValue = val;
+              AppState.liveData.fngLabelVi = translateFearGreed(item.value_classification, val);
+              renderFearGreedKPI();
+              fngOk = true;
+            }
+          }
+        } catch (err) {
+          console.warn('Fear & Greed API failed:', err);
+        }
+      })();
+
+      await Promise.allSettled([marketTask, fngTask]);
+
+      if (cryptoOk && fngOk) {
+        setFeedStatus('status-crypto', usedFallback ? 'fallback' : 'ok', usedFallback ? 'Proxy' : '24/7 Live');
+      } else if (cryptoOk || fngOk || isFinitePos(AppState.liveData.paxgPrice)) {
+        setFeedStatus('status-crypto', 'fallback', 'Một phần');
+      } else {
+        setFeedStatus('status-crypto', 'error');
+      }
+    }
+
+    function translateFearGreed(classification, val) {
+      const map = {
+        'Extreme Fear': 'Sợ Hãi Tột Độ',
+        'Fear': 'Sợ Hãi',
+        'Neutral': 'Trung Lập',
+        'Greed': 'Tham Lam',
+        'Extreme Greed': 'Tham Lam Tột Độ'
+      };
+      if (map[classification]) return map[classification];
+      if (val <= 25) return 'Sợ Hãi Tột Độ';
+      if (val <= 45) return 'Sợ Hãi';
+      if (val <= 55) return 'Trung Lập';
+      if (val <= 75) return 'Tham Lam';
+      return 'Tham Lam Tột Độ';
+    }
+
+    /** 2. Fetch Spot Metals (XAU, XAG, XPT, HG) with PAXG & Currency-CDN Fallbacks */
+    async function fetchPreciousMetals(binancePromise, getCdnRates) {
+      setFeedStatus('status-gold', 'loading');
+
+      const [xauRes, xagRes, xptRes, hgRes] = await Promise.allSettled([
+        fetchJSONNoCache('https://api.gold-api.com/price/XAU'),
+        fetchJSONNoCache('https://api.gold-api.com/price/XAG'),
+        fetchJSONNoCache('https://api.gold-api.com/price/XPT'),
+        fetchJSONNoCache('https://api.gold-api.com/price/HG')
+      ]);
+
+      let xauPrice = xauRes.status === 'fulfilled' && isFinitePos(xauRes.value?.price) ? xauRes.value.price : null;
+      let xauSource = xauPrice ? 'Gold-API Spot' : '';
+      let usedFallback = false;
+
+      let xagPrice = xagRes.status === 'fulfilled' && isFinitePos(xagRes.value?.price) ? xagRes.value.price : null;
+      let xptPrice = xptRes.status === 'fulfilled' && isFinitePos(xptRes.value?.price) ? xptRes.value.price : null;
+      const hgPrice = hgRes.status === 'fulfilled' && isFinitePos(hgRes.value?.price) ? hgRes.value.price : null;
+
+      // Fallback for XAU via Binance PAXG
+      if (!xauPrice) {
+        try {
+          await binancePromise;
+          if (isFinitePos(AppState.liveData.paxgPrice)) {
+            xauPrice = AppState.liveData.paxgPrice;
+            xauSource = 'Binance PAXG Proxy (Dự phòng)';
+            usedFallback = true;
+          }
+        } catch {}
+      }
+
+      // Fallback via Currency CDN for any missing precious metal (XAU / XAG / XPT)
+      if (!xauPrice || !xagPrice || !xptPrice) {
+        try {
+          const cdn = await getCdnRates();
+          const u = cdn?.usd;
+          if (u) {
+            if (!xauPrice && isFinitePos(u.xau)) {
+              xauPrice = 1 / u.xau;
+              xauSource = 'Currency CDN XAU (Dự phòng)';
+              usedFallback = true;
+            }
+            if (!xagPrice && isFinitePos(u.xag)) {
+              xagPrice = 1 / u.xag;
+            }
+            if (!xptPrice && isFinitePos(u.xpt)) {
+              xptPrice = 1 / u.xpt;
+            }
+          }
+        } catch (err) {
+          console.warn('Currency CDN metals fallback failed:', err);
+        }
+      }
+
+      // Preserve existing valid values on transient refresh failure
+      if (isFinitePos(xauPrice)) {
+        AppState.liveData.xauUsd = xauPrice;
+        AppState.liveData.xauSource = xauSource;
+      }
+      if (isFinitePos(xagPrice)) AppState.liveData.xagUsd = xagPrice;
+      if (isFinitePos(xptPrice)) AppState.liveData.xptUsd = xptPrice;
+      if (isFinitePos(hgPrice)) AppState.liveData.hgUsd = hgPrice;
+
+      if (isFinitePos(AppState.liveData.xauUsd) && isFinitePos(AppState.liveData.xagUsd)) {
+        AppState.liveData.gsr = AppState.liveData.xauUsd / AppState.liveData.xagUsd;
+      }
+      if (isFinitePos(AppState.liveData.xauUsd) && isFinitePos(AppState.liveData.hgUsd)) {
+        AppState.liveData.goldCopperRatio = AppState.liveData.xauUsd / AppState.liveData.hgUsd;
+      }
+
+      if (isFinitePos(AppState.liveData.xauUsd)) {
+        setFeedStatus('status-gold', usedFallback ? 'fallback' : 'ok', usedFallback ? 'Proxy' : 'Spot');
+      } else {
+        setFeedStatus('status-gold', 'error');
+      }
+
+      renderGoldSilverKPIs();
+      renderBinanceKPIs();
+    }
+
+    /** 3. Fetch Global FX Rates & Calculate Live ICE USD Index (DXY) */
+    async function fetchFXAndDXY(getCdnRates) {
+      setFeedStatus('status-fx', 'loading');
+      let rates = null;
+      let statusMode = 'ok';
+      let statusLabel = 'ICE Calc';
+
+      const hasAllDXY = (r) => r && ['EUR', 'JPY', 'GBP', 'CAD', 'SEK', 'CHF'].every(k => isFinitePos(r[k]));
+
+      // Tier 1: open.er-api.com
+      try {
+        const erRes = await fetchJSONNoCache('https://open.er-api.com/v6/latest/USD');
+        if (hasAllDXY(erRes?.rates)) {
+          rates = erRes.rates;
+        }
+      } catch (err) {
+        console.warn('open.er-api failed, trying Currency CDN fallback:', err);
+      }
+
+      // Tier 2: jsDelivr Currency CDN (includes VND, CNY, INR + all DXY pairs)
+      if (!rates) {
+        try {
+          const cdn = await getCdnRates();
+          const u = cdn?.usd;
+          if (u) {
+            const mapped = {
+              EUR: u.eur,
+              JPY: u.jpy,
+              GBP: u.gbp,
+              CAD: u.cad,
+              SEK: u.sek,
+              CHF: u.chf,
+              VND: u.vnd,
+              CNY: u.cny,
+              INR: u.inr
+            };
+            if (hasAllDXY(mapped)) {
+              rates = mapped;
+              statusMode = 'fallback';
+              statusLabel = 'CDN';
+            }
+          }
+        } catch (err) {
+          console.warn('Currency CDN FX fallback failed, trying Frankfurter:', err);
+        }
+      }
+
+      // Tier 3: Frankfurter
+      if (!rates) {
+        try {
+          const ffRes = await fetchJSONNoCache('https://api.frankfurter.dev/v1/latest?base=USD');
+          if (hasAllDXY(ffRes?.rates)) {
+            rates = ffRes.rates;
+            statusMode = 'fallback';
+            statusLabel = 'Frankfurter';
+          }
+        } catch (err) {
+          console.error('All FX providers failed:', err);
+          setFeedStatus('status-fx', isFinitePos(AppState.liveData.dxy) ? 'fallback' : 'error');
+          return;
+        }
+      }
+
+      // ICE DXY Formula:
+      // DXY = 50.14348112 * EURUSD^-0.576 * USDJPY^0.136 * GBPUSD^-0.119 * USDCAD^0.091 * USDSEK^0.042 * USDCHF^0.036
+      const eurUsd = 1 / rates.EUR;
+      const usdJpy = rates.JPY;
+      const gbpUsd = 1 / rates.GBP;
+      const usdCad = rates.CAD;
+      const usdSek = rates.SEK;
+      const usdChf = rates.CHF;
+
+      const dxy = 50.14348112
+        * Math.pow(eurUsd, -0.576)
+        * Math.pow(usdJpy, 0.136)
+        * Math.pow(gbpUsd, -0.119)
+        * Math.pow(usdCad, 0.091)
+        * Math.pow(usdSek, 0.042)
+        * Math.pow(usdChf, 0.036);
+
+      if (Number.isFinite(dxy)) {
+        AppState.liveData.dxy = dxy;
+        AppState.liveData.eurUsd = eurUsd;
+        AppState.liveData.usdJpy = usdJpy;
+        AppState.liveData.gbpUsd = gbpUsd;
+        AppState.liveData.fxSource = statusLabel;
+      }
+      if (isFinitePos(rates.CNY)) AppState.liveData.usdCny = rates.CNY;
+      if (isFinitePos(rates.VND)) AppState.liveData.usdVnd = rates.VND;
+      if (isFinitePos(rates.INR)) AppState.liveData.usdInr = rates.INR;
+
+      renderFXKPIs();
+      renderGoldSilverKPIs();
+      setFeedStatus('status-fx', statusMode, statusLabel);
+    }
+
+    /** Helper: Format YYYYMM string offset by 0 or -1 months */
+    function getTreasuryMonthParam(offsetMonths = 0) {
+      const now = new Date();
+      let year = now.getUTCFullYear();
+      let month = now.getUTCMonth() + 1 + offsetMonths;
+      if (month <= 0) {
+        month += 12;
+        year -= 1;
+      }
+      return `${year}${String(month).padStart(2, '0')}`;
+    }
+
+    /** Helper: Parse US Treasury Atom XML entries namespace-agnostically */
+    function parseTreasuryAtomXML(xmlText) {
+      const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      if (!doc || doc.getElementsByTagName('parsererror').length > 0) {
+        throw new Error('Invalid Treasury XML');
+      }
+      const entries = Array.from(doc.getElementsByTagNameNS('*', 'entry'));
+      const rows = [];
+      for (const entry of entries) {
+        const props = entry.getElementsByTagNameNS('*', 'properties')[0] || entry;
+        const row = {};
+        for (const child of props.children) {
+          const key = child.localName || child.nodeName.split(':').pop();
+          const val = (child.textContent || '').trim();
+          if (val !== '') row[key] = val;
+        }
+        if (row.NEW_DATE) {
+          row.dateKey = row.NEW_DATE.slice(0, 10);
+          rows.push(row);
+        }
+      }
+      return rows;
+    }
+
+    /** Helper: Fetch daily US Treasury curve XML, merging prev month if < 2 rows */
+    async function fetchTreasuryDailyXML(dataset) {
+      const currMonth = getTreasuryMonthParam(0);
+      const currUrl = `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=${dataset}&field_tdr_date_value_month=${currMonth}`;
+      const currText = await fetchTextNoCache(currUrl, 12000);
+      let rows = parseTreasuryAtomXML(currText);
+
+      if (rows.length < 2) {
+        try {
+          const prevMonth = getTreasuryMonthParam(-1);
+          const prevUrl = `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=${dataset}&field_tdr_date_value_month=${prevMonth}`;
+          const prevText = await fetchTextNoCache(prevUrl, 12000);
+          const prevRows = parseTreasuryAtomXML(prevText);
+          rows = prevRows.concat(rows);
+        } catch (err) {
+          console.warn(`Prev month fetch skipped for ${dataset}:`, err);
+        }
+      }
+
+      // Deduplicate by dateKey and sort ascending
+      const byDate = new Map();
+      for (const r of rows) {
+        byDate.set(r.dateKey, r);
+      }
+      return Array.from(byDate.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    }
+
+    /** 4. Fetch Official Daily US Treasury Nominal & Real Yields, NY Fed EFFR, and US Debt */
+    async function fetchTreasuryAndFedMacro() {
+      setFeedStatus('status-treasury', 'loading');
+
+      const [nomRes, realRes, effrRes, debtRes] = await Promise.allSettled([
+        fetchTreasuryDailyXML('daily_treasury_yield_curve'),
+        fetchTreasuryDailyXML('daily_treasury_real_yield_curve'),
+        fetchJSONNoCache('https://markets.newyorkfed.org/api/rates/unsecured/effr/last/2.json'),
+        fetchJSONNoCache('https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/debt_to_penny?sort=-record_date&page[size]=2')
+      ]);
+
+      const d = AppState.liveData;
+      let nomOk = false;
+      let realOk = false;
+      let effrOk = false;
+      let debtOk = false;
+
+      const parseField = (row, key) => {
+        if (!row || row[key] === undefined) return null;
+        const v = parseFloat(row[key]);
+        return Number.isFinite(v) ? v : null;
+      };
+
+      let nomRows = [];
+      let realRows = [];
+
+      if (nomRes.status === 'fulfilled' && nomRes.value.length > 0) {
+        nomRows = nomRes.value;
+        const latest = nomRows[nomRows.length - 1];
+        const prev = nomRows.length > 1 ? nomRows[nomRows.length - 2] : null;
+
+        d.yieldDate = latest.dateKey;
+        d.us3m = parseField(latest, 'BC_3MONTH');
+        d.us2y = parseField(latest, 'BC_2YEAR');
+        d.us5y = parseField(latest, 'BC_5YEAR');
+        d.us10y = parseField(latest, 'BC_10YEAR');
+        d.us30y = parseField(latest, 'BC_30YEAR');
+
+        const prev2y = parseField(prev, 'BC_2YEAR');
+        const prev10y = parseField(prev, 'BC_10YEAR');
+        const prev30y = parseField(prev, 'BC_30YEAR');
+
+        d.us2yChgBps = isFiniteNum(d.us2y) && isFiniteNum(prev2y) ? (d.us2y - prev2y) * 100 : null;
+        d.us10yChgBps = isFiniteNum(d.us10y) && isFiniteNum(prev10y) ? (d.us10y - prev10y) * 100 : null;
+        d.us30yChgBps = isFiniteNum(d.us30y) && isFiniteNum(prev30y) ? (d.us30y - prev30y) * 100 : null;
+
+        if (isFiniteNum(d.us10y) && isFiniteNum(d.us2y)) {
+          d.spread10y2y = d.us10y - d.us2y;
+          d.spread10y2yChgBps = (isFiniteNum(prev10y) && isFiniteNum(prev2y))
+            ? (d.spread10y2y - (prev10y - prev2y)) * 100
+            : null;
+        }
+        nomOk = isFiniteNum(d.us10y);
+      }
+
+      if (realRes.status === 'fulfilled' && realRes.value.length > 0) {
+        realRows = realRes.value;
+        const latestR = realRows[realRows.length - 1];
+        const prevR = realRows.length > 1 ? realRows[realRows.length - 2] : null;
+
+        d.real5y = parseField(latestR, 'TC_5YEAR');
+        d.real10y = parseField(latestR, 'TC_10YEAR');
+        const prevReal10y = parseField(prevR, 'TC_10YEAR');
+        d.real10yChgBps = isFiniteNum(d.real10y) && isFiniteNum(prevReal10y)
+          ? (d.real10y - prevReal10y) * 100
+          : null;
+
+        if (!d.yieldDate && latestR.dateKey) d.yieldDate = latestR.dateKey;
+
+        // Compute 10Y Breakeven Inflation (Nominal US10Y - Real TIPS 10Y)
+        const matchingNomLatest = nomRows.find(r => r.dateKey === latestR.dateKey) || nomRows[nomRows.length - 1];
+        const nom10yMatch = parseField(matchingNomLatest, 'BC_10YEAR') ?? d.us10y;
+        if (isFiniteNum(nom10yMatch) && isFiniteNum(d.real10y)) {
+          d.bei10y = nom10yMatch - d.real10y;
+          if (prevR && isFiniteNum(prevReal10y)) {
+            const matchingNomPrev = nomRows.find(r => r.dateKey === prevR.dateKey);
+            const nom10yPrev = parseField(matchingNomPrev, 'BC_10YEAR');
+            if (isFiniteNum(nom10yPrev)) {
+              d.bei10yChgBps = (d.bei10y - (nom10yPrev - prevReal10y)) * 100;
+            }
+          }
+        }
+        realOk = isFiniteNum(d.real10y);
+      }
+
+      if (effrRes.status === 'fulfilled' && Array.isArray(effrRes.value?.refRates) && effrRes.value.refRates[0]) {
+        const rateObj = effrRes.value.refRates[0];
+        const rate = parseFloat(rateObj.percentRate);
+        if (Number.isFinite(rate)) {
+          d.effr = rate;
+          d.effrDate = rateObj.effectiveDate || '';
+          effrOk = true;
+        }
+      }
+
+      if (debtRes.status === 'fulfilled' && Array.isArray(debtRes.value?.data) && debtRes.value.data[0]) {
+        const row = debtRes.value.data[0];
+        const amt = parseFloat(row.tot_pub_debt_out_amt);
+        if (Number.isFinite(amt) && amt > 0) {
+          d.usDebtTrillion = amt / 1e12;
+          d.usDebtDate = row.record_date || '';
+          debtOk = true;
+        }
+      }
+
+      if (nomOk || realOk) {
+        renderRealYieldKPI();
+        renderTreasuryStrip();
+        setFeedStatus('status-treasury', (nomOk && realOk && effrOk && debtOk) ? 'ok' : 'fallback', (nomOk && realOk) ? 'Daily Live' : 'Một phần');
+        return;
+      }
+
+      // If daily XML failed, fallback to Fiscal Data avg_interest_rates ONLY if we don't already have daily yields
+      if (!isFiniteNum(d.us10y)) {
+        try {
+          const avgRes = await fetchJSONNoCache(
+            'https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/avg_interest_rates?sort=-record_date&page[size]=16'
+          );
+          if (Array.isArray(avgRes?.data) && avgRes.data.length > 0) {
+            renderTreasuryAvgFallback(avgRes.data);
+            setFeedStatus('status-treasury', 'fallback', 'Avg Rates');
+            return;
+          }
+        } catch (err) {
+          console.warn('Treasury avg fallback failed:', err);
+        }
+        renderTreasuryErrorFallback();
+        setFeedStatus('status-treasury', 'error');
+      } else {
+        renderRealYieldKPI();
+        renderTreasuryStrip();
+        setFeedStatus('status-treasury', 'fallback', 'Cached');
+      }
+    }
+
+    /* =========================================================================
+     * RENDER FUNCTIONS FOR LIVE KPI CARDS & TREASURY STRIP
+     * ========================================================================= */
+
+    function renderGoldSilverKPIs() {
+      const d = AppState.liveData;
+
+      // Card 1: XAU/USD + VNĐ/lượng
+      const xauPriceEl = document.getElementById('kpi-xau-price');
+      const xauSourceEl = document.getElementById('kpi-xau-source');
+      const xauBadgeEl = document.getElementById('kpi-xau-badge');
+      const xauVndEl = document.getElementById('kpi-xau-vnd');
+
+      if (isFinitePos(d.xauUsd)) {
+        xauPriceEl.textContent = `$${fmtNum(d.xauUsd, 2)}`;
+        xauSourceEl.textContent = `Nguồn: ${d.xauSource}`;
+        const isProxy = d.xauSource.includes('Dự phòng');
+        xauBadgeEl.textContent = isProxy ? 'PROXY' : 'LIVE';
+        xauBadgeEl.className = isProxy
+          ? 'px-2 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30'
+          : 'px-2 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+      }
+
+      if (isFinitePos(d.xauUsd) && isFinitePos(d.usdVnd)) {
+        const vndPerTael = d.xauUsd * 1.20565 * d.usdVnd;
+        d.xauVndPerTael = vndPerTael;
+        xauVndEl.textContent = fmtVND(vndPerTael);
+      } else if (isFinitePos(d.xauUsd) && !isFinitePos(d.usdVnd)) {
+        xauVndEl.textContent = 'Đang chờ tỷ giá USD/VND...';
+      }
+
+      // Card 4: XAG/USD, Platinum, Copper & Ratios
+      const xagPriceEl = document.getElementById('kpi-xag-price');
+      const gsrValEl = document.getElementById('kpi-gsr-val');
+      const gsrBadgeEl = document.getElementById('kpi-gsr-badge');
+      const gsrNoteEl = document.getElementById('kpi-gsr-note');
+      const xptEl = document.getElementById('kpi-xpt-price');
+      const copperRatioEl = document.getElementById('kpi-copper-ratio');
+
+      if (isFinitePos(d.xagUsd)) {
+        xagPriceEl.textContent = `$${fmtNum(d.xagUsd, 2)}`;
+      }
+      if (isFinitePos(d.xptUsd)) {
+        xptEl.textContent = `$${fmtNum(d.xptUsd, 0)}`;
+      }
+      if (isFinitePos(d.hgUsd)) {
+        copperRatioEl.textContent = isFinitePos(d.goldCopperRatio)
+          ? `$${fmtNum(d.hgUsd, 2)} • ${fmtNum(d.goldCopperRatio, 0)}x`
+          : `$${fmtNum(d.hgUsd, 2)}/lb`;
+      }
+
+      if (isFinitePos(d.gsr)) {
+        gsrValEl.textContent = `${fmtNum(d.gsr, 2)}x`;
+        if (d.gsr >= 80) {
+          gsrBadgeEl.textContent = 'GSR > 80';
+          gsrBadgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-[#F5C542]/15 text-[#F5C542] border border-[#F5C542]/40';
+          gsrNoteEl.innerHTML = '<span class="text-[#F5C542] font-semibold">Vàng vượt trội / Bạc định giá rẻ:</span> Tỷ lệ trên 80 cho thấy dòng tiền trú ẩn ưu tiên Vàng, đồng thời Bạc có dư địa bắt kịp nếu sóng mở rộng.';
+        } else if (d.gsr >= 65) {
+          gsrBadgeEl.textContent = 'Cân bằng';
+          gsrBadgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-sky-500/15 text-sky-400 border border-sky-500/30';
+          gsrNoteEl.innerHTML = '<span class="text-sky-400 font-semibold">Vùng cân bằng lịch sử (65-80):</span> Đà tăng giữa Vàng và Bạc đang tương đối hài hòa, phản ánh thị trường vận động lành mạnh.';
+        } else {
+          gsrBadgeEl.textContent = 'Bạc dẫn sóng';
+          gsrBadgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+          gsrNoteEl.innerHTML = '<span class="text-emerald-400 font-semibold">Bạc đang bứt phá mạnh (&lt;65):</span> Thường xuất hiện trong giai đoạn chu kỳ hàng hóa nóng và khẩu vị rủi ro tăng cao.';
+        }
+      }
+    }
+
+    function renderFXKPIs() {
+      const d = AppState.liveData;
+      if (isFinitePos(d.dxy)) {
+        document.getElementById('kpi-dxy-val').textContent = fmtNum(d.dxy, 3);
+        document.getElementById('kpi-eurusd').textContent = fmtNum(d.eurUsd, 4);
+        document.getElementById('kpi-usdjpy').textContent = fmtNum(d.usdJpy, 2);
+        document.getElementById('kpi-gbpusd').textContent = fmtNum(d.gbpUsd, 4);
+
+        const zoneEl = document.getElementById('kpi-dxy-zone');
+        if (d.dxy < 100) {
+          zoneEl.textContent = 'USD Yếu (Lợi Vàng)';
+          zoneEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+        } else if (d.dxy <= 104.5) {
+          zoneEl.textContent = 'Vùng Trung Tính';
+          zoneEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30';
+        } else {
+          zoneEl.textContent = 'USD Mạnh (Cản Vàng)';
+          zoneEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30';
+        }
+      }
+
+      document.getElementById('kpi-usdvnd').textContent = isFinitePos(d.usdVnd)
+        ? `${Math.round(d.usdVnd).toLocaleString('vi-VN')} đ`
+        : 'N/A';
+      document.getElementById('kpi-usdcny').textContent = isFinitePos(d.usdCny)
+        ? fmtNum(d.usdCny, 4)
+        : 'N/A';
+      document.getElementById('kpi-usdinr').textContent = isFinitePos(d.usdInr)
+        ? fmtNum(d.usdInr, 2)
+        : 'N/A';
+    }
+
+    function renderRealYieldKPI() {
+      const d = AppState.liveData;
+      const realEl = document.getElementById('kpi-real10y');
+      const chgEl = document.getElementById('kpi-real10y-chg');
+      const badgeEl = document.getElementById('kpi-real10y-badge');
+
+      if (isFiniteNum(d.real10y)) {
+        realEl.textContent = `${fmtNum(d.real10y, 2)}%`;
+
+        if (d.real10y >= 2.2) {
+          badgeEl.textContent = 'Thực cao (Cản)';
+          badgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30';
+        } else if (d.real10y >= 1.2) {
+          badgeEl.textContent = 'Trung tính';
+          badgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30';
+        } else {
+          badgeEl.textContent = 'Thực thấp (Lợi Vàng)';
+          badgeEl.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+        }
+      }
+
+      if (isFiniteNum(d.real10yChgBps)) {
+        const bpsText = fmtBps(d.real10yChgBps);
+        chgEl.textContent = `Ngày: ${bpsText}`;
+        if (d.real10yChgBps < 0) {
+          chgEl.className = 'text-xs font-mono font-semibold text-emerald-400';
+        } else if (d.real10yChgBps > 0) {
+          chgEl.className = 'text-xs font-mono font-semibold text-rose-400';
+        } else {
+          chgEl.className = 'text-xs font-mono font-semibold text-slate-400';
+        }
+      } else {
+        chgEl.textContent = d.yieldDate ? `Ngày ${d.yieldDate}` : '---';
+      }
+
+      document.getElementById('kpi-us10y').textContent = isFiniteNum(d.us10y) ? `${fmtNum(d.us10y, 2)}%` : '---';
+      document.getElementById('kpi-bei10y').textContent = isFiniteNum(d.bei10y) ? `${fmtNum(d.bei10y, 2)}%` : '---';
+      document.getElementById('kpi-spread10y2y').textContent = isFiniteNum(d.spread10y2y) ? fmtSigned(d.spread10y2y, 2, '%') : '---';
+    }
+
+    function renderBinanceKPIs() {
+      const d = AppState.liveData;
+
+      // PAXG Card
+      if (isFinitePos(d.paxgPrice)) {
+        document.getElementById('kpi-paxg-price').textContent = `$${fmtNum(d.paxgPrice, 2)}`;
+
+        const paxgChgEl = document.getElementById('kpi-paxg-chg');
+        if (isFiniteNum(d.paxgChangePct)) {
+          const isUp = d.paxgChangePct >= 0;
+          paxgChgEl.textContent = fmtSigned(d.paxgChangePct, 2, '%');
+          paxgChgEl.className = `px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${
+            isUp
+              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+          }`;
+        }
+
+        const rangeEl = document.getElementById('kpi-paxg-range');
+        if (isFinitePos(d.paxgLow) && isFinitePos(d.paxgHigh)) {
+          rangeEl.textContent = `24h: $${fmtNum(d.paxgLow, 0)} – $${fmtNum(d.paxgHigh, 0)}`;
+        } else {
+          rangeEl.textContent = '24/7 Tokenized';
+        }
+      }
+
+      // BTC sub-tiles inside Card 5
+      if (isFinitePos(d.btcPrice)) {
+        document.getElementById('kpi-btc-price').textContent = `$${fmtNum(d.btcPrice, 0)}`;
+
+        const btcChgEl = document.getElementById('kpi-btc-chg');
+        if (isFiniteNum(d.btcChangePct)) {
+          const isUp = d.btcChangePct >= 0;
+          btcChgEl.textContent = fmtSigned(d.btcChangePct, 2, '%');
+          btcChgEl.className = `text-[10px] font-bold ${isUp ? 'text-emerald-400' : 'text-rose-400'}`;
+        }
+
+        if (isFinitePos(d.btcQuoteVol)) {
+          const volBillion = d.btcQuoteVol / 1_000_000_000;
+          document.getElementById('kpi-btc-vol').textContent = `$${fmtNum(volBillion, 2)}B`;
+        } else {
+          document.getElementById('kpi-btc-vol').textContent = '24h';
+        }
+
+        const refGold = isFinitePos(d.xauUsd) ? d.xauUsd : d.paxgPrice;
+        if (isFinitePos(refGold)) {
+          document.getElementById('kpi-btc-gold-ratio').textContent = `${fmtNum(d.btcPrice / refGold, 2)} oz`;
+        }
+      }
+    }
+
+    function renderFearGreedKPI() {
+      const d = AppState.liveData;
+      if (!isFiniteNum(d.fngValue)) return;
+
+      document.getElementById('kpi-fng-val').textContent = d.fngValue;
+      document.getElementById('kpi-fng-label').textContent = d.fngLabelVi;
+      document.getElementById('kpi-fng-bar').style.width = `${Math.min(100, Math.max(0, d.fngValue))}%`;
+
+      const badge = document.getElementById('kpi-fng-badge');
+      if (d.fngValue <= 35) {
+        badge.textContent = 'Risk-Off';
+        badge.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30';
+      } else if (d.fngValue <= 60) {
+        badge.textContent = 'Cân bằng';
+        badge.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      } else {
+        badge.textContent = 'Risk-On';
+        badge.className = 'px-2 py-1 rounded-lg text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30';
+      }
+    }
+
+    function renderTreasuryStrip() {
+      const d = AppState.liveData;
+      const dateBadge = document.getElementById('treasury-record-date');
+      const parts = [];
+      if (d.yieldDate) parts.push(`Lợi suất: ${d.yieldDate}`);
+      if (d.effrDate) parts.push(`EFFR: ${d.effrDate}`);
+      if (d.usDebtDate) parts.push(`Nợ công: ${d.usDebtDate}`);
+      dateBadge.textContent = parts.length ? parts.join(' • ') : 'Dữ liệu chính thức US Treasury & NY Fed';
+
+      const cards = [
+        {
+          label: 'Lãi suất Fed (EFFR)',
+          value: isFiniteNum(d.effr) ? `${fmtNum(d.effr, 2)}%` : 'N/A',
+          sub: d.effrDate ? `NY Fed • ${d.effrDate}` : 'Lãi suất điều hành Mỹ',
+          subClass: 'text-slate-400'
+        },
+        {
+          label: 'US 3 Tháng (T-Bill)',
+          value: isFiniteNum(d.us3m) ? `${fmtNum(d.us3m, 2)}%` : 'N/A',
+          sub: 'Nhạy chính sách ngắn hạn',
+          subClass: 'text-slate-400'
+        },
+        {
+          label: 'US 2 Năm (US02Y)',
+          value: isFiniteNum(d.us2y) ? `${fmtNum(d.us2y, 2)}%` : 'N/A',
+          sub: isFiniteNum(d.us2yChgBps) ? `Phiên: ${fmtBps(d.us2yChgBps)}` : 'Kỳ vọng lộ trình Fed',
+          subClass: isFiniteNum(d.us2yChgBps)
+            ? (d.us2yChgBps < 0 ? 'text-emerald-400' : d.us2yChgBps > 0 ? 'text-rose-400' : 'text-slate-400')
+            : 'text-slate-400'
+        },
+        {
+          label: 'US 10 Năm (US10Y)',
+          value: isFiniteNum(d.us10y) ? `${fmtNum(d.us10y, 2)}%` : 'N/A',
+          sub: isFiniteNum(d.us10yChgBps) ? `Phiên: ${fmtBps(d.us10yChgBps)}` : 'Chuẩn định giá toàn cầu',
+          subClass: isFiniteNum(d.us10yChgBps)
+            ? (d.us10yChgBps < 0 ? 'text-emerald-400' : d.us10yChgBps > 0 ? 'text-rose-400' : 'text-slate-400')
+            : 'text-slate-400'
+        },
+        {
+          label: 'US 30 Năm (US30Y)',
+          value: isFiniteNum(d.us30y) ? `${fmtNum(d.us30y, 2)}%` : 'N/A',
+          sub: isFiniteNum(d.us30yChgBps) ? `Phiên: ${fmtBps(d.us30yChgBps)}` : 'Rủi ro tài khóa dài hạn',
+          subClass: isFiniteNum(d.us30yChgBps)
+            ? (d.us30yChgBps < 0 ? 'text-emerald-400' : d.us30yChgBps > 0 ? 'text-rose-400' : 'text-slate-400')
+            : 'text-slate-400'
+        },
+        {
+          label: 'Nợ Công Mỹ (Debt)',
+          value: isFinitePos(d.usDebtTrillion) ? `$${fmtNum(d.usDebtTrillion, 2)}T` : 'N/A',
+          sub: d.usDebtDate ? `Ngàn tỷ USD • ${d.usDebtDate}` : 'Fiscal Data Debt-to-Penny',
+          subClass: 'text-amber-300'
+        }
+      ];
+
+      const grid = document.getElementById('treasury-rates-grid');
+      grid.innerHTML = cards.map(c => `
+        <div class="rounded-xl bg-[#0B0F17]/90 border border-[#1E293B] hover:border-[#F5C542]/40 p-3 transition-colors">
+          <div class="text-[11px] text-slate-400 truncate" title="${c.label}">${c.label}</div>
+          <div class="mt-1 text-lg font-mono font-bold text-[#F5C542]">${c.value}</div>
+          <div class="mt-0.5 text-[10px] font-mono ${c.subClass} truncate">${c.sub}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTreasuryAvgFallback(rows) {
+      const latestDate = rows[0].record_date;
+      document.getElementById('treasury-record-date').textContent = `Dự phòng (Lãi suất BQ kỳ ${latestDate}) — xem live US10Y/DFII10 bên dưới`;
+      const latestRows = rows.filter(r => r.record_date === latestDate);
+      const priorityList = [
+        { match: 'Treasury Bills', label: 'Tín phiếu Mỹ (T-Bills)' },
+        { match: 'Treasury Notes', label: 'Trái phiếu Trung hạn (T-Notes)' },
+        { match: 'Treasury Bonds', label: 'Trái phiếu Dài hạn (T-Bonds)' },
+        { match: 'Treasury Inflation-Protected Securities (TIPS)', label: 'Trái phiếu TIPS (Lạm phát)' },
+        { match: 'Total Interest-bearing Debt', label: 'Lãi suất TB Nợ Công Mỹ' }
+      ];
+
+      const selected = [];
+      const seenDescs = new Set();
+      priorityList.forEach(item => {
+        const found = latestRows.find(r => r.security_desc === item.match);
+        if (found) {
+          seenDescs.add(found.security_desc);
+          selected.push({ label: item.label, rate: parseFloat(found.avg_interest_rate_amt) });
+        }
+      });
+
+      for (const row of latestRows) {
+        if (selected.length >= 6) break;
+        if (!seenDescs.has(row.security_desc)) {
+          seenDescs.add(row.security_desc);
+          selected.push({ label: row.security_desc, rate: parseFloat(row.avg_interest_rate_amt) });
+        }
+      }
+
+      document.getElementById('treasury-rates-grid').innerHTML = selected.map(item => `
+        <div class="rounded-xl bg-[#0B0F17]/90 border border-[#1E293B] p-3">
+          <div class="text-[11px] text-slate-400 truncate" title="${item.label}">${item.label}</div>
+          <div class="mt-1 text-lg font-mono font-bold text-[#F5C542]">${fmtNum(item.rate, 3)}%</div>
+          <div class="mt-0.5 text-[10px] font-mono text-slate-500">BQ Danh mục Nợ</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTreasuryErrorFallback() {
+      document.getElementById('treasury-record-date').textContent = 'US Treasury API tạm bận — xem lợi suất trực tuyến US10Y/DFII10 bên dưới';
+      document.getElementById('treasury-rates-grid').innerHTML = `
+        <div class="col-span-full rounded-xl bg-[#0B0F17]/80 border border-[#1E293B] p-3 text-xs text-slate-400">
+          Không thể truy vấn US Treasury XML tại thời điểm này. Bạn vẫn có thể theo dõi lợi suất trực tuyến từng giây của <strong>FRED:DFII10, OTCB:US10Y, OTCB:US02Y, OTCB:US30Y</strong> tại Bảng Chỉ Số Thị Trường và Biểu đồ TradingView bên dưới.
+        </div>
+      `;
+    }
+
+
+    /* =========================================================================
+     * TRADINGVIEW REAL-TIME WIDGET MOUNTER (RE-MOUNTABLE ON EVERY RELOAD)
+     * ========================================================================= */
+
+    function mountTradingViewWidget(containerId, scriptUrl, configObj) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'tradingview-widget-container w-full h-full';
+
+      const widgetInner = document.createElement('div');
+      widgetInner.className = 'tradingview-widget-container__widget w-full h-full';
+
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = scriptUrl;
+      script.async = true;
+      script.text = JSON.stringify(configObj);
+
+      wrapper.appendChild(widgetInner);
+      wrapper.appendChild(script);
+      container.appendChild(wrapper);
+    }
+
+    function mountTickerTape() {
+      mountTradingViewWidget(
+        'tv-ticker-tape',
+        'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
+        {
+          symbols: [
+            { proName: 'OANDA:XAUUSD', title: 'Vàng Spot (XAU)' },
+            { proName: 'CAPITALCOM:DXY', title: 'USD Index (DXY)' },
+            { proName: 'OTCB:US10Y', title: 'Lợi suất Mỹ 10Y' },
+            { proName: 'OTCB:US02Y', title: 'Lợi suất Mỹ 2Y' },
+            { proName: 'FRED:DFII10', title: 'Lợi suất Thực 10Y' },
+            { proName: 'TVC:USOIL', title: 'Dầu WTI' },
+            { proName: 'OANDA:XAGUSD', title: 'Bạc Spot (XAG)' },
+            { proName: 'OANDA:SPX500USD', title: 'S&P 500' },
+            { proName: 'CAPITALCOM:VIX', title: 'Chỉ số VIX' },
+            { proName: 'AMEX:GLD', title: 'SPDR Gold ETF' },
+            { proName: 'OANDA:XCUUSD', title: 'Đồng (Copper)' },
+            { proName: 'FX_IDC:USDVND', title: 'USD/VND' }
+          ],
+          showSymbolLogo: true,
+          isTransparent: true,
+          displayMode: 'adaptive',
+          colorTheme: 'dark',
+          locale: 'vi_VN'
+        }
+      );
+    }
+
+    function mountAdvancedChart(symbol = AppState.activeChartSymbol) {
+      const interval = symbol.startsWith('FRED:') ? 'D' : '60';
+      mountTradingViewWidget(
+        'tv-advanced-chart',
+        'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',
+        {
+          autosize: true,
+          symbol: symbol,
+          interval: interval,
+          timezone: 'Asia/Ho_Chi_Minh',
+          theme: 'dark',
+          style: '1',
+          locale: 'vi_VN',
+          backgroundColor: 'rgba(11, 15, 23, 1)',
+          gridColor: 'rgba(30, 41, 59, 0.4)',
+          allow_symbol_change: true,
+          calendar: false,
+          studies: ['STD;EMA', 'STD;RSI'],
+          support_host: 'https://www.tradingview.com'
+        }
+      );
+    }
+
+    function mountTechnicalAnalysis(symbol = AppState.activeTechnicalSymbol) {
+      mountTradingViewWidget(
+        'tv-technical-analysis',
+        'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js',
+        {
+          interval: '1h',
+          width: '100%',
+          isTransparent: true,
+          height: '100%',
+          symbol: symbol,
+          showIntervalTabs: true,
+          displayMode: 'single',
+          locale: 'vi_VN',
+          colorTheme: 'dark'
+        }
+      );
+    }
+
+    function mountCoreDriverMiniCharts() {
+      const grid = document.getElementById('mini-charts-grid');
+      if (!grid) return;
+
+      grid.innerHTML = CORE_DRIVERS.map(driver => `
+        <div class="rounded-2xl bg-[#121826] border border-[#1E293B] hover:border-[#F5C542]/45 overflow-hidden shadow-terminal-card transition-all flex flex-col">
+          <div class="px-3.5 py-2.5 bg-[#0E1420] border-b border-[#1E293B] flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="text-xs font-bold text-slate-100 truncate">${driver.title}</h3>
+              <p class="text-[10px] text-slate-400 truncate">${driver.desc}</p>
+            </div>
+            <span class="flex-shrink-0 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${driver.relationClass}">
+              ${driver.relation}
+            </span>
+          </div>
+          <div id="${driver.id}" class="w-full h-[185px] bg-[#121826]"></div>
+          <div class="px-3.5 py-2 border-t border-[#1E293B]/70 bg-[#0B0F17]/60 flex items-center justify-between">
+            <span class="text-[10px] font-mono text-slate-500">${driver.symbol}</span>
+            <button
+              type="button"
+              data-chart-symbol="${driver.symbol}"
+              data-chart-label="${driver.title} (${driver.symbol})"
+              class="mini-open-chart-btn text-[11px] font-semibold text-[#F5C542] hover:underline flex items-center gap-1"
+            >
+              <span>Mở biểu đồ lớn</span>
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      grid.querySelectorAll('.mini-open-chart-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectMainChart(btn.dataset.chartSymbol, btn.dataset.chartLabel, true);
+        });
+      });
+
+      CORE_DRIVERS.forEach(driver => {
+        mountTradingViewWidget(
+          driver.id,
+          'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js',
+          {
+            symbol: driver.symbol,
+            width: '100%',
+            height: '100%',
+            locale: 'vi_VN',
+            dateRange: driver.dateRange || '1M',
+            colorTheme: 'dark',
+            isTransparent: true,
+            autosize: true,
+            largeChartUrl: ''
+          }
+        );
+      });
+    }
+
+    function mountFullMarketQuotes() {
+      mountTradingViewWidget(
+        'tv-market-quotes',
+        'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js',
+        {
+          width: '100%',
+          height: '100%',
+          symbolsGroups: [
+            {
+              name: '1. Kim Loại Quý, Vàng Đa Tiền Tệ & ETF Vàng',
+              originalName: 'Precious Metals & Multi-Currency Gold',
+              symbols: [
+                { name: 'OANDA:XAUUSD', displayName: 'Vàng Thế Giới Spot (XAU/USD)' },
+                { name: 'TVC:GOLD', displayName: 'Vàng Giao Ngay Toàn Cầu (TVC:GOLD)' },
+                { name: 'BINANCE:PAXGUSDT', displayName: 'Vàng Tokenized 24/7 (PAXG/USDT)' },
+                { name: 'OANDA:XAUEUR', displayName: 'Vàng định giá theo Euro (XAU/EUR)' },
+                { name: 'OANDA:XAUJPY', displayName: 'Vàng định giá theo Yên Nhật (XAU/JPY)' },
+                { name: 'FX_IDC:XAUCNY', displayName: 'Vàng định giá theo NDT (XAU/CNY)' },
+                { name: 'OANDA:XAGUSD', displayName: 'Bạc Thế Giới Spot (XAG/USD)' },
+                { name: 'TVC:GOLDSILVER', displayName: 'Tỷ Lệ Vàng / Bạc (GSR)' },
+                { name: 'TVC:PLATINUM', displayName: 'Bạch Kim (Platinum)' },
+                { name: 'TVC:PALLADIUM', displayName: 'Palladium' },
+                { name: 'AMEX:GLD', displayName: 'Quỹ SPDR Gold Trust ETF (GLD)' },
+                { name: 'AMEX:SLV', displayName: 'Quỹ iShares Silver Trust ETF (SLV)' },
+                { name: 'AMEX:GDX', displayName: 'Cổ phiếu Khai thác Vàng Lớn (GDX)' },
+                { name: 'AMEX:GDXJ', displayName: 'Cổ phiếu Khai thác Vàng Nhỏ (GDXJ)' }
+              ]
+            },
+            {
+              name: '2. Lợi Suất Thực, Lạm Phát & Trái Phiếu Toàn Cầu',
+              originalName: 'Real Yields, Inflation & Global Bonds',
+              symbols: [
+                { name: 'FRED:DFII10', displayName: 'Lợi suất Thực Mỹ 10 Năm (TIPS Yield)' },
+                { name: 'FRED:T10YIE', displayName: 'Kỳ vọng Lạm phát Mỹ 10 Năm (Breakeven)' },
+                { name: 'OTCB:US10Y', displayName: 'Lợi suất Trái phiếu Mỹ 10 Năm (US10Y)' },
+                { name: 'OTCB:US02Y', displayName: 'Lợi suất Trái phiếu Mỹ 2 Năm (US02Y)' },
+                { name: 'OTCB:US05Y', displayName: 'Lợi suất Trái phiếu Mỹ 5 Năm (US05Y)' },
+                { name: 'OTCB:US30Y', displayName: 'Lợi suất Trái phiếu Mỹ 30 Năm (US30Y)' },
+                { name: 'OTCB:US03MY', displayName: 'Tín phiếu Mỹ 3 Tháng (US03MY)' },
+                { name: 'FRED:T10Y2Y', displayName: 'Đường cong Lợi suất 10Y-2Y (Suy thoái)' },
+                { name: 'FRED:T10Y3M', displayName: 'Đường cong Lợi suất 10Y-3M (Mô hình Fed)' },
+                { name: 'FRED:FEDFUNDS', displayName: 'Lãi suất Điều hành Fed (Fed Funds)' },
+                { name: 'AMEX:TIP', displayName: 'Quỹ Trái phiếu Chống Lạm phát (TIPS ETF)' },
+                { name: 'NASDAQ:TLT', displayName: 'Quỹ Trái phiếu Mỹ 20Y+ (TLT)' },
+                { name: 'OTCB:DE10Y', displayName: 'Trái phiếu Đức 10 Năm (DE10Y)' },
+                { name: 'OTCB:JP10Y', displayName: 'Trái phiếu Nhật 10 Năm (JP10Y)' },
+                { name: 'OTCB:CN10Y', displayName: 'Trái phiếu Trung Quốc 10 Năm (CN10Y)' },
+                { name: 'OTCB:GB10Y', displayName: 'Trái phiếu Anh 10 Năm (GB10Y)' }
+              ]
+            },
+            {
+              name: '3. Đồng USD & Ngoại Hối Ảnh Hưởng Vàng',
+              originalName: 'USD & Gold-Sensitive Forex',
+              symbols: [
+                { name: 'CAPITALCOM:DXY', displayName: 'Chỉ số USD Index (DXY)' },
+                { name: 'AMEX:UUP', displayName: 'Quỹ ETF Sức mạnh USD (UUP)' },
+                { name: 'FX:EURUSD', displayName: 'EUR / USD (Tỷ trọng 57.6% DXY)' },
+                { name: 'FX:USDJPY', displayName: 'USD / JPY (Tỷ trọng 13.6% DXY)' },
+                { name: 'FX:GBPUSD', displayName: 'GBP / USD (Tỷ trọng 11.9% DXY)' },
+                { name: 'FX:USDCHF', displayName: 'USD / CHF (Đồng tiền trú ẩn Thụy Sĩ)' },
+                { name: 'FX:USDCNH', displayName: 'USD / Nhân Dân Tệ (CNH - Cầu TQ)' },
+                { name: 'FX_IDC:USDINR', displayName: 'USD / Rupee Ấn Độ (INR - Cầu Ấn Độ)' },
+                { name: 'FX:AUDUSD', displayName: 'AUD / USD (Nước xuất khẩu vàng lớn)' },
+                { name: 'FX_IDC:USDVND', displayName: 'Tỷ giá USD / VNĐ' }
+              ]
+            },
+            {
+              name: '4. Hàng Hóa, Năng Lượng & Chu Kỳ Kinh Tế',
+              originalName: 'Commodities, Energy & Economic Cycle',
+              symbols: [
+                { name: 'TVC:USOIL', displayName: 'Dầu Thô WTI (USOIL)' },
+                { name: 'TVC:UKOIL', displayName: 'Dầu Thô Brent (UKOIL)' },
+                { name: 'OANDA:XCUUSD', displayName: 'Đồng (Dr. Copper - Sức khỏe Kinh tế)' },
+                { name: 'AMEX:DBC', displayName: 'Rổ Hàng Hóa Tổng Hợp (DBC ETF)' },
+                { name: 'OANDA:NATGASUSD', displayName: 'Khí Tự Nhiên (Natural Gas)' }
+              ]
+            },
+            {
+              name: '5. Rủi Ro, Biến Động, Chứng Khoán & Thanh Khoản',
+              originalName: 'Risk, Volatility, Equities & Liquidity',
+              symbols: [
+                { name: 'CAPITALCOM:VIX', displayName: 'Chỉ số Sợ Hãi VIX (Biến động S&P 500)' },
+                { name: 'FRED:GVZCLS', displayName: 'Chỉ số Biến động Vàng (CBOE GVZ)' },
+                { name: 'AMEX:HYG', displayName: 'Trái phiếu Lợi suất Cao (HYG - Rủi ro Tín dụng)' },
+                { name: 'FRED:M2SL', displayName: 'Cung tiền M2 Mỹ (Thanh khoản Dài hạn)' },
+                { name: 'FRED:WALCL', displayName: 'Bảng Cân đối Tài sản Fed (QE / QT)' },
+                { name: 'OANDA:SPX500USD', displayName: 'S&P 500 (Mỹ)' },
+                { name: 'OANDA:NAS100USD', displayName: 'Nasdaq 100 (Công nghệ Mỹ)' },
+                { name: 'OANDA:JP225USD', displayName: 'Nikkei 225 (Nhật Bản)' },
+                { name: 'HSI:HSI', displayName: 'Hang Seng (Hồng Kông)' },
+                { name: 'BITSTAMP:BTCUSD', displayName: 'Bitcoin (BTC/USD)' }
+              ]
+            }
+          ],
+          showSymbolLogo: true,
+          isTransparent: true,
+          colorTheme: 'dark',
+          locale: 'vi_VN'
+        }
+      );
+    }
+
+    function mountEconomicCalendar() {
+      mountTradingViewWidget(
+        'tv-economic-calendar',
+        'https://s3.tradingview.com/external-embedding/embed-widget-events.js',
+        {
+          width: '100%',
+          height: '100%',
+          colorTheme: 'dark',
+          isTransparent: true,
+          locale: 'vi_VN',
+          importanceFilter: '0,1',
+          countryFilter: 'us,eu,cn,jp,gb,ch,au,ca'
+        }
+      );
+    }
+
+    function mountNewsTimeline(mode = AppState.activeNewsMode) {
+      const config = mode === 'xau'
+        ? {
+            feedMode: 'symbol',
+            symbol: 'OANDA:XAUUSD',
+            isTransparent: true,
+            displayMode: 'regular',
+            width: '100%',
+            height: '100%',
+            colorTheme: 'dark',
+            locale: 'vi_VN'
+          }
+        : {
+            feedMode: 'market',
+            market: 'forex',
+            isTransparent: true,
+            displayMode: 'regular',
+            width: '100%',
+            height: '100%',
+            colorTheme: 'dark',
+            locale: 'vi_VN'
+          };
+
+      mountTradingViewWidget(
+        'tv-news-timeline',
+        'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js',
+        config
+      );
+    }
+
+    function mountAllTradingViewWidgets() {
+      setFeedStatus('status-tv', 'loading');
+      mountTickerTape();
+      mountAdvancedChart(AppState.activeChartSymbol);
+      mountTechnicalAnalysis(AppState.activeTechnicalSymbol);
+      mountCoreDriverMiniCharts();
+      mountFullMarketQuotes();
+      mountEconomicCalendar();
+      mountNewsTimeline(AppState.activeNewsMode);
+      setTimeout(() => setFeedStatus('status-tv', 'ok', 'Real-Time'), 600);
+    }
+
+    /* =========================================================================
+     * UI INTERACTIONS: CHART SWITCHER, TA TABS, NEWS TABS, SCORECARD
+     * ========================================================================= */
+
+    function renderChartSwitcherBar() {
+      const bar = document.getElementById('chart-symbol-bar');
+      if (!bar) return;
+
+      bar.innerHTML = CHART_SYMBOLS.map(item => {
+        const isActive = item.symbol === AppState.activeChartSymbol;
+        return `
+          <button
+            type="button"
+            data-chart-symbol="${item.symbol}"
+            data-chart-label="${item.short} (${item.symbol})"
+            class="chart-switch-btn px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 flex items-center gap-1.5 border ${
+              isActive
+                ? 'bg-[#F5C542] text-[#0B0F17] font-bold border-[#F5C542] shadow-gold-glow'
+                : 'bg-[#0B0F17] text-slate-300 hover:text-white border-[#1E293B] hover:border-slate-600'
+            }"
+          >
+            <span>${item.short}</span>
+            <span class="text-[10px] font-mono ${isActive ? 'text-[#0B0F17]/80' : 'text-slate-500'}">${item.sub}</span>
+          </button>
+        `;
+      }).join('');
+
+      bar.querySelectorAll('.chart-switch-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectMainChart(btn.dataset.chartSymbol, btn.dataset.chartLabel, false);
+        });
+      });
+    }
+
+    function selectMainChart(symbol, label, scrollToChart = false) {
+      AppState.activeChartSymbol = symbol;
+      AppState.activeChartLabel = label;
+      document.getElementById('active-chart-label').textContent = `Đang xem: ${label}`;
+      renderChartSwitcherBar();
+      mountAdvancedChart(symbol);
+      if (scrollToChart) {
+        document.getElementById('section-chart').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function initTabListeners() {
+      // Technical Analysis 4 Tabs
+      document.querySelectorAll('.ta-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sym = btn.dataset.taSymbol;
+          AppState.activeTechnicalSymbol = sym;
+          document.querySelectorAll('.ta-tab-btn').forEach(b => {
+            const active = b.dataset.taSymbol === sym;
+            b.className = `ta-tab-btn py-1.5 px-1.5 rounded-lg text-[11px] font-mono transition-all ${
+              active ? 'font-bold bg-[#F5C542] text-[#0B0F17]' : 'font-semibold text-slate-400 hover:text-white'
+            }`;
+          });
+          mountTechnicalAnalysis(sym);
+        });
+      });
+
+      // News Feed 2 Tabs
+      document.querySelectorAll('.news-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.newsMode;
+          AppState.activeNewsMode = mode;
+          document.querySelectorAll('.news-tab-btn').forEach(b => {
+            const active = b.dataset.newsMode === mode;
+            b.className = `news-tab-btn px-2 py-1 rounded-md text-[11px] font-mono transition-all ${
+              active ? 'font-bold bg-[#F5C542] text-[#0B0F17]' : 'font-medium text-slate-400 hover:text-white'
+            }`;
+          });
+          mountNewsTimeline(mode);
+        });
+      });
+    }
+
+    /* =========================================================================
+     * INTERACTIVE GOLD MACRO SCORECARD ENGINE
+     * ========================================================================= */
+
+    function renderScorecard() {
+      const container = document.getElementById('scorecard-factors');
+      if (!container) return;
+
+      container.innerHTML = SCORECARD_FACTORS.map(factor => `
+        <div class="rounded-xl bg-[#0B0F17]/90 border border-[#1E293B] p-3.5 space-y-2.5">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-slate-100">${factor.title}</h4>
+              <p class="text-[11px] text-slate-400">${factor.hint}</p>
+            </div>
+            <span class="flex-shrink-0 text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-[#F5C542]">±${factor.weight}đ</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            ${factor.options.map(opt => {
+              const selected = factor.value === opt.score;
+              let btnStyle = 'bg-[#121826] text-slate-300 border-[#1E293B] hover:border-slate-500';
+              if (selected) {
+                if (opt.score > 0) btnStyle = 'bg-emerald-500/20 text-emerald-300 border-emerald-500 font-bold';
+                else if (opt.score < 0) btnStyle = 'bg-rose-500/20 text-rose-300 border-rose-500 font-bold';
+                else btnStyle = 'bg-[#F5C542]/20 text-[#F5C542] border-[#F5C542] font-bold';
+              }
+              return `
+                <button
+                  type="button"
+                  data-factor-id="${factor.id}"
+                  data-score="${opt.score}"
+                  class="scorecard-opt-btn px-2.5 py-1.5 rounded-lg text-[11px] border transition-all active:scale-95 ${btnStyle}"
+                >
+                  ${opt.label}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.scorecard-opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setScorecardValue(btn.dataset.factorId, parseInt(btn.dataset.score, 10));
+        });
+      });
+
+      recalculateMacroScore();
+    }
+
+    function setScorecardValue(factorId, score) {
+      const target = SCORECARD_FACTORS.find(f => f.id === factorId);
+      if (target) {
+        target.value = score;
+        renderScorecard();
+      }
+    }
+
+    function recalculateMacroScore() {
+      let total = 0;
+      let posSum = 0;
+      let negSum = 0;
+
+      SCORECARD_FACTORS.forEach(f => {
+        total += f.value;
+        if (f.value > 0) posSum += f.value;
+        if (f.value < 0) negSum += f.value;
+      });
+
+      const scoreEl = document.getElementById('macro-total-score');
+      const needleEl = document.getElementById('score-needle');
+      const badgeEl = document.getElementById('macro-verdict-badge');
+      const descEl = document.getElementById('macro-verdict-desc');
+
+      scoreEl.textContent = total > 0 ? `+${total}` : `${total}`;
+      document.getElementById('score-pos-sum').textContent = `+${posSum}`;
+      document.getElementById('score-neg-sum').textContent = `${negSum}`;
+
+      // Map -100..+100 to 0%..100%
+      const pct = ((total + 100) / 200) * 100;
+      needleEl.style.left = `${Math.min(98, Math.max(2, pct))}%`;
+
+      if (total >= 45) {
+        scoreEl.className = 'text-5xl sm:text-6xl font-mono font-extrabold text-emerald-400 tracking-tight';
+        badgeEl.className = 'inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 w-full';
+        badgeEl.textContent = 'RẤT TÍCH CỰC CHO VÀNG (STRONG BULLISH)';
+        descEl.textContent = 'Hội tụ nhiều động lực vĩ mô thuận lợi (đồng USD/lợi suất suy yếu, nhu cầu trú ẩn hoặc dòng tiền lớn hỗ trợ). Ưu tiên chiến lược nắm giữ hoặc canh mua khi giá điều chỉnh về hỗ trợ.';
+      } else if (total >= 15) {
+        scoreEl.className = 'text-5xl sm:text-6xl font-mono font-extrabold text-emerald-300 tracking-tight';
+        badgeEl.className = 'inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 w-full';
+        badgeEl.textContent = 'TÍCH CỰC / THIÊN MUA (BULLISH BIAS)';
+        descEl.textContent = 'Bối cảnh vĩ mô nghiêng về xu hướng hỗ trợ giá vàng. Cần kết hợp thêm tín hiệu kỹ thuật ngắn hạn trên biểu đồ XAU/USD và quản trị rủi ro trước các giờ công bố tin Mỹ.';
+      } else if (total > -15) {
+        scoreEl.className = 'text-5xl sm:text-6xl font-mono font-extrabold text-[#F5C542] tracking-tight';
+        badgeEl.className = 'inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/40 w-full';
+        badgeEl.textContent = 'TRUNG LẬP / GIẰNG CO (NEUTRAL)';
+        descEl.textContent = 'Các biến số vĩ mô đang giằng co trái chiều. Giá vàng dễ đi ngang tích lũy trong biên độ cho đến khi có cú hích mới từ dữ liệu CPI, PCE, Non-Farm hoặc phát biểu của Fed.';
+      } else if (total > -45) {
+        scoreEl.className = 'text-5xl sm:text-6xl font-mono font-extrabold text-rose-400 tracking-tight';
+        badgeEl.className = 'inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-rose-500/15 text-rose-400 border border-rose-500/35 w-full';
+        badgeEl.textContent = 'ÁP LỰC GIẢM / THẬN TRỌNG (BEARISH BIAS)';
+        descEl.textContent = 'Đồng USD mạnh lên, lợi suất trái phiếu neo cao hoặc khẩu vị rủi ro tích cực đang tạo sức ép điều chỉnh lên giá vàng. Hạn chế mua đuổi, chờ tín hiệu tạo đáy vĩ mô rõ ràng hơn.';
+      } else {
+        scoreEl.className = 'text-5xl sm:text-6xl font-mono font-extrabold text-rose-500 tracking-tight';
+        badgeEl.className = 'inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-extrabold tracking-wide bg-rose-600/20 text-rose-300 border border-rose-500/60 w-full';
+        badgeEl.textContent = 'ÁP LỰC GIẢM MẠNH (STRONG BEARISH)';
+        descEl.textContent = 'Hàng loạt biến số vĩ mô trọng yếu đang chống lại giá vàng. Cần ưu tiên bảo toàn vốn, theo dõi chặt ngưỡng hỗ trợ kỹ thuật dài hạn và chờ sự đảo chiều của DXY/US10Y.';
+      }
+    }
+
+    /** Auto-fill up to 5 live API metrics into the Scorecard */
+    function autoFillScorecardFromLiveAPI() {
+      const d = AppState.liveData;
+      let filledCount = 0;
+
+      // 1. DXY live level heuristic
+      if (isFinitePos(d.dxy)) {
+        const fDxy = SCORECARD_FACTORS.find(f => f.id === 'f_dxy');
+        if (d.dxy < 98.5) fDxy.value = 20;
+        else if (d.dxy < 101.5) fDxy.value = 10;
+        else if (d.dxy <= 104) fDxy.value = 0;
+        else if (d.dxy <= 106.5) fDxy.value = -10;
+        else fDxy.value = -20;
+        filledCount++;
+      }
+
+      // 2. US 10Y Real Yield & daily bps change heuristic
+      if (isFiniteNum(d.real10y)) {
+        const fYield = SCORECARD_FACTORS.find(f => f.id === 'f_yield');
+        const bps = isFiniteNum(d.real10yChgBps) ? d.real10yChgBps : (d.us10yChgBps ?? 0);
+        if (d.real10y < 1.0 || (d.real10y < 1.8 && bps <= -5)) {
+          fYield.value = 20;
+        } else if (d.real10y < 1.6 || bps <= -4) {
+          fYield.value = 10;
+        } else if (d.real10y <= 2.3 && Math.abs(bps) < 4) {
+          fYield.value = 0;
+        } else if (d.real10y > 2.3 && bps <= -4) {
+          fYield.value = 0;
+        } else if (d.real10y <= 2.7 && bps < 5) {
+          fYield.value = -10;
+        } else {
+          fYield.value = -20;
+        }
+        filledCount++;
+      }
+
+      // 3. 10Y Breakeven Inflation Expectation (BEI)
+      if (isFiniteNum(d.bei10y)) {
+        const fCpi = SCORECARD_FACTORS.find(f => f.id === 'f_cpi');
+        if (d.bei10y >= 2.65) fCpi.value = 10;
+        else if (d.bei10y >= 2.35) fCpi.value = 5;
+        else if (d.bei10y >= 2.0) fCpi.value = 0;
+        else if (d.bei10y >= 1.7) fCpi.value = -5;
+        else fCpi.value = -10;
+        filledCount++;
+      }
+
+      // 4. Sentiment Crypto F&G -> Risk Appetite proxy
+      if (isFiniteNum(d.fngValue)) {
+        const fVix = SCORECARD_FACTORS.find(f => f.id === 'f_vix');
+        if (d.fngValue <= 25) fVix.value = 15;
+        else if (d.fngValue <= 42) fVix.value = 8;
+        else if (d.fngValue <= 60) fVix.value = 0;
+        else if (d.fngValue <= 75) fVix.value = -8;
+        else fVix.value = -15;
+        filledCount++;
+      }
+
+      // 5. PAXG 24h momentum -> Technical Momentum proxy
+      if (isFiniteNum(d.paxgChangePct)) {
+        const fTech = SCORECARD_FACTORS.find(f => f.id === 'f_tech');
+        if (d.paxgChangePct >= 1.0) fTech.value = 5;
+        else if (d.paxgChangePct >= 0.25) fTech.value = 3;
+        else if (d.paxgChangePct > -0.25) fTech.value = 0;
+        else if (d.paxgChangePct > -1.0) fTech.value = -3;
+        else fTech.value = -5;
+        filledCount++;
+      }
+
+      renderScorecard();
+      showToast(
+        filledCount > 0
+          ? `Đã tự động điền ${filledCount} chỉ số Live (DXY, Lợi suất Thực 10Y, Lạm phát 10Y BEI, F&G proxy, Đà PAXG). Hãy kiểm tra thêm VIX/GVZ, Fed & dòng tiền ETF!`
+          : 'Dữ liệu API đang tải, vui lòng thử lại sau giây lát.',
+        'gold'
+      );
+    }
+
+    /* =========================================================================
+     * MASTER RELOAD, AUTO-REFRESH & CLIPBOARD SNAPSHOT
+     * ========================================================================= */
+
+    /** Reload all REST/XML APIs concurrently and optionally re-mount TradingView Widgets */
+    async function reloadAllData(remountWidgets = true, showNotification = true) {
+      if (AppState.isLoading) return;
+      AppState.isLoading = true;
+
+      const icon = document.getElementById('reload-icon');
+      const btn = document.getElementById('btn-reload-all');
+      if (icon) icon.classList.add('animate-spin');
+      if (btn) btn.classList.add('opacity-80', 'cursor-wait');
+
+      if (remountWidgets) {
+        mountAllTradingViewWidgets();
+      }
+
+      let cdnPromise = null;
+      const getCdnRates = () => {
+        if (!cdnPromise) {
+          cdnPromise = fetchJSONNoCache(
+            'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json'
+          );
+        }
+        return cdnPromise;
+      };
+
+      const binancePromise = fetchBinanceAndSentiment();
+      await Promise.allSettled([
+        binancePromise,
+        fetchPreciousMetals(binancePromise, getCdnRates),
+        fetchFXAndDXY(getCdnRates),
+        fetchTreasuryAndFedMacro()
+      ]);
+
+      const updatedStr = getVietnamTimeString(true);
+      AppState.liveData.lastUpdatedStr = updatedStr;
+      document.getElementById('last-updated-time').textContent = updatedStr;
+
+      AppState.isLoading = false;
+      if (icon) icon.classList.remove('animate-spin');
+      if (btn) btn.classList.remove('opacity-80', 'cursor-wait');
+
+      if (AppState.autoRefreshSeconds > 0) {
+        AppState.countdownRemaining = AppState.autoRefreshSeconds;
+      }
+
+      if (showNotification) {
+        showToast(`Đã đồng bộ mới 100% dữ liệu trực tuyến lúc ${getVietnamTimeString(false)}`, 'success');
+      }
+    }
+
+    /** Copy formatted live Vietnamese market report to clipboard */
+    async function copyMarketSnapshot() {
+      const d = AppState.liveData;
+      const paxgChgStr = isFiniteNum(d.paxgChangePct) ? ` (${fmtSigned(d.paxgChangePct, 2, '%')} 24h)` : '';
+      const btcChgStr = isFiniteNum(d.btcChangePct) ? ` (${fmtSigned(d.btcChangePct, 2, '%')} 24h)` : '';
+
+      const lines = [
+        `📊 BÁO CÁO NHANH VĨ MÔ GIÁ VÀNG THẾ GIỚI (${d.lastUpdatedStr || getVietnamTimeString(true)})`,
+        `• Vàng Spot (XAU/USD): $${fmtNum(d.xauUsd, 2)}/oz | Quy đổi VNĐ: ${d.xauVndPerTael ? fmtVND(d.xauVndPerTael) : 'N/A'}`,
+        `• USD Index (DXY ICE): ${fmtNum(d.dxy, 3)} | EUR/USD: ${fmtNum(d.eurUsd, 4)} | USD/JPY: ${fmtNum(d.usdJpy, 2)}`,
+        `• Lợi suất Thực Mỹ 10Y (TIPS): ${isFiniteNum(d.real10y) ? fmtNum(d.real10y, 2) + '%' : 'N/A'} | US10Y: ${isFiniteNum(d.us10y) ? fmtNum(d.us10y, 2) + '%' : 'N/A'} | US02Y: ${isFiniteNum(d.us2y) ? fmtNum(d.us2y, 2) + '%' : 'N/A'} | 10Y-2Y: ${fmtSigned(d.spread10y2y, 2, '%')}`,
+        `• Kỳ vọng Lạm phát 10Y (BEI): ${isFiniteNum(d.bei10y) ? fmtNum(d.bei10y, 2) + '%' : 'N/A'} | Fed EFFR: ${isFiniteNum(d.effr) ? fmtNum(d.effr, 2) + '%' : 'N/A'} | Nợ Công Mỹ: ${isFinitePos(d.usDebtTrillion) ? '$' + fmtNum(d.usDebtTrillion, 2) + 'T' : 'N/A'}`,
+        `• Bạc (XAG): $${fmtNum(d.xagUsd, 2)} (GSR: ${fmtNum(d.gsr, 2)}x) | Bạch Kim: $${fmtNum(d.xptUsd, 0)} | Đồng (Hg): $${fmtNum(d.hgUsd, 2)}/lb (XAU/Cu: ${fmtNum(d.goldCopperRatio, 0)}x)`,
+        `• Vàng 24/7 (PAXG): $${fmtNum(d.paxgPrice, 2)}${paxgChgStr} | BTC: $${fmtNum(d.btcPrice, 0)}${btcChgStr}`,
+        `• Tỷ giá Châu Á: USD/VND ${isFinitePos(d.usdVnd) ? Math.round(d.usdVnd).toLocaleString('vi-VN') : 'N/A'} | USD/CNY ${fmtNum(d.usdCny, 4)} | USD/INR ${fmtNum(d.usdInr, 2)}`,
+        `• Crypto Fear & Greed: ${d.fngValue ?? 'N/A'}/100 (${d.fngLabelVi || 'N/A'})`,
+        `• Điểm Vĩ Mô Vàng (Scorecard): ${document.getElementById('macro-total-score').textContent} — ${document.getElementById('macro-verdict-badge').textContent}`
+      ];
+      const text = lines.join('\n');
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        }
+        showToast('Đã sao chép bản tóm tắt dữ liệu vĩ mô giá vàng vào bộ nhớ tạm!', 'gold');
+      } catch (err) {
+        console.error('Copy failed:', err);
+        showToast('Không thể sao chép tự động trên trình duyệt này.', 'error');
+      }
+    }
+
+    /** Setup live ticking clock and auto-refresh countdown */
+    function initClockAndAutoRefresh() {
+      const clockEl = document.getElementById('live-clock');
+      const selectEl = document.getElementById('auto-refresh-select');
+      const countdownEl = document.getElementById('auto-refresh-countdown');
+
+      const updateClock = () => {
+        if (clockEl) clockEl.textContent = getVietnamTimeString(false);
+      };
+      updateClock();
+
+      if (AppState.autoRefreshSeconds > 0) {
+        countdownEl.classList.remove('hidden');
+        countdownEl.textContent = `${AppState.countdownRemaining}s`;
+      }
+
+      if (AppState.autoRefreshIntervalId) {
+        clearInterval(AppState.autoRefreshIntervalId);
+      }
+
+      AppState.autoRefreshIntervalId = setInterval(() => {
+        updateClock();
+        if (AppState.autoRefreshSeconds > 0 && !AppState.isLoading) {
+          AppState.countdownRemaining--;
+          countdownEl.classList.remove('hidden');
+          countdownEl.textContent = `${Math.max(0, AppState.countdownRemaining)}s`;
+
+          if (AppState.countdownRemaining <= 0) {
+            AppState.countdownRemaining = AppState.autoRefreshSeconds;
+            reloadAllData(false, false);
+          }
+        } else if (AppState.autoRefreshSeconds === 0) {
+          countdownEl.classList.add('hidden');
+        }
+      }, 1000);
+
+      selectEl.addEventListener('change', (e) => {
+        const secs = parseInt(e.target.value, 10);
+        AppState.autoRefreshSeconds = secs;
+        AppState.countdownRemaining = secs;
+        if (secs > 0) {
+          countdownEl.classList.remove('hidden');
+          countdownEl.textContent = `${secs}s`;
+          showToast(`Đã bật tự động làm mới dữ liệu API mỗi ${secs} giây.`, 'gold');
+        } else {
+          countdownEl.classList.add('hidden');
+          showToast('Đã tắt tự động làm mới định kỳ (TradingView vẫn chạy trực tuyến).', 'warn');
+        }
+      });
+    }
+
+    /* =========================================================================
+     * INITIALIZATION ON PAGE LOAD (FRESH DATA ON EVERY RELOAD / F5)
+     * ========================================================================= */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderChartSwitcherBar();
+      renderScorecard();
+      initTabListeners();
+      initClockAndAutoRefresh();
+
+      document.getElementById('btn-reload-all').addEventListener('click', () => {
+        reloadAllData(true, true);
+      });
+      document.getElementById('btn-copy-snapshot').addEventListener('click', copyMarketSnapshot);
+      document.getElementById('btn-auto-score').addEventListener('click', autoFillScorecardFromLiveAPI);
+      document.getElementById('btn-reset-score').addEventListener('click', () => {
+        SCORECARD_FACTORS.forEach(f => { f.value = 0; });
+        renderScorecard();
+        showToast('Đã đặt lại toàn bộ yếu tố chấm điểm về Trung lập (0).', 'warn');
+      });
+
+      reloadAllData(true, false);
+    });
+  </script>
+</body>
+</html>
