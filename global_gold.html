@@ -93,8 +93,9 @@
             <span class="text-[11px] text-slate-400 hidden sm:inline">Tự làm mới:</span>
             <select id="auto-refresh-select" aria-label="Tự động làm mới" class="bg-transparent text-xs font-mono font-semibold text-[#F5C542] focus:outline-none cursor-pointer">
               <option value="0" class="bg-[#121826] text-slate-200">Tắt</option>
+              <option value="10" class="bg-[#121826] text-slate-200" selected>10 giây</option>
               <option value="30" class="bg-[#121826] text-slate-200">30 giây</option>
-              <option value="60" class="bg-[#121826] text-slate-200" selected>60 giây</option>
+              <option value="60" class="bg-[#121826] text-slate-200">60 giây</option>
               <option value="300" class="bg-[#121826] text-slate-200">5 phút</option>
             </select>
             <span id="auto-refresh-countdown" class="hidden text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">--s</span>
@@ -917,8 +918,8 @@
       activeChartLabel: 'Vàng Spot (OANDA:XAUUSD)',
       activeTechnicalSymbol: 'OANDA:XAUUSD',
       activeNewsMode: 'xau',
-      autoRefreshSeconds: 60,
-      countdownRemaining: 60,
+      autoRefreshSeconds: 10,
+      countdownRemaining: 10,
       autoRefreshIntervalId: null,
       isLoading: false,
       liveData: {
